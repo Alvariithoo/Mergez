@@ -358,24 +358,6 @@ class Client {
     };
 
     sendPacket(packet) {
-        if (packet == null) return;
-        if (this.readyState == WebSocket.OPEN) {
-            if (this._socket.writable != null && !this._socket.writable) {
-                return;
-            }
-            var buffer = packet.build(this.player.socket.client.protocol);
-            if (buffer != null) {
-                this.send(buffer, {
-                    binary: true
-                });
-            }
-        } else {
-            this.readyState = WebSocket.CLOSED;
-            // this.emit('close');
-        }
-    };
-
-    sendPacket(packet) {
         var socket = this.socket;
         if (!packet || !socket.isConnected || socket.player.isMi || socket.player.isBot) return;
         if (socket.readyState == WebSocket.OPEN) {
