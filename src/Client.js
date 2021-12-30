@@ -247,7 +247,7 @@ class Client {
         if (dt < 25 * 2) {
             return;
         }
-        console.log('[' + day() + '] | ' + '[CHAT] | [' + message + ']')
+        console.log("[" + day() + "] | " + "[CHAT] | [" + message + "]");
         var flags = message[1];    // flags
         var rvLength = (flags & 2 ? 4 : 0) + (flags & 4 ? 8 : 0) + (flags & 8 ? 16 : 0);
         if (message.length < 3 + rvLength) // second validation
