@@ -1,0 +1,20 @@
+﻿[
+    { 
+        "ip":"", 
+        "password":"0_xazOutNoob+",
+        "role":"ADMIN",
+        "name":"Local Administrator" 
+    },
+    { 
+        "ip":"", 
+        "password":"imposibledkdhksdhksduyasd728itkjuhsadk_[dsaiodsaKEKWplGUR0M!",
+        "role":"MODER",
+        "name":"Local Moderator" 
+    },
+    { 
+        "ip":"", 
+        "password":"Userfgdhgfdf0+ghjjhgf",
+        "role":"USER",
+        "name":"Local User" 
+    }
+]

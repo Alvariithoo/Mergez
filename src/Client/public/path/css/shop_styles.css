@@ -1,0 +1,94 @@
+@import url('../css/font.css');
+
+
+body{
+    background-color: rgb(37,37,37);
+    margin: auto auto;
+    font-family: 'Roboto Mono' !important;
+    letter-spacing: -1px;
+}
+#container {
+    transition-duration: .3s;
+    transition-property: all;
+    width: 100%;
+    height: 100%;
+}
+#shop{
+    margin:auto;
+    text-align: center;
+    overflow-wrap: break-word;
+    width: 70%;
+    height: 1000px;
+    margin-top: 10px;
+    background: rgb(37,37,37);
+background: -moz-linear-gradient(180deg, rgba(37,37,37,1) 0%, rgba(45,0,57,1) 100%);
+background: -webkit-linear-gradient(180deg, rgba(37,37,37,1) 0%, rgba(45,0,57,1) 100%);
+background: linear-gradient(180deg, rgba(37,37,37,1) 0%, rgba(45,0,57,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#252525",endColorstr="#2d0039",GradientType=1);
+}
+.skin {
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: keepLurking 20s;
+    -webkit-animation: keepLurking 20s;
+    animation-iteration-count: infinite;
+    border: 2px solid transparent;
+    transition: .3s
+}
+.skin:hover{
+    transition: .3s;
+    border: 2px solid #FAFAFA;
+}
+.skinCard{
+    position: relative;
+    display: inline-block;
+    width: 210px;
+    height: 240px;
+    text-align: center;
+    border:3px solid transparent;
+    background: rgba(0,0,0,0.20)!important;
+    margin-bottom: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 10px;
+    vertical-align: top;
+    border-radius: 4px;
+    z-index: 1;
+    pointer-events: auto;
+    box-shadow: 0 2px 8px 0 rgb(0 0 0 / 40%);
+    font-weight: 300;
+    font-size: 20px;
+    color: #FFF;
+    transition: .3s;
+}
+.skinCard:hover{
+    transition: .3s;
+    border:3px solid rgb(73, 2, 73)
+}
+.price{
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.20)!important;
+    border:0;
+    margin-top: 10px;
+    padding: 5px 10px 5px 10px;
+    transition: .3s;
+    border:3px solid transparent
+}
+.price:hover{
+    transition: .3s;
+    border:3px solid rgb(73, 2, 73)
+}
+.skinName{
+    box-shadow: 0 2px 8px 0 rgb(0 0 0 / 40%);
+    overflow: hidden;
+    white-space: nowrap;
+    text-transform: capitalize;
+    background: rgba(0,0,0,0.20)!important;
+    border-radius: 4px;
+    transition: 0.3s;
+}
+.skinName:hover{
+    text-shadow: 2px 2px 15px #FAFAFA;
+    transition: 0.3s;
+}

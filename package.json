@@ -1,0 +1,38 @@
+{
+    "name": "MultiOgarII",
+    "version": "1.6.0",
+    "description": "Open source multi-protocol Ogar server and Client",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "cd src && node index.js"
+    },
+    "keywords": [],
+    "author": "Barbosik (https://github.com/Barbosik/MultiOgar)",
+    "homepage": "https://github.com/Alvariithoo/MultiOgarII-Edited",
+    "license": "ISC",
+    "dependencies": {
+        "chalk": "^4.1.1",
+        "clear": "^0.1.0",
+        "crypto": "^1.0.1",
+        "ejs": "^3.1.6",
+        "express": "^4.17.1",
+        "express-session": "^1.17.2",
+        "express-subdomain": "^1.0.5",
+        "figlet": "^1.5.0",
+        "fs": "0.0.1-security",
+        "got": "^11.8.2",
+        "http": "0.0.1-security",
+        "inquirer": "^8.1.1",
+        "path": "^0.12.7",
+        "quad-node": "^1.0.5",
+        "request": "^2.88.2",
+        "serve-favicon": "^2.5.0",
+        "simple-git": "^2.40.0",
+        "debug-logger": "^0.4.1",
+        "socket.io": "^2.0.4",
+        "underscore": "^1.13.1",
+        "url": "^0.11.0",
+        "vector2-node": "0.0.3"
+    }
+}
