@@ -13,7 +13,7 @@
     },
     { 
         "ip": "", 
-        "password": null,
+        "password": "1029384756",
         "role":"USER",
         "name":"User" 
     }
