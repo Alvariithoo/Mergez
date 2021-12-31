@@ -39,7 +39,7 @@ class BotPlayer extends Player {
                 this.socket.close();
             }
         }
-    }
+    };
 
     sendUpdate() { // Overrides the update function from player tracker
         if (this.splitCooldown > 0) this.splitCooldown--;
@@ -73,12 +73,10 @@ class BotPlayer extends Player {
                 if (this.server.gameMode.haveTeams && (cell.owner.team == check.owner.team)) {
                     // Same team cell
                     influence = 0;
-                }
-                else if (cell._size > (check._size + 4) * 1.15) {
+                } else if (cell._size > (check._size + 4) * 1.15) {
                     // Can eat it
                     influence = check._size * 2.5;
-                }
-                else if (check._size + 4 > cell._size * 1.15) {
+                } else if (check._size + 4 > cell._size * 1.15) {
                     // Can eat me
                     influence = -check._size;
                 } else {
@@ -94,8 +92,7 @@ class BotPlayer extends Player {
                     if (this.cells.length == this.server.config.playerMaxCells) {
                         // Won't explode
                         influence = check._size * 2.5;
-                    }
-                    else {
+                    } else {
                         // Can explode
                         influence = -1;
                     }
@@ -144,23 +141,10 @@ class BotPlayer extends Player {
             //     console.log( this.cells.length);
             // }
             // Splitting conditions
-            if (check.cellType == 0 && 
-                cell._size > (check._size + 4) * 1.15 &&
-                cell._size < check._size * 5 &&
-                (!split) && 
-                this.splitCooldown == 0 && 
-                this.cells.length < 5) {
-                
-                var endDist = 780 + 40 - cell._size / 2 - check._size;
-                
-                if (endDist > 0 && distance < endDist) {
-                    splitTarget = check;
-                    split = true;
-                }
-            } else {
-                // Add up forces on the entity
-                result.add(force);
-            }
+
+            splitTarget = check;
+            split = true;
+
         }
         
         // Normalize the resulting vector
@@ -171,26 +155,27 @@ class BotPlayer extends Player {
             // Can be shortened but I'm too lazy
             if (threats.length > 0) {
                 if (this.largest(threats)._size > cell._size * 1.3) {
-                    // Splitkill the target
-                    this.mouse = {
-                        x: splitTarget.position.x,
-                        y: splitTarget.position.y
-                    };
-                    this.splitCooldown = 5;
-                    // this.socket.client.Split = true;
-                    this.socket.player.Split();
                     return;
                 }
-            }
-            else {
-                // Still splitkill the target
+            } else {
+                // Splitkill the target
                 this.mouse = {
                     x: splitTarget.position.x,
                     y: splitTarget.position.y
                 };
-                this.splitCooldown = 10;
+                this.splitCooldown = 1000;
                 this.socket.client.Split = true;
-                this.socket.player.Split();
+                if (this.cells.length <= 2) {
+                    this.socket.player.Split(2);
+                    setTimeout(() => {
+                        this.socket.player.Split(5);
+                    }, 450)
+                } else {
+                    this.mouse = {
+                        x: cellPos.x,
+                        y: cellPos.y
+                    };
+                }
                 return;
             }
         }
