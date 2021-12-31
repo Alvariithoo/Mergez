@@ -1,20 +1,20 @@
 ﻿[
     { 
-        "ip":"", 
-        "password":"0_xazOutNoob+",
-        "role":"ADMIN",
-        "name":"Local Administrator" 
+        "ip": "", 
+        "password": "0_xazOutNoob36+",
+        "role": "ADMIN",
+        "name": "Administrator" 
     },
     { 
         "ip":"", 
-        "password":"imposibledkdhksdhksduyasd728itkjuhsadk_[dsaiodsaKEKWplGUR0M!",
-        "role":"MODER",
-        "name":"Local Moderator" 
+        "password": "0_xazzOutAgain36+",
+        "role": "MOD",
+        "name": "Moderator" 
     },
     { 
-        "ip":"", 
-        "password":"Userfgdhgfdf0+ghjjhgf",
+        "ip": "", 
+        "password": null,
         "role":"USER",
-        "name":"Local User" 
+        "name":"User" 
     }
 ]
