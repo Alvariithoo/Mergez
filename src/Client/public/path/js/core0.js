@@ -81,34 +81,6 @@ var vg = new Image();
 vg.src = "./images/vg.png";
 var pepe = new Image();
 pepe.src = "./images/pepe.png";
-var pelletCanvas = document.createElement("canvas");
-pelletCanvas.width = 22;
-pelletCanvas.height = 22;
-var pelletCtx = pelletCanvas.getContext("2d");
-pelletCtx.beginPath();
-pelletCtx.arc(11, 11, 15, 0, 2 * Math.PI);
-pelletCtx.fillStyle = "#651fff";
-// pelletCtx.fill();
-var cellCanvas = document.createElement("canvas");
-cellCanvas.width = 1000;
-cellCanvas.height = 1000;
-var cellCtx = pelletCanvas.getContext("2d");
-cellCtx.beginPath();
-cellCtx.arc(500, 500, 400, 0, 2 * Math.PI);
-cellCtx.fillStyle = "#651fff";
-// cellCtx.fill();
-var W = 500;
-var H = 500;
-var mp = 50; //max particles
-var particles = [];
-for (var i = 0; i < mp; i++) {
-    particles.push({
-        x: Math.random() * W, //x-coordinate
-        y: Math.random() * H, //y-coordinate
-        r: Math.random() * 4 + 1, //radius
-        d: Math.random() * mp //density
-    })
-}
 
 function UI() {
     function enter() {
@@ -179,7 +151,6 @@ function UI() {
     this.isShowScroll = false;
     this.isEnableGridline = false;
     this.isEnableShowAllMass = true;
-    this.isJellyPhysics = !false;
     this.isEnableAutoStart = false;
     this.isEnableMouseW = false;
     this.isEnableCustomSkin = true;
@@ -603,14 +574,6 @@ function UI() {
                     }
                 }
             },
-            opt_jelly_physics: {
-                text: "Jelly Physics",
-                "default": false,
-                disabled: true,
-                handler: function(token) {
-                    UI.isJellyPhysics = !token;
-                }
-            },
             opt_rainbowfood: {
                 text: 'Rainbow Food',
                 "default": true,
@@ -844,28 +807,12 @@ function UI() {
     };
     this.setupHotKey = function() {
         hotkeyConfig = {
-            hk_simple_draw: {
-                defaultHotkey: "",
-                name: "Jelly Physics",
-                keyDown: function() {
-                    $("#opt_jelly_physics").click();
-                },
-                type: "NORMAL"
-            },
             hk_start_new_game: {
                 defaultHotkey: "N",
                 name: "Respawn",
                 keyDown: async function () {
                     await chatRoom.sendMessageToServer('/kill');
                     await $(".btn-play").trigger("click");
-                },
-                type: "NORMAL"
-            },
-            hk_new_msg_cords: {
-                defaultHotkey: "",
-                name: "Cordenadas",
-                keyDown: async function () {
-                    await $("#opt_cursorline").click();
                 },
                 type: "NORMAL"
             },
@@ -1889,23 +1836,23 @@ var selected_profile = 0;
 var player_profile = [{
     name: "Profile 1",
     team: "",
-    skinurl: "https://i.imgur.com/1bFRYYA.png"
+    skinurl: ""
 }, {
     name: "Profile 2",
     team: "",
-    skinurl: "https://i.imgur.com/qp0v8Nh.jpg"
+    skinurl: ""
 }, {
     name: "Profile 3",
     team: "",
-    skinurl: "https://i.imgur.com/LPldzne.png"
+    skinurl: ""
 }, {
     name: "Profile 4",
     team: "",
-    skinurl: "https://i.imgur.com/XYsZ0vt.jpg"
+    skinurl: ""
 }, {
     name: "Profile 5",
     team: "",
-    skinurl: "https://i.imgur.com/Aq7haaf.jpg"
+    skinurl: ""
 }];
 UI = new UI, UI.init();
 var playerDetailsByIdentifier = {};
@@ -2592,65 +2539,6 @@ var announcementSent = false;
         }
     }
 
-    function componentToHex(c) {
-        var hex = c.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
-    }
-
-    function rgbToHex(r, g, b) {
-        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-    }
-
-    function getRandomColor() {
-        var h = 360 * Math.random();
-        var s = 248 / 255;
-        var v = 1;
-
-        // hsv to rgb    
-        var rgb = { r: v, g: v, b: v }; // achromatic (grey)
-        if (s > 0) {
-            h /= 60; // sector 0 to 5
-            var i = Math.floor(h) >> 0;
-            var f = h - i; // factorial part of h
-            var p = v * (1 - s);
-            var q = v * (1 - s * f);
-            var t = v * (1 - s * (1 - f));
-            switch (i) {
-                case 0:
-                    rgb = { r: v, g: t, b: p };
-                    break
-                case 1:
-                    rgb = { r: q, g: v, b: p };
-                    break
-                case 2:
-                    rgb = { r: p, g: v, b: t };
-                    break
-                case 3:
-                    rgb = { r: p, g: q, b: v };
-                    break
-                case 4:
-                    rgb = { r: t, g: p, b: v };
-                    break
-                default:
-                    rgb = { r: v, g: p, b: q };
-                    break
-            }
-        }
-        // check color range
-        rgb.r = Math.max(rgb.r, 0);
-        rgb.g = Math.max(rgb.g, 0);
-        rgb.b = Math.max(rgb.b, 0);
-        rgb.r = Math.min(rgb.r, 1);
-        rgb.g = Math.min(rgb.g, 1);
-        rgb.b = Math.min(rgb.b, 1);
-        return rgbToHex(
-            (rgb.r * 255) >>> 0,
-            (rgb.g * 255) >>> 0,
-            (rgb.b * 255) >>> 0
-        )
-    }
-    var group1Color = getRandomColor();
-
     function drawCellGroup(group, ctx) {
         ctx.beginPath();
         for (var i = 0; i < group.length; i++) {
@@ -2677,7 +2565,7 @@ var announcementSent = false;
         if (group.length == 1 && group[0].isMine) {
             ctx.fillStyle = "#091299";
         } else {
-            ctx.fillStyle = group1Color;
+            ctx.fillStyle = "#ff071e";
         }
         ctx.fill();
     }
@@ -3031,7 +2919,6 @@ var announcementSent = false;
         this.n = this.size = size;
         this.color = color;
         this.a = [];
-        this.Q();
         this.t(ms);
         this.isMine = (result.indexOf(value) >= 0)
     }
@@ -3329,7 +3216,6 @@ var announcementSent = false;
             } else {
                 var old = null;
                 self.setNick = function(v) {
-                    group1Color = getRandomColor();
                     if (self.ga) {
                         self.ga("send", "event", "Nick", v.toLowerCase());
                     }
@@ -3548,23 +3434,6 @@ var announcementSent = false;
                             this.k.u(this.name);
                         }
                     },
-                    Q: function() {
-                        var a = this.B();
-                        for (; this.a.length > a;) {
-                            var data = ~~(Math.random() * this.a.length);
-                            this.a.splice(data, 1);
-                        }
-                        if (0 == this.a.length) {
-                            if (a > 0) {
-                                this.a.push(new Client(this, this.x, this.y, this.size, Math.random() - 0.5));
-                            }
-                        }
-                        for (; this.a.length < a;) {
-                            data = ~~(Math.random() * this.a.length);
-                            data = this.a[data];
-                            this.a.push(new Client(this, data.x, data.y, data.g, data.b));
-                        }
-                    },
                     B: function() {
                         var rh = 10;
                         if (20 > this.size) {
@@ -3577,69 +3446,6 @@ var announcementSent = false;
                         return this.f || (height *= scale),
                             height *= resolutionScale,
                             32 & this.T && (height *= 0.25), ~~Math.max(height, rh);
-                    },
-                    da: function() {
-                        this.Q();
-                        var nodes = this.a;
-                        var n = nodes.length;
-                        var i = 0;
-                        for (i = 0; i < n; ++i) {
-                            var a = nodes[(i - 1 + n) % n].b;
-                            var b = nodes[(i + 1) % n].b;
-                            nodes[i].b += (Math.random() - 0.5) * (this.j ? 3 : 1);
-                            nodes[i].b *= 0.7;
-                            if (10 < nodes[i].b) {
-                                nodes[i].b = 10;
-                            }
-                            if (-10 > nodes[i].b) {
-                                nodes[i].b = -10;
-                            }
-                            nodes[i].b = (a + b + 8 * nodes[i].b) / 10;
-                        }
-                        var ELEMENT_NODE = this;
-                        var sa = this.f ? 0 : (this.id / 1E3 + max / 1E4) % (2 * Math.PI);
-                        i = 0;
-                        for (; n > i; ++i) {
-                            var g = nodes[i].g;
-                            if (a = nodes[(i - 1 + n) % n].g, b = nodes[(i + 1) % n].g, 15 < this.size && (null != _root && (20 < this.size * scale && 0 < this.id))) {
-                                var r = false;
-                                var x = nodes[i].x;
-                                var y = nodes[i].y;
-                                _root.ea(x - 5, y - 5, 10, 10, function(node) {
-                                    if (node.P != ELEMENT_NODE) {
-                                        if (25 > (x - node.x) * (x - node.x) + (y - node.y) * (y - node.y)) {
-                                            r = true;
-                                        }
-                                    }
-                                });
-                                if (!r) {
-                                    if (nodes[i].x < right || (nodes[i].y < top || (nodes[i].x > left || nodes[i].y > computed))) {
-                                        r = true;
-                                    }
-                                }
-                                if (r) {
-                                    if (0 < nodes[i].b) {
-                                        nodes[i].b = 0;
-                                    }
-                                    --nodes[i].b;
-                                }
-                            }
-                            g += nodes[i].b;
-                            if (0 > g) {
-                                g = 0;
-                            }
-                            g = this.j ? (19 * g + this.size) / 20 : (12 * g + this.size) / 13;
-                            nodes[i].g = (a + b + 8 * g) / 10;
-                            a = 2 * Math.PI / n;
-                            b = this.a[i].g;
-                            if (this.f) {
-                                if (0 == i % 2) {
-                                    b += 5;
-                                }
-                            }
-                            nodes[i].x = this.x + Math.cos(a * i + sa) * b;
-                            nodes[i].y = this.y + Math.sin(a * i + sa) * b;
-                        }
                     },
                     J: function() {
                         if (0 >= this.id) {
@@ -3662,7 +3468,7 @@ var announcementSent = false;
                     },
                     s: function(ctx) {
                         if (this.H()) {
-                            var f = UI.isJellyPhysics;
+                            var f = !false;
                             if (30 > this.size) {
                                 if (!UI.isEnableHideFood) {
                                     if (UI.isRainbowFood) {
@@ -3723,7 +3529,7 @@ var announcementSent = false;
                                             ctx.lineTo(minX, t);
                                             ctx.stroke();
                                             ctx.restore();
-                                            window.exec(`Cords ${minX} / ${t}`);
+                                            // window.exec(`Cords ${minX} / ${t}`);
                                         }
                                         if ("" != UI.cellColor && (this.color = UI.cellColor), UI.isEnableAttackRange) {
                                             ctx.beginPath();
@@ -3739,7 +3545,7 @@ var announcementSent = false;
                                         }
                                     }
                                 }
-                                if (doneResults ? (ctx.fillStyle = "#FFFFFF", ctx.strokeStyle = "#AAAAAA") : (ctx.fillStyle = this.color, ctx.lineWidth = 10), f && (this.f && (ctx.fillStyle = this.color, ctx.globalAlpha = 1, ctx.lineWidth = 0, ctx.strokeStyle = this.color)), f || y_position) {
+                                if (ctx.fillStyle = this.color, ctx.globalAlpha = 1, f || y_position) {
                                     ctx.beginPath();
                                 if (!this.f) ctx.arc(this.x, this.y, this.size + 5, 0, 2 * Math.PI, false);
                                     if (this.color == "#ce6363") {
@@ -3763,24 +3569,13 @@ var announcementSent = false;
                                         }
                                     }
                                 }
-                                else {
-                                    this.da();
-                                    ctx.beginPath();
-                                    var n = this.B();
-                                    ctx.moveTo(this.a[0].x, this.a[0].y);
-                                    i = 1;
-                                    for (; i <= n; ++i) {
-                                        c = i % n;
-                                        ctx.lineTo(this.a[c].x, this.a[c].y);
-                                    }
-                                }
-                                if (ctx.closePath(), i = this.name.toLowerCase(), c = this.img ? "http://upload.happyfor.me/getimg.php?id=" + this.img + "&_t=" + Math.random() : "skins/" + i + ".png", x || (this.j || (!error && !UI.isEnableOtherSkinSupport || ":teams" == index)) ? n = null : (n = this.V, null == n ? n = null : ":" == n[0] ? (images.hasOwnProperty(n) || (images[n] = new Image, images[n].src = n.slice(1)), n = 0 != images[n].width && images[n].complete ? images[n] : null) : n = null, n || (-1 != numbers.indexOf(i) && error || this.img ? ($.hasOwnProperty(i) || ($[i] = new Image, $[i].src = c), n = 0 != $[i].width && $[i].complete ? $[i] : null) : n = null)), c = n, y_position || f && (this.f && ctx.stroke()), ctx.fill(), UI.isEnableCustomSkin && (n = null, x = false, v && (x = v.url), x && (results.hasOwnProperty(x) || (v = new Image, v.src = x, results[x] = v), results[x].width && (results[x].complete && (n = results[x]))), c = n, null != c)) {
+                                if (ctx.closePath(), i = this.name.toLowerCase(), c = this.img ? "http://upload.happyfor.me/getimg.php?id=" + this.img + "&_t=" + Math.random() : "skins/" + i + ".png", x || (this.j || (!error && !UI.isEnableOtherSkinSupport || ":teams" == index)) ? n = null : (n = this.V, null == n ? n = null : ":" == n[0] ? (images.hasOwnProperty(n) || (images[n] = new Image, images[n].src = n.slice(1)), n = 0 != images[n].width && images[n].complete ? images[n] : null) : n = null, n || (-1 != numbers.indexOf(i) && error || this.img ? ($.hasOwnProperty(i) || ($[i] = new Image, $[i].src = c), n = 0 != $[i].width && $[i].complete ? $[i] : null) : n = null)), c = n, y_position || f && (this.f), ctx.fill(), UI.isEnableCustomSkin && (n = null, x = false, v && (x = v.url), x && (results.hasOwnProperty(x) || (v = new Image, v.src = x, results[x] = v), results[x].width && (results[x].complete && (n = results[x]))), c = n, null != c)) {
                                     var size = Math.min(c.width, c.height);
                                     var startX = (c.width - size) / 2;
                                     var offsetY = (c.height - size) / 2;
                                     var y = this.size + 5;
                                 }
-                                if (null != c && (ctx.save(), ctx.clip(), ctx.drawImage(c, startX, offsetY, size, size, this.x - y, this.y - y, 2 * y, 2 * y), ctx.restore()), f || ((doneResults || 15 < this.size) && (y_position || (ctx.strokeStyle = "#000000", ctx.globalAlpha *= 0.1, ctx.stroke())), ctx.globalAlpha = 1), n = -1 != data.indexOf(this), y_position = ~~this.y, f = this.f || (300 < this.size || 1000 < this.size * scale), !(isHideSelfName && UI.isHideSelfName || UI.isAutoHideName && !f) && (0 != this.id && ((oldStatus || n) && (this.name && (this.k && (null == c || -1 == reserved.indexOf(i))))))) {
+                                if (null != c && (ctx.save(), ctx.clip(), ctx.drawImage(c, startX, offsetY, size, size, this.x - y, this.y - y, 2 * y, 2 * y), ctx.restore()), f || ((doneResults || 15 < this.size), ctx.globalAlpha = 1), n = -1 != data.indexOf(this), y_position = ~~this.y, f = this.f || (300 < this.size || 1000 < this.size * scale), !(isHideSelfName && UI.isHideSelfName || UI.isAutoHideName && !f) && (0 != this.id && ((oldStatus || n) && (this.name && (this.k && (null == c || -1 == reserved.indexOf(i))))))) {
                                     c = this.k;
                                     c.u(this.name);
                                     c.G(this.i() / 0.9);
