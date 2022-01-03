@@ -2555,6 +2555,9 @@ var announcementSent = false;
                 continue;
             }
             if (cell.size < 32) {
+                var pelletCanvas = document.createElement("canvas");
+                pelletCanvas.width = 22;
+                pelletCanvas.height = 22;
                 ctx.drawImage(pelletCanvas, cell.x - cell.size, cell.y - cell.size, cell.size * 2, cell.size * 2);
                 continue;
             }
