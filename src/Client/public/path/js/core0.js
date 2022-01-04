@@ -20,8 +20,8 @@ function mainLoader() {
     $(".btn-green").insertBefore(".btn-blue");
     $(".btn-red").insertAfter(".btn-green");
 
-    UI.getVersion = "V2.2.0";
-    $("n2").text("UI.io | " + UI.getVersion + " | By Alvariithoo & Mrozio");
+    UI.getVersion = "V2.2.2";
+    $("n2").text("Mergez.io | " + UI.getVersion + " | By Alvariithoo & Mrozio");
 
     $('#profile-bg').click(function() {
         while (localStorage.getItem("selected_profile") != 0) {
@@ -114,11 +114,11 @@ function UI() {
     function data() {
         setLocalStorage("player_profile", player_profile);
     }
-    var version = "v2.1.0";
+    var version = "v2.2.2";
     this.getVersion = function() {
         return version;
     };
-    this.toggleHats = function() {
+    this.toggleKeys = function() {
         $("#KeysPanel").fadeToggle();
     };
 

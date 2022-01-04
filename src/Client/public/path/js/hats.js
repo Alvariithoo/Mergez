@@ -4,11 +4,11 @@ $("#skin_url").change(function() {
 });
 
 document.querySelector("#KeysClose").onclick = () => {
-    UI.toggleHats();
+    UI.toggleKeys();
 };
 document.querySelector("#save").onclick = () => {
     saveHotkeys();
-    UI.toggleHats();
+    UI.toggleKeys();
 };
 document.querySelector("#reset").onclick = () => {
     resetDefaultHotkey();
