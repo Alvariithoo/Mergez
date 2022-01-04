@@ -86,6 +86,34 @@ var vg = new Image();
 vg.src = "./images/vg.png";
 var pepe = new Image();
 pepe.src = "./images/pepe.png";
+var pelletCanvas = document.createElement("canvas");
+pelletCanvas.width = 22;
+pelletCanvas.height = 22;
+var pelletCtx = pelletCanvas.getContext("2d");
+pelletCtx.beginPath();
+pelletCtx.arc(11, 11, 15, 0, 2 * Math.PI);
+pelletCtx.fillStyle = "#651fff";
+// pelletCtx.fill();
+var cellCanvas = document.createElement("canvas");
+cellCanvas.width = 1000;
+cellCanvas.height = 1000;
+var cellCtx = pelletCanvas.getContext("2d");
+cellCtx.beginPath();
+cellCtx.arc(500, 500, 400, 0, 2 * Math.PI);
+cellCtx.fillStyle = "#651fff";
+// cellCtx.fill();
+var W = 500;
+var H = 500;
+var mp = 50; //max particles
+var particles = [];
+for (var i = 0; i < mp; i++) {
+    particles.push({
+        x: Math.random() * W, //x-coordinate
+        y: Math.random() * H, //y-coordinate
+        r: Math.random() * 4 + 1, //radius
+        d: Math.random() * mp //density
+    })
+}
 
 function UI() {
     function enter() {
@@ -2589,9 +2617,6 @@ var announcementSent = false;
                 continue;
             }
             if (cell.size < 32) {
-                var pelletCanvas = document.createElement("canvas");
-                pelletCanvas.width = 22;
-                pelletCanvas.height = 22;
                 ctx.drawImage(pelletCanvas, cell.x - cell.size, cell.y - cell.size, cell.size * 2, cell.size * 2);
                 continue;
             }
