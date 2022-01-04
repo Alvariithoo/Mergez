@@ -14,13 +14,9 @@
     <script src="https://use.fonticons.com/902e63d5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/0.6.8/js/min/perfect-scrollbar.jquery.min.js"></script>
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4656002964152261"
-     crossorigin="anonymous"></script>
-     <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4656002964152261" crossorigin="anonymous"></script>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </head>
 <body>
     <noscript>Please enable JavaScript in your browser for game to work!</noscript>
@@ -31,142 +27,139 @@
             </div>
         </center>
         <div id="container" class="opac0 hided">
-            <div class="longAd">
-                <ins class=" adsbygoogle" data-ad-client="ca-pub-1725936073416590" data-ad-slot="8820282509" data-ad-layout="" data-ad-layout-key="" data-ad-format="" data-full-width-responsive="false" style="width: 728px; height: 90px; display: inline-block;" data-adsbygoogle-status="done" data-ad-status="filled"><ins id="aswift_1_expand" style="border: none; height: 90px; width: 728px; margin: 0px; padding: 0px; position: relative; visibility: visible; background-color: transparent; display: inline-table;" tabindex="0" title="Advertisement" aria-label="Advertisement"><ins id="aswift_1_anchor" style="border: none; height: 90px; width: 728px; margin: 0px; padding: 0px; position: relative; visibility: visible; background-color: transparent; display: block;"><iframe id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;border:0;width:728px;height:90px;" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" width="728" height="90" frameborder="0" src="https://googleads.g.doubleclick.net/pagead/ads?client=ca-pub-4656002964152261&amp;output=html&amp;h=90&amp;slotname=1204092969&amp;adk=2437282065&amp;adf=658450961&amp;pi=t.ma~as.1204092969&amp;w=728&amp;lmt=1635719887&amp;psa=0&amp;format=728x90&amp;url=https%3A%2F%2Ftricksplit.io%2F&amp;flash=0&amp;fwrattr=false&amp;wgl=1&amp;uach=WyJXaW5kb3dzIiwiMTAuMC4wIiwieDg2IiwiIiwiOTUuMC40NjM4LjU0IixbXSxudWxsLG51bGwsIjY0Il0.&amp;dt=1635947204011&amp;bpp=39&amp;bdt=2558&amp;idt=-M&amp;shv=r20211029&amp;mjsv=m202110280101&amp;ptt=9&amp;saldr=aa&amp;abxe=1&amp;prev_fmts=0x0&amp;nras=1&amp;correlator=7480592834023&amp;frm=20&amp;pv=2&amp;ga_vid=100645483.1635947202&amp;ga_sid=1635947253&amp;ga_hid=355993000&amp;ga_fc=1&amp;u_tz=60&amp;u_his=2&amp;u_h=1080&amp;u_w=1920&amp;u_ah=1040&amp;u_aw=1920&amp;u_cd=24&amp;adx=703&amp;ady=206&amp;biw=2133&amp;bih=1077&amp;scr_x=0&amp;scr_y=0&amp;eid=21067496&amp;oid=2&amp;pvsid=3442109445752713&amp;pem=794&amp;eae=0&amp;fc=1920&amp;brdim=0%2C0%2C0%2C0%2C1920%2C0%2C1920%2C1040%2C2133%2C1076&amp;vis=1&amp;rsz=%7C%7CfEe%7C&amp;abl=CF&amp;pfx=0&amp;fu=0&amp;bc=31&amp;ifi=2&amp;uci=a!2&amp;fsb=1&amp;xpc=tVINDwi7Bg" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" data-google-container-id="a!2" data-google-query-id="COzF2beq_PMCFQxCHgIdCFwNiw" data-load-complete="true"></iframe></ins></ins></ins>
-
-            </div>
-            <div id="hatsPanel" class="general-box-shadow" style="display: none;height: 400px;">
-                <div id="uiBody">
-                    <div id="uiModal">
-                        <div id="hatsTitle">Hats</div>
-                        <hr style="border-top: 1px solid #fff; border-bottom: 1px solid #fff;">
-                        <div id="hat" style="height: 33px;">
-                            <div id="hats-container">
-                                <p class="loadHats">Soon!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="hatsClose" onclick="UI.toggleHats(); return false">
-                    <svg viewBox="0 0 20 20" icon="check" width="40" height="40" ratio="2" style="margin-top: 190px;">
-                        <polyline fill="none" stroke="#444" stroke-width="1.1" points="4,10 8,15 17,4"></polyline>
-                    </svg>
-                </div>
-            </div>
-            <div id="helloContainer">
-                <div id="left-container" class="side-container left-side">
-                    <div class="UI-panel UI-side-panel UI-profiles">
-                        <ul class="nav nav-tabs">
-                            <button class="btn btn-danger btn-success" onclick="window.location=`<%= user && user.data ? '/logout' : '/login' %>`" id="login"><%= user && user.data ? 'LOGOUT' : 'LOGIN' %></button>
-                        </ul>
-                        <div class="profiles-panel">
-                            <div id="profile-bg"  class="UIProfiles"></div>
-                            <div id="profile-bg2"  class="UIProfiles"></div>
-                            <div id="profile-bg3"  class="UIProfiles"></div>
-                            <div id="profile-bg4"  class="UIProfiles"></div>
-                            <div id="profile-bg5"  class="UIProfiles"></div>
-                        </div>
-                        <button class="btn btn-danger btn-success" id="hats" onclick="$('#hatsPanel').fadeToggle();">HATS</button>
-                    </div>
-                </div>
-                <div id="servers"></div>
-                <div id="mainPanel" class="UI-panel" style="display: inline-block !important">
-                    <form role="form">
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab"><i class="material-icons">home</i></a></li>
-                            <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab"><i class="material-icons">settings</i></a></li>
-                            <li role="presentation"><a href="#hotkeys" aria-controls="hotkeys" data-toggle="modal" data-target="#hotkeys_setting"><i class="material-icons">keyboard</i></a></li>
-                        </ul>
-                        <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane fade in active" id="home">
-                                <div id="profile-main">
-                                    <div id="profile-pic" class="picker-container clearfix">
-                                        <div class="nav2 arrow-left"></div>
-                                        <div id="preview-img-area"><img id="preview-img" onerror="DefaultSkin();"></div>
-                                        <div class="nav2 arrow-right"></div>
-                                    </div>
-                                </div>
-                                <div id="profile-container">
-                                    <div id="teamNameContainer" class="input-group">
-                                        <input type="text" id="team_name" class="form-control" placeholder="Team" spellcheck="false" maxlength="10">
-                                    </div>
-                                    <div id="nickContainer">
-                                        <input id="nick" type="text" class="form-control" placeholder="Nickname" spellcheck="false" maxlength="15">
-                                    </div>
-                                    <input type="text" id="skin_url" class="form-control" spellcheck="false" placeholder="Skin URL ( Imgur Link )">
-                                </div>
-                                <button id="main-play" onclick="UI.play(); return false" class="btn btn-play btn-success"><i id="icon" class="material-icons">play_arrow</i></button>
-                                <button onclick="spectate(); return false" class="btn btn-warning btn-spectate"><i id="icon" class="material-icons">visibility</i></button>
-                            </div>
-                            <div role="tabpanel" class="tab-pane fade" id="settings">
-                                <hr id="server-hr">
-                                <div id="radio-container">
-                                </div>
-                                <div class="container">
-                                    <div class="settingsRow">
-                                        <div class="col-xs-6 firstSettings"></div>
-                                        <div class="col-xs-6 secondSettings"></div>
-                                    </div>
-                                </div>
-                                <hr id="server-hr">
-                                <div class="toggles">
-                                    <div>
-                                        <p class="picker-text">Cell Text Position</p>
-                                        <select class="select-theming" onchange="config.TextPost=($(this).val()).toLowerCase()">
-                                            <option disabled>Cell Text Position</option>
-                                            <option>Top</option>
-                                            <option selected="selected">Middle</option>
-                                            <option>Bottom</option>
-                                        </select>
-                                    </div>
-                                    <div class="range-container">
-                                        <div id="AnimationDelay"></div>
-                                        <div id="HatsCell"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div role="tabpanel" class="tab-pane fade" id="theming">Coming Soon!</div>
-                            <div role="tabpanel" class="tab-pane fade" id="hotkeys">...</div>
-                        </div>
-                    </form>
-                </div>
-                <div class="side-container right-side">
-                    <div class="side-container right-side">
+            <div class="longAd"><ins class=" adsbygoogle" data-ad-client="ca-pub-1725936073416590" data-ad-slot="8820282509" data-ad-layout="" data-ad-layout-key="" data-ad-format="" data-full-width-responsive="false" style="width: 728px; height: 90px; display: inline-block;" data-adsbygoogle-status="done" data-ad-status="filled"><ins id="aswift_1_expand" style="border: none; height: 90px; width: 728px; margin: 0px; padding: 0px; position: relative; visibility: visible; background-color: transparent; display: inline-table;" tabindex="0" title="Advertisement" aria-label="Advertisement"><ins id="aswift_1_anchor" style="border: none; height: 90px; width: 728px; margin: 0px; padding: 0px; position: relative; visibility: visible; background-color: transparent; display: block;"><iframe id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;border:0;width:728px;height:90px;" sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" width="728" height="90" frameborder="0" src="https://googleads.g.doubleclick.net/pagead/ads?client=ca-pub-4656002964152261&amp;output=html&amp;h=90&amp;slotname=1204092969&amp;adk=2437282065&amp;adf=658450961&amp;pi=t.ma~as.1204092969&amp;w=728&amp;lmt=1635719887&amp;psa=0&amp;format=728x90&amp;url=https%3A%2F%2Ftricksplit.io%2F&amp;flash=0&amp;fwrattr=false&amp;wgl=1&amp;uach=WyJXaW5kb3dzIiwiMTAuMC4wIiwieDg2IiwiIiwiOTUuMC40NjM4LjU0IixbXSxudWxsLG51bGwsIjY0Il0.&amp;dt=1635947204011&amp;bpp=39&amp;bdt=2558&amp;idt=-M&amp;shv=r20211029&amp;mjsv=m202110280101&amp;ptt=9&amp;saldr=aa&amp;abxe=1&amp;prev_fmts=0x0&amp;nras=1&amp;correlator=7480592834023&amp;frm=20&amp;pv=2&amp;ga_vid=100645483.1635947202&amp;ga_sid=1635947253&amp;ga_hid=355993000&amp;ga_fc=1&amp;u_tz=60&amp;u_his=2&amp;u_h=1080&amp;u_w=1920&amp;u_ah=1040&amp;u_aw=1920&amp;u_cd=24&amp;adx=703&amp;ady=206&amp;biw=2133&amp;bih=1077&amp;scr_x=0&amp;scr_y=0&amp;eid=21067496&amp;oid=2&amp;pvsid=3442109445752713&amp;pem=794&amp;eae=0&amp;fc=1920&amp;brdim=0%2C0%2C0%2C0%2C1920%2C0%2C1920%2C1040%2C2133%2C1076&amp;vis=1&amp;rsz=%7C%7CfEe%7C&amp;abl=CF&amp;pfx=0&amp;fu=0&amp;bc=31&amp;ifi=2&amp;uci=a!2&amp;fsb=1&amp;xpc=tVINDwi7Bg" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" data-google-container-id="a!2" data-google-query-id="COzF2beq_PMCFQxCHgIdCFwNiw" data-load-complete="true"></iframe></ins></ins></ins></div>
+            <div id="mainPanel">
+                <div id="helloContainer">
+                    <div id="left-container" class="side-container left-side">
                         <div class="UI-panel UI-side-panel UI-profiles">
                             <ul class="nav nav-tabs">
-                                <li class="active" id="spl">
-                                    <div id="userInfo"><p><i class="fas fa-user"></i> Guest<a class="randomID"></a><script type="text/javascript">document.querySelector('.randomID').innerText=btoa(Math.random()).substring(0,7)</script></p></div>
-                                </li>
+                                <button class="btn btn-danger btn-success" onclick="window.location=`<%= user && user.data ? '/logout' : '/login' %>`" id="login"><%= user && user.data ? 'LOGOUT' : 'LOGIN' %></button>
                             </ul>
-                            <div id="server-container" class="servers-panel">
-                                <div id="server" onclick="connect('ws://49.12.231.126:7251');">
-                                    <label id="server-label">Ultrasplit</label>
-                                    <label id="number-label">1</label>
+                            <div class="profiles-panel">
+                                <div id="profile-bg" class="UIProfiles"></div>
+                                <div id="profile-bg2" class="UIProfiles"></div>
+                                <div id="profile-bg3" class="UIProfiles"></div>
+                                <div id="profile-bg4" class="UIProfiles"></div>
+                                <div id="profile-bg5" class="UIProfiles"></div>
+                            </div>
+                            <button class="btn btn-danger btn-success" id="hats">HATS SOON!</button>
+                        </div>
+                    </div>
+                    <div id="mainPanel" class="UI-panel" style="display: inline-block !important">
+                        <center class="nav-center">
+                            <div class="nav" id="nav">
+                                <div href="home" class="icon-container"><i class="material-icons">home</i></div>
+                                <div href="settings" class="icon-container"><i class="material-icons">settings</i></div>
+                                <div href="sliders" class="icon-container"><i class="material-icons">linear_scale</i></div>
+                                <div onclick="$('#KeysPanel').fadeToggle();" class="icon-botton"><i class="material-icons">keyboard</i></div>
+                            </div>
+                        </center>
+                        <div class="tab active" href="home" id="home">
+                            <div id="profile-main">
+                                <div id="profile-pic" class="picker-container clearfix">
+                                    <div class="nav2 arrow-left"></div>
+                                    <div id="preview-img-area"><img id="preview-img" onerror="DefaultSkin();"></div>
+                                    <div class="nav2 arrow-right"></div>
                                 </div>
-                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                    <label id="server-label">Server Closed</label>
-                                    <label id="number-label">2</label>
+                            </div>
+                            <div id="profile-container">
+                                <div id="teamNameContainer" class="input-group">
+                                    <input type="text" id="team_name" class="form-control" placeholder="Team" spellcheck="false" maxlength="10">
                                 </div>
-                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                    <label id="server-label">Server Closed</label>
-                                    <label id="number-label">3</label>
-                                </div>                          
-                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                    <label id="server-label">Server Closed</label>
-                                    <label id="number-label">4</label>
+                                <div id="nickContainer">
+                                    <input id="nick" type="text" class="form-control" placeholder="Nickname" spellcheck="false" maxlength="15">
                                 </div>
-                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                    <label id="server-label">Server Closed</label>
-                                    <label id="number-label">5</label>
+                                <input type="text" id="skin_url" class="form-control" spellcheck="false" placeholder="Skin URL ( Imgur Link )">
+                            </div>
+                            <button id="main-play" onclick="UI.play(); return false" class="btn btn-play btn-success"><i id="icon" class="material-icons">play_arrow</i></button>
+                            <button onclick="spectate(); return false" class="btn btn-warning btn-spectate"><i id="icon" class="material-icons">visibility</i></button>
+                        </div>
+                        <div class="tab" href="settings" id="settings">
+                            <div id="radio-container">
+                            </div>
+                            <div class="container">
+                                <div class="settingsRow">
+                                    <div class="col-xs-6 firstSettings"></div>
+                                    <div class="col-xs-6 secondSettings"></div>
                                 </div>
-                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                    <label id="server-label">Server Closed</label>
-                                    <label id="number-label">6</label>
+                            </div>
+                        </div>
+                        <div class="tab" href="sliders" id="sliders">
+                            <hr id="server-hr">
+                            <div class="toggles">
+                                <div>
+                                    <p class="picker-text">Cell Text Position</p>
+                                    <select class="select-theming" onchange="config.TextPost=($(this).val()).toLowerCase()">
+                                        <option disabled>Cell Text Position</option>
+                                        <option>Top</option>
+                                        <option selected="selected">Middle</option>
+                                        <option>Bottom</option>
+                                    </select>
                                 </div>
-                                <div id="server" onclick="connect('ws://localhost:7251');">
-                                    <label id="server-label">Tests</label>
-                                    <label id="number-label">7</label>
+                                <hr id="server-hr">
+                                <div class="range-container">
+                                    <div id="AnimationDelay"></div>
+                                    <div id="HatsCell"></div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="tab" href="keybinds" id="keybinds">yes yes yes yess!</div>
+                    </div>
+                    <div class="side-container right-side">
+                        <div class="side-container right-side">
+                            <div class="UI-panel UI-side-panel UI-profiles">
+                                <ul class="nav nav-tabs">
+                                    <li class="active" id="spl">
+                                        <div id="userInfo">
+                                            <p><i class="fas fa-user"></i> Guest<a class="randomID"></a>
+                                                <script type="text/javascript">document.querySelector('.randomID').innerText = btoa(Math.random()).substring(0, 7)
+                                                </script>
+                                            </p>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <div id="server-container" class="servers-panel">
+                                    <div id="server" onclick="connect('ws://49.12.231.126:7251');">
+                                        <label id="server-label">Ultrasplit</label>
+                                        <label id="number-label">1</label>
+                                    </div>
+                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                        <label id="server-label">Server Closed</label>
+                                        <label id="number-label">2</label>
+                                    </div>
+                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                        <label id="server-label">Server Closed</label>
+                                        <label id="number-label">3</label>
+                                    </div>
+                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                        <label id="server-label">Server Closed</label>
+                                        <label id="number-label">4</label>
+                                    </div>
+                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                        <label id="server-label">Server Closed</label>
+                                        <label id="number-label">5</label>
+                                    </div>
+                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                        <label id="server-label">Server Closed</label>
+                                        <label id="number-label">6</label>
+                                    </div>
+                                    <div id="server" onclick="connect('ws://localhost:7251');">
+                                        <label id="server-label">Tests</label>
+                                        <label id="number-label">7</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="KeysPanel" class="general-box-shadow">
+                    <div id="uiBody">
+                        <div id="uiModal">
+                            <div id="KeysClose"><i class="material-icons">close</i></div>
+                            <div id="KeysTitle">Heybinds panel</div>
+                            <hr>
+                            <div id="KeysContainer" style="height: 33px;">
+                                <div id="Keys-Container"></div>
                             </div>
                         </div>
                     </div>
@@ -176,7 +169,9 @@
                 <n2></n2>
             </div>
             <div class="social-buttons" style="display: block;">
-                <a href="https://www.youtube.com/channel/UCou7b7bODwiDEJwVqSiDxeA?sub_confirmation=1" target="_blank" class="social-button google" data-toggle="tooltip" data-placement="top" title="" data-original-title="Youtube">
+                <a href="https://www.youtube.com/channel/UCou7b7bODwiDEJwVqSiDxeA?sub_confirmation=1" target="_blank"
+                    class="social-button google" data-toggle="tooltip" data-placement="top" title=""
+                    data-original-title="Youtube">
                     <i class="fa fa-youtube"></i>
                 </a>
             </div>
@@ -196,15 +191,18 @@
     <!-- SCRIPTS -->
     <script type="text/javascript" src="./path/js/core0.js"></script>
     <script type="text/javascript" src="./path/js/hats.js"></script>
-    
+
     <script type="text/javascript">
-    console.log('https://github.com/Alvariithoo/UI-Client');
-    // Auto Connect
-    window.onload=()=>{connect('ws://49.12.231.126:7251')}</script>
-    <% if (user.data) { %><script type="text/javascript">
-    document.getElementById('userInfo').innerHTML=`<p style="margin-left:5px;"><img id="avatar" alt src="<%= user && user.data && user.data.avatar || null %>"><%= user.data.username || "NOT FOUND" %><a class="randomID">#<%= user.data.discriminator || "NOT FOUND"%></a></p>`</script><% } %>
+        console.log('https://github.com/Alvariithoo/UI-Client');
+        // Auto Connect
+        window.onload = () => {
+            connect('ws://49.12.231.126:7251')
+        }
+    </script>
+    <% if (user.data) { %><script type="text/javascript">document.getElementById('userInfo').innerHTML = `<p style="margin-left:5px;"><img id="avatar" alt src="<%= user && user.data && user.data.avatar || null %>"><%= user.data.username || "NOT FOUND" %><a class="randomID">#<%= user.data.discriminator || "NOT FOUND"%></a></p>`</script><% } %>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1725936073416590" crossorigin="anonymous"></script>
-    <ins class="adsbygoogle"style="display:block"data-ad-format="fluid"data-ad-layout-key="-f9+5v+4m-d8+7b"data-ad-client="ca-pub-1725936073416590"data-ad-slot="5857462848"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-layout-key="-f9+5v+4m-d8+7b" data-ad-client="ca-pub-1725936073416590" data-ad-slot="5857462848"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
 </body>
 </html>

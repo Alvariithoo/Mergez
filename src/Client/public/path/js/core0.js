@@ -3,6 +3,11 @@ function mainLoader() {
         document.body.style.zoom = "80%";
     }
 
+    $(".icon-container").on("click", function () {
+        $(".tab").removeClass("active");
+        $("#" + this.attributes.href.value).addClass("active");
+    });
+
     $("#input_box2").attr("placeholder", "Enter chat message...");
     $("#input_box2").attr("onkeydown", "getText();");
 
@@ -114,7 +119,7 @@ function UI() {
         return version;
     };
     this.toggleHats = function() {
-        $("#hatsPanel").fadeToggle();
+        $("#KeysPanel").fadeToggle();
     };
 
     var log = {
@@ -684,10 +689,10 @@ function UI() {
         var row = [];
         for (i in options) {
             if (!options[i].disabled) {
-                row.push('<input id="' + i + '" class="check-slider__check" type="checkbox"> ' + options[i].text + "<br>");
+                row.push(`<div class="setting-container">\n\t<p class="textSetting">${options[i]["text"]}</p>\n\t<input id="${i}" class="flip" type="checkbox"> \n\t<label class="setting" for="${i}"></label>\n</div>`);
             }
         }
-        var d = row.splice(0, 16);
+        var d = row.splice(0, 15);
         var j = 0;
         for (; j < d.length; j++) {
             $(".firstSettings").append(d[j]);
@@ -1043,27 +1048,21 @@ function UI() {
         });
         $(document).on("hide.bs.modal", "#message_dialog", function() {});
     };
-    this.setUpHotKeyConfigPage = function() {
+    this.setUpHotKeyConfigPage = function () {
         var body;
-        var $rootElement;
-        $rootElement = $('<div class="modal-footer" style="background: #222;">');
-        $rootElement.append("<button onclick='resetDefaultHotkey();' type='button' class='btn btn-blue' style='float:left;'><i id='icon' class='material-icons'>autorenew</i></button>");
-        $rootElement.append("<button type='button' class='btn btn-red' data-dismiss='modal'><i id='icon' class='material-icons'>clear</i></button>");
-        $rootElement.append("<button id='btn_save_hotkey' onclick='saveHotkeys();' type='button' class='btn btn-green' data-dismiss='modal'><i id='icon' class='material-icons'>save</i></button>");
-        body = $("<div class='modal-content' style='background: #222;'/>");
-        body.append($("<div class='modal-header'/>").append("<button type='button' class='close' data-dismiss='modal'>&times;</button><h4 class='modal-title'>Hotkey Setup</h4>"));
-        body.append($("<div id='hotkey_modal_body' class='modal-body'>").append(UI.getHotkeyDivHtml()));
-        body.append($rootElement);
-        body = $("<div id='hotkeys_setting' class='modal fade' role='dialog'/>").append("<div class='modal-dialog'/>").append(body);
-        $("body").append(body);
-        $(document).on("hide.bs.modal", "#hotkeys_setting", function() {
+        body = $('<div class="modal-content"/>');
+        body.append($('<div id="hotkey_modal_body" class="modal-body">').append(UI.getHotkeyDivHtml()));
+        body = $('<div id="hotkeys_setting" class="modal fade" role="dialog"/>').append(body);
+        $("#Keys-Container").append(body);
+        $("#hotkey_setting").insertAfter(".modal-content")
+        $(document).on("hide.bs.modal", "#hotkeys_setting", function () {
             if (selectedHotkeyRow) {
                 selectedHotkeyRow.removeClass("table-row-selected");
             }
             selectedHotkeyRow = null;
-            UI.refreshHotkeySettingPage();
+            Game.refreshHotkeySettingPage();
         });
-        $("#hotkey_table .row").not(".header").click(function() {
+        $("#hotkey_table .row").not(".header").click(function () {
             if (selectedHotkeyRow) {
                 selectedHotkeyRow.removeClass("table-row-selected");
             }
@@ -1131,35 +1130,70 @@ function UI() {
             $("#" + val).val(chatCommand[val]);
         }
     };
-    this.getHotkeyDivHtml = function() {
+    this.getHotkeyDivHtml = function () {
         var html = "";
         var fragment = $("<div id='hotkey_setting'></div>");
-        var rendered = $("<div id='hotkey_table' class='table'></div>");
-        var $message = $("<div class='row header'></div>");
-        $message.append($("<div class='cell' style='width:170px;'>Hotkey</div>"));
-        $message.append($("<div class='cell' style='width:222px;'>Function</div>"));
-        $message.append($("<div class='cell'>Message</div>"));
+        var rendered = $("<div id='hotkey_table'></div>");
+        var $message = $("<div class='row'></div>");
+        $message.append($("<div class='cell cell1' style='background:rgba(137, 24, 24, 0.69)'>Hotkey</div>"));
+        $message.append($("<div class='cell cell2' style='background:rgba(137, 24, 24, 0.69)'>Function</div>"));
+        $message.append($("<div class='cell cell3' style='background:rgba(137, 24, 24, 0.69)'>Message</div>"));
         rendered.append($message);
         $message = null;
         var type;
         for (type in hotkeyConfig) {
             $message = $("<div class='row'></div>");
-            $message.append($("<div data-hotkeyId='" + type + "' class='cell hotkey'>" + getHotkeyById(type) + "</div>"));
-            $message.append($("<div class='cell'>" + hotkeyConfig[type].name + "</div>"));
+            $message.append($(`<div data-hotkeyId='${type}' class='cell1 hotkey'>${getHotkeyById(type)}</div>`));
+            $message.append($(`<div class='cell cell2'>${hotkeyConfig[type].name}</div>`));
             if ("TEXT" == hotkeyConfig[type].type) {
-                $message.append($("<div class='cell'><input id='input_" + type + "' maxlength='200' style='width:100%;color:black;' type='text' value='" + chatCommand["input_" + type] + "'></input></div>"));
+                $message.append($(`<div class='cell cell'><input id='input_${type}' class='input-hk' maxlength='200' type='text' value='${chatCommand["input_" + type]}'></input></div>`));
             } else {
-                $message.append($("<div class='cell'> / </div>"));
+                $message.append($("<div class='cell cell3'> / </div>"));
             }
             rendered.append($message);
         }
         return fragment.append(rendered),
-        html += $("<p>Step 1: Click on the function item</p>")[0].outerHTML,
-        html += $("<p>Step 2: Press wanted hotkey to modify</p>")[0].outerHTML,
-        html += $("<p>Press [DEL] key to remove selected hotkey</p>")[0].outerHTML,
-        html += $("<p>Allowed hotkey combinations: [CTRL] + [ALT] + 0-9, a-z, [TAB], [ENTER]</p>")[0].outerHTML,
+        html += $("<h1>Keysbinds Setup</h1>")[0].outerHTML,
+        html += $("<hr id='server-hr'>")[0].outerHTML,
+        html += $("<p class='ins-text'>Step 1: Click on the function item</p>")[0].outerHTML,
+        html += $("<p class='ins-text'>Step 2: Press wanted hotkey to modify</p>")[0].outerHTML,
+        html += $("<p class='ins-text'>Press [DEL] key to remove selected hotkey</p>")[0].outerHTML,
+        // html += $("<br></br>")[0].outerHTML,
+        html += $("<hr id='server-hr'>")[0].outerHTML,
+        html += $("<p class='ins-text'>Allowed hotkey combinations:</p>")[0].outerHTML,
+        html += $("<p class='ins-text'>[CTRL] + [ALT] + 0-9, a-z, [TAB], [ENTER]</p>")[0].outerHTML,
         html += $("<br></br>")[0].outerHTML,
-        html += $("<div style=' width: 100%; height: 100px; padding-left: 30px; '><div style=' width: 50%; float: left; '><span style=' color: #fff; '>Left Mouse</span><select id='leftMouse' class='mouse-select'><option id='leftMouseDefault'>None</option><option value='Respawn'>Quick Respawn</option><option value='Feed'>Macro Feed</option><option value='QuadSplit'>Quad Split</option><option value='TripleSplit'>Triple Split</option><option value='DoubleSplit'>Double Split</option><option value='Split'>Split</option></select></div><div style=' float: right; width: 50%; '><span style=' color: #fff; '>Right Mouse</span><select id='rightMouse' class='mouse-select'><option id='rightMouseDefault'>None</option><option value='Respawn'>Quick Respawn</option><option value='Feed'>Macro Feed</option><option value='QuadSplit'>Quad Split</option><option value='TripleSplit'>Triple Split</option><option value='DoubleSplit'>Double Split</option><option value='Split'>Split</option></select></div></div>")[0].outerHTML,
+        html += $(`
+        <div style="width: 40%;float: left;font-size: 15px;margin-top: 15px;margin-right: 15px;margin-left: 10px;">
+            <span>Left Mouse</span>
+            <select id="leftMouse" class="mouse-select">
+                <option disabled>Left Mouse</option>
+                <option id="leftMouseDefault">None</option>
+                <option value="Feed">Macro Feed</option>
+                <option value="Split16">Quad Split</option>
+                <option value="Split8">Triple Split</option>
+                <option value="Split4">Double Split</option>
+                <option value="Split">Split</option>
+            </select>
+        </div>
+        `)[0].outerHTML,
+        html += $(`
+        <div style="float: left;width: 40%;margin: 15px;font-size: 15px;">
+            <span>Right Mouse</span>
+            <select id="rightMouse" class="mouse-select">
+                <option disabled>Right Mouse</option>
+                <option id="rightMouseDefault">None</option>
+                <option value="Feed">Macro Feed</option>
+                <option value="Split16">Quad Split</option>
+                <option value="Split8">Triple Split</option>
+                <option value="Split4">Double Split</option>
+                <option value="Split">Split</option>
+            </select>
+        </div>
+        `)[0].outerHTML,
+        html += $('<button id="reset">Reset</button>')[0].outerHTML,
+        html += $('<button id="save">Save</button>')[0].outerHTML,
+        html += $("<br></br>")[0].outerHTML,
         html += fragment[0].outerHTML,
         $("<div/>").append(html).html();
     };
@@ -1834,23 +1868,23 @@ var gm;
 var Icon = {};
 var selected_profile = 0;
 var player_profile = [{
-    name: "Profile 1",
+    name: "KeysPanel 1",
     team: "",
     skinurl: ""
 }, {
-    name: "Profile 2",
+    name: "KeysPanel 2",
     team: "",
     skinurl: ""
 }, {
-    name: "Profile 3",
+    name: "KeysPanel 3",
     team: "",
     skinurl: ""
 }, {
-    name: "Profile 4",
+    name: "KeysPanel 4",
     team: "",
     skinurl: ""
 }, {
-    name: "Profile 5",
+    name: "KeysPanel 5",
     team: "",
     skinurl: ""
 }];
@@ -2301,7 +2335,7 @@ var announcementSent = false;
                 }
                 if(flags & 0x20) {
                     isAdmin = true;
-                    prefix = "[ADMIN]";
+                    prefix = "[MODER]";
                 }
                 if(isServer || !isOwner || !isAdmin) {
                     var r = view.getUint8(offset++);
@@ -2595,11 +2629,7 @@ var announcementSent = false;
         child.css("transform", "none");
         var b = child.height();
         var a = self.innerHeight;
-        if (b > a / 1.1) {
-            child.css("transform", "translate(-50%, -50%) scale(0.75);");
-        } else {
-            child.css("transform", "translate(-31%, -50%)");
-        }
+        child.css("transform", "translate(-50%, -50%)");
         render();
     }
 
