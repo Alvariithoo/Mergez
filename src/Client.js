@@ -244,7 +244,7 @@ class Client {
         var tick = this.server.getTick();
         var dt = tick - this.lastChatTick;
         this.lastChatTick = tick;
-        if (dt < 25 * 2) {
+        if (dt < this.server.config.chatCooldown) {
             return;
         }
         console.log("[" + day() + "] | " + "[CHAT] | [" + message + "]");

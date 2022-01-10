@@ -139,9 +139,11 @@
 // ultraRestartCounterDuration: seconds left for resatrt!
 // playerSplitDelay: Next Auto Split In Milliseconds for (Double, tripe, x16, etc.)
 // playerMergeType: 0 = Ultrasplit | 1 = Instant | 2 = Normal
+// chatCooldown: Next msg in Milliseconds
 "ultraRestartMassLimit": 220000,
 "ultraRestartCounterDuration": 25,
 "playerSplitDelay": 40,
 "playerMergeType": 0,
+"chatCooldown": 25 * 2,
 
 })
