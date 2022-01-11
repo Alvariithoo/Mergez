@@ -1373,11 +1373,11 @@ function ChatRoom() {
         var index = now.getMinutes();
         return index = 10 > index ? "0" + index : index, now.getHours() + ":" + index + " ";
     };
-    this.receiveMessage = function(prefix, name, message, color) {
+    this.receiveMessage = function(role, name, message, color) {
         $("#chatroom").append(`
             <div class="chatItem">
                 <span id="time">${this.getTimeStr()} 
-                <span class="chatHolder" style="color:${color}">${prefix}${escapeHtml(name.split("$")[0])} : 
+                <span class="chatHolder" style="color:${color}">${role}${escapeHtml(name.split("$")[0])} : 
                 <span id="msg">${escapeHtml(message)}
             <div/>
         `);
@@ -2104,6 +2104,8 @@ var announcementSent = false;
             ws.onclose = null;
             try {
                 ws.close();
+                // Clean chat
+                $("#chatroom").html('');
             } catch (o) {}
             ws = null;
         }
@@ -2350,20 +2352,20 @@ var announcementSent = false;
 
                 var isAdmin = false;
                 var isOwner = false;
-                var isServer = true;
-                var prefix = "";
+                var isServer = false;
+                var role = "";
                 var flags = view.getUint8(offset++);
                 if(flags & 0x80) {
                     isServer = true;
-                    prefix = "<i class=\"material-icons Server\">extension</i>";
+                    role = "<i class=\"material-icons Server\">extension</i>";
                 }
                 if(flags & 0x40) {
                     isOwner = true;
-                    prefix = "<img src=\"https://c.tenor.com/yRDp5iDM0DwAAAAC/pepe-pepeking.gif\" class=\"chatIcon\" />";
+                    role = "<img src=\"https://c.tenor.com/yRDp5iDM0DwAAAAC/pepe-pepeking.gif\" class=\"chatIcon\" />";
                 }
                 if(flags & 0x20) {
                     isAdmin = true;
-                    prefix = "[MODER]";
+                    role = "[MODER]";
                 }
                 if(isServer || !isOwner || !isAdmin) {
                     var r = view.getUint8(offset++);
@@ -2372,12 +2374,12 @@ var announcementSent = false;
                 }
                 color = ((r << 16) | (g << 8) | b).toString(16);
                 while (color.length < 6) {
-                    color = `#${color}`;
+                    color = `0${color}`;
                 }
                 color = `#${color}`;
                 const name = readFile();
                 const message = readFile();
-                chatRoom.receiveMessage(prefix, name, message, color);
+                chatRoom.receiveMessage(role, name, message, color);
                 break;
         }
     }
@@ -3627,7 +3629,7 @@ var announcementSent = false;
                                         }
                                     }
                                 }
-                                if (ctx.closePath(), i = this.name.toLowerCase(), c = this.img ? "http://upload.happyfor.me/getimg.php?id=" + this.img + "&_t=" + Math.random() : "skins/" + i + ".png", x || (this.j || (!error && !UI.isEnableOtherSkinSupport || ":teams" == index)) ? n = null : (n = this.V, null == n ? n = null : ":" == n[0] ? (images.hasOwnProperty(n) || (images[n] = new Image, images[n].src = n.slice(1)), n = 0 != images[n].width && images[n].complete ? images[n] : null) : n = null, n || (-1 != numbers.indexOf(i) && error || this.img ? ($.hasOwnProperty(i) || ($[i] = new Image, $[i].src = c), n = 0 != $[i].width && $[i].complete ? $[i] : null) : n = null)), c = n, y_position || f && (this.f), ctx.fill(), UI.isEnableCustomSkin && (n = null, x = false, v && (x = v.url), x && (results.hasOwnProperty(x) || (v = new Image, v.src = x, results[x] = v), results[x].width && (results[x].complete && (n = results[x]))), c = n, null != c)) {
+                                if (ctx.closePath(), i = this.name.toLowerCase(), c = this.img, x || (this.j || (!error && !UI.isEnableOtherSkinSupport || ":teams" == index)) ? n = null : (n = this.V, null == n ? n = null : ":" == n[0] ? (images.hasOwnProperty(n) || (images[n] = new Image, images[n].src = n.slice(1)), n = 0 != images[n].width && images[n].complete ? images[n] : null) : n = null, n || (-1 != numbers.indexOf(i) && error || this.img ? ($.hasOwnProperty(i) || ($[i] = new Image, $[i].src = c), n = 0 != $[i].width && $[i].complete ? $[i] : null) : n = null)), c = n, y_position || f && (this.f), ctx.fill(), UI.isEnableCustomSkin && (n = null, x = false, v && (x = v.url), x && (results.hasOwnProperty(x) || (v = new Image, v.src = x, results[x] = v), results[x].width && (results[x].complete && (n = results[x]))), c = n, null != c)) {
                                     var size = Math.min(c.width, c.height);
                                     var startX = (c.width - size) / 2;
                                     var offsetY = (c.height - size) / 2;
@@ -4107,22 +4109,19 @@ function $respawn() {
 $("#overlays2").mousedown((e) => {
     if (e.button == 0) {
         switch ($("#leftMouse").val()) {
-            case "Respawn":
-                $respawn();
-                break;
             case "Feed":
                 UI.autoW = true;
                 handleQuickW();
                 break;
-            case "QuadSplit":
+            case "Split16":
                 UI.quadSplit = true;
                 quadSplit();
                 break;
-            case "TripleSplit":
+            case "Split8":
                 UI.tripleSplit = true;
                 tripleSplit();
                 break;
-            case "DoubleSplit":
+            case "Split4":
                 UI.doubleSplit = true;
                 doubleSplit();
                 break;
@@ -4133,22 +4132,19 @@ $("#overlays2").mousedown((e) => {
         }
     } else if (e.button == 2) {
         switch ($("#rightMouse").val()) {
-            case "Respawn":
-                $respawn();
-                break;
             case "Feed":
                 UI.autoW = true;
                 handleQuickW();
                 break;
-            case "QuadSplit":
+            case "Split16":
                 UI.quadSplit = true;
                 quadSplit();
                 break;
-            case "TripleSplit":
+            case "Split8":
                 UI.tripleSplit = true;
                 tripleSplit();
                 break;
-            case "DoubleSplit":
+            case "Split4":
                 UI.doubleSplit = true;
                 doubleSplit();
                 break;
@@ -4163,18 +4159,16 @@ $("#overlays2").mousedown((e) => {
 $("#overlays2").mouseup((e) => {
     if (e.button == 0) {
         switch ($("#leftMouse").val()) {
-            case "Respawn":
-                break;
             case "Feed":
                 UI.autoW = false;
                 break;
-            case "QuadSplit":
+            case "Split16":
                 UI.quadSplit = false;
                 break;
-            case "TripleSplit":
+            case "Split8":
                 UI.tripleSplit = false;
                 break;
-            case "DoubleSplit":
+            case "Split4":
                 UI.doubleSplit = false;
                 break;
             case "Split":
@@ -4183,18 +4177,16 @@ $("#overlays2").mouseup((e) => {
         }
     } else if (e.button == 2) {
         switch ($("#rightMouse").val()) {
-            case "Respawn":
-                break;
             case "Feed":
                 UI.autoW = false;
                 break;
-            case "QuadSplit":
+            case "Split16":
                 UI.quadSplit = false;
                 break;
             case "tripleSplit":
                 UI.tripleSplit = false;
                 break;
-            case "DoubleSplit":
+            case "Split4":
                 UI.doubleSplit = false;
                 break;
             case "Split":

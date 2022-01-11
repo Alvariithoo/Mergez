@@ -12,7 +12,7 @@ module.exports = ChatMessage;
 ChatMessage.prototype.build = function (protocol) {
     var text = this.message;
     if (text == null) text = "";
-    var name = "\uD83D\uDC51" + "SERVER";
+    var name = "SERVER";
     var color = { 'r': 0x9B, 'g': 0x9B, 'b': 0x9B };
     if (this.sender != null) {
         name = this.sender.getName();
