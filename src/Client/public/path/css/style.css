@@ -411,7 +411,7 @@ input:focus {
     color: #fff;
 }
 
-.chatHolder .Verified {
+#Verified {
     margin-right: 2px;
     font-size: 22px;
     color: #40C4FF;

@@ -1765,7 +1765,7 @@ function updateLbDiv() {
                 i = apps[a].name ? escapeHtml(apps[a].name) : "An unnamed cell";
 
                 if (UI.imageURL.hasOwnProperty(i.split('$')[1])) {
-					symbol = '\uD83D\uDC51';
+					symbol = '<i id="Verified" class=\"material-icons\">verified</i>';
 					style = 'color: #29B6F6;';
 				} else {
 					symbol = '';
@@ -1896,23 +1896,23 @@ var gm;
 var Icon = {};
 var selected_profile = 0;
 var player_profile = [{
-    name: "KeysPanel 1",
+    name: "profile 1",
     team: "",
     skinurl: ""
 }, {
-    name: "KeysPanel 2",
+    name: "profile 2",
     team: "",
     skinurl: ""
 }, {
-    name: "KeysPanel 3",
+    name: "profile 3",
     team: "",
     skinurl: ""
 }, {
-    name: "KeysPanel 4",
+    name: "profile 4",
     team: "",
     skinurl: ""
 }, {
-    name: "KeysPanel 5",
+    name: "profile 5",
     team: "",
     skinurl: ""
 }];
@@ -2357,7 +2357,7 @@ var announcementSent = false;
                 var flags = view.getUint8(offset++);
                 if(flags & 0x80) {
                     isServer = true;
-                    role = "<i class=\"material-icons Server\">extension</i>";
+                    role = "<img src=\"https://i.imgur.com/9rEMwTi.png\" class=\"chatIcon\" />";
                 }
                 if(flags & 0x40) {
                     isOwner = true;
@@ -2365,7 +2365,7 @@ var announcementSent = false;
                 }
                 if(flags & 0x20) {
                     isAdmin = true;
-                    role = "[MODER]";
+                    role = "<img src=\"https://i.imgur.com/CRPMI4Z.png\" class=\"chatIcon\" />";
                 }
                 if(isServer || !isOwner || !isAdmin) {
                     var r = view.getUint8(offset++);
