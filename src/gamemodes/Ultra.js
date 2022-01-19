@@ -79,16 +79,10 @@ class Ultra extends FFA {
         }, 5 * 60000 * 3)
     };
 
-    startRestartTimer(server, nick, symbol, style) {
-        if (nick.split('$')[1]) {
-            symbol = '\uD83D\uDC51';
-            style = '[Winner]';
-        } else {
-            symbol = '';
-            style = '[Winner]';
-        }
+    startRestartTimer(server, nick) {
+        nick.split('$')[1]
 
-        this.winner = `${symbol} ${nick.split("$")[0]} ${style}`;
+        this.winner = nick.split("$")[0];
         
         if (this.restarting) {
             return;

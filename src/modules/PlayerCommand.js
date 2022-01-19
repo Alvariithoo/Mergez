@@ -145,7 +145,7 @@ var playerCommands = {
             this.writeLine("Your skin set to " + skinName);
     },
     playerlist: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
+        if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
             this.writeLine("You don't have permission to use this command.");
             return;
         }

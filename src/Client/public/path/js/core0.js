@@ -1,7 +1,61 @@
+window.nameCache = {};
+
+var config = {
+    position: {
+        top: -0.6,
+        middle: 0,
+        bottom: 0.6
+    },
+
+    animationDelay: 140,
+    HatOpcity: 1,
+    TextPost: 'middle',
+};
+
+/* Load skin spikes nodes */
+var vr = new Image();
+vr.src = "./images/vr.png";
+var vg = new Image();
+vg.src = "./images/vg.png";
+var pepe = new Image();
+pepe.src = "./images/pepe.png";
+var pelletCanvas = document.createElement("canvas");
+pelletCanvas.width = 22;
+pelletCanvas.height = 22;
+var pelletCtx = pelletCanvas.getContext("2d");
+pelletCtx.beginPath();
+pelletCtx.arc(11, 11, 15, 0, 2 * Math.PI);
+pelletCtx.fillStyle = "#651fff";
+// pelletCtx.fill();
+var cellCanvas = document.createElement("canvas");
+cellCanvas.width = 1000;
+cellCanvas.height = 1000;
+var cellCtx = pelletCanvas.getContext("2d");
+cellCtx.beginPath();
+cellCtx.arc(500, 500, 400, 0, 2 * Math.PI);
+cellCtx.fillStyle = "#651fff";
+// cellCtx.fill();
+var W = 500;
+var H = 500;
+var mp = 50; //max particles
+var particles = [];
+for (var i = 0; i < mp; i++) {
+    particles.push({
+        x: Math.random() * W, //x-coordinate
+        y: Math.random() * H, //y-coordinate
+        r: Math.random() * 4 + 1, //radius
+        d: Math.random() * mp //density
+    })
+}
+
 function mainLoader() {
     if ((screen.width * screen.height) / 1000 < 1100) {
         document.body.style.zoom = "80%";
     }
+
+    var child = $("#helloContainer");
+    child.css("transform", "none");
+    child.css("transform", "translate(-50%, -50%)");
 
     $(".icon-container").on("click", function () {
         $(".tab").removeClass("active");
@@ -64,55 +118,6 @@ function mainLoader() {
             }, time / 2);
         }, time);
     }, time * 3);
-}
-
-var config = {
-    position: {
-        top: -0.6,
-        middle: 0,
-        bottom: 0.6
-    },
-
-    animationDelay: 140,
-    HatOpcity: 1,
-    TextPost: 'middle',
-};
-
-
-/* Load skin spikes nodes */
-var vr = new Image();
-vr.src = "./images/vr.png";
-var vg = new Image();
-vg.src = "./images/vg.png";
-var pepe = new Image();
-pepe.src = "./images/pepe.png";
-var pelletCanvas = document.createElement("canvas");
-pelletCanvas.width = 22;
-pelletCanvas.height = 22;
-var pelletCtx = pelletCanvas.getContext("2d");
-pelletCtx.beginPath();
-pelletCtx.arc(11, 11, 15, 0, 2 * Math.PI);
-pelletCtx.fillStyle = "#651fff";
-// pelletCtx.fill();
-var cellCanvas = document.createElement("canvas");
-cellCanvas.width = 1000;
-cellCanvas.height = 1000;
-var cellCtx = pelletCanvas.getContext("2d");
-cellCtx.beginPath();
-cellCtx.arc(500, 500, 400, 0, 2 * Math.PI);
-cellCtx.fillStyle = "#651fff";
-// cellCtx.fill();
-var W = 500;
-var H = 500;
-var mp = 50; //max particles
-var particles = [];
-for (var i = 0; i < mp; i++) {
-    particles.push({
-        x: Math.random() * W, //x-coordinate
-        y: Math.random() * H, //y-coordinate
-        r: Math.random() * 4 + 1, //radius
-        d: Math.random() * mp //density
-    })
 }
 
 function UI() {
@@ -2124,6 +2129,7 @@ var announcementSent = false;
         img = angles = null;
         closingAnimationTime = 0;
         matchEnd = false;
+        window.nameCache[this.w] = {};
         ws = new WebSocket(url);
         window.webSocket = ws;
         window.urlSocket = url;
@@ -2648,15 +2654,10 @@ var announcementSent = false;
     }
 
     function update() {
-        width = 1 * self.innerWidth;
-        height = 1 * self.innerHeight;
+        width = 1 * window.innerWidth;
+        height = 1 * window.innerHeight;
         cv.width = cnv.width = width;
         cv.height = cnv.height = height;
-        var child = $("#helloContainer");
-        child.css("transform", "none");
-        var b = child.height();
-        var a = self.innerHeight;
-        child.css("transform", "translate(-50%, -50%)");
         render();
     }
 
@@ -3751,39 +3752,56 @@ var announcementSent = false;
                         }
                     },
                     F: function() {
-                        if (null == this.l && (this.l = document.createElement("canvas"), this.N = this.l.getContext("2d")), this.h) {
-                            this.h = false;
-                            var size = this.l;
-                            var c = this.N;
-
-                            let blobNick = `${this.w}`;
-							blobNick = blobNick.split('$')[0]; //
-							var line = blobNick;
-
-                            if(UI.massInKs) {
-                                line = line > 999 ? (line / 1000).toFixed(1) + "k" : line;
-                            }
-                            var factor = this.v;
-                            var right = this.q;
-                            var left = ~~(.2 * right);
-                            var font = "500 " + right + "px Ruluko";
-                            c.font = font;
-                            size.width = (c.measureText(line).width + 6) * factor;
-                            size.height = (right + left) * factor;
-                            c.font = font;
-                            c.scale(factor, factor);
-                            c.globalAlpha = 1;
-                            c.fillStyle = "#FFFFFF"
-                            if (UI.isShowTextStrokeLine) {
-                                c.lineWidth = Math.max(right * 0.12, 12);
-                                c.strokeStyle = "#000000"
-                                if (this.O) {
-                                    c.strokeText(line, 3, right - left / 2);
+                        var cellSize = this.q;
+                        var line = this.w.split("$")[0]; // text to be printed
+                        var lagOffset = 5;
+                        if (!isNaN(parseInt(line))) {
+                            line = parseInt(line);
+                            if (UI.massInKs) {
+                                if (line > 999) {
+                                    line = (line / 1000).toFixed(1) + "k";
+                                    lagOffset = 15;
                                 }
                             }
-                            c.fillText(line, 3, right - left / 2);
                         }
-                        return this.l;
+
+                        var zoomFactor = this.v;
+                        var compound = cellSize * zoomFactor;
+                        compound = Math.floor(compound / lagOffset) * lagOffset;
+                        // console.log('calculated copmound factor for ' + this.w + ' is ' + compound);
+                        // If we have a cache hit for this cell size/scale then use it instead
+                        if (window.nameCache[this.w] && window.nameCache[this.w][compound]) {
+                            return window.nameCache[this.w][compound];
+                        }
+                        this.l = document.createElement("canvas");
+                        this.N = this.l.getContext("2d");
+                        this.h = false; // ?
+                        var size = this.l; // this is a html5 canvas element?
+                        var ctx = this.N; // ? undefined ?
+
+                        var factor = this.v; // factor to scale?
+                        var right = this.q; // ?size?
+
+                        var font = "bold " + right + "px Ubuntu";
+                        ctx.font = font;
+                        var left = ~~(0.2 * right);
+                        size.width = (ctx.measureText(line).width + 6) * factor;
+                        size.height = (right + left) * factor;
+                        ctx.font = font;
+                        ctx.scale(factor, factor);
+                        ctx.globalAlpha = 1;
+                        ctx.fillStyle = this.M;
+                        if (UI.isShowTextStrokeLine) {
+                            ctx.lineWidth = 5;
+                            ctx.strokeStyle = this.r;
+                            if (this.O) {
+                                ctx.strokeText(line, 3, right - left / 2);
+                            }
+                        }
+                        ctx.fillText(line, 3, right - left / 2);
+                        if (!window.nameCache[this.w]) window.nameCache[this.w] = {};
+                        window.nameCache[this.w][compound] = this.l;
+                        return window.nameCache[this.w][compound];
                     }
                 };
                 if (!Date.now) {

@@ -86,6 +86,10 @@ function runClient() {
             }
             accList.data.push(...list, {
                 id: userData.id,
+                isOwner: 0,
+                isMod: 0,
+                VerifyName: "",
+                isVerfied: 0,
                 coins: 0,
                 info: [{
                     joinedFormattedDate: today(),
