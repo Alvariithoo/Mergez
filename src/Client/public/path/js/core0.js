@@ -3638,7 +3638,7 @@ var announcementSent = false;
                                 }
                                 if (null != c && (ctx.save(), ctx.clip(), ctx.drawImage(c, startX, offsetY, size, size, this.x - y, this.y - y, 2 * y, 2 * y), ctx.restore()), f || ((doneResults || 15 < this.size), ctx.globalAlpha = 1), n = -1 != data.indexOf(this), y_position = ~~this.y, f = this.f || (300 < this.size || 1000 < this.size * scale), !(isHideSelfName && UI.isHideSelfName || UI.isAutoHideName && !f) && (0 != this.id && ((oldStatus || n) && (this.name && (this.k && (null == c || -1 == reserved.indexOf(i))))))) {
                                     c = this.k;
-                                    c.u(this.name);
+                                    c.u(this.name.split("$")[0]);
                                     c.G(this.i() / 0.9);
                                     i = 0 >= this.id ? 1 : Math.ceil(5 * scale) / 10;
                                     c.U(i);
@@ -3753,8 +3753,8 @@ var announcementSent = false;
                     },
                     F: function() {
                         var cellSize = this.q;
-                        var line = this.w.split("$")[0]; // text to be printed
-                        var lagOffset = 5;
+                        var line = this.w; // text to be printed
+                        var lagOffset = 15;
                         if (!isNaN(parseInt(line))) {
                             line = parseInt(line);
                             if (UI.massInKs) {
@@ -3773,34 +3773,36 @@ var announcementSent = false;
                         if (window.nameCache[this.w] && window.nameCache[this.w][compound]) {
                             return window.nameCache[this.w][compound];
                         }
-                        this.l = document.createElement("canvas");
-                        this.N = this.l.getContext("2d");
+                        const canvas = document.createElement("canvas");
+                        const ctx = canvas.getContext("2d");
                         this.h = false; // ?
-                        var size = this.l; // this is a html5 canvas element?
-                        var ctx = this.N; // ? undefined ?
 
-                        var factor = this.v; // factor to scale?
-                        var right = this.q; // ?size?
+                        const scale = this.v; // factor to scale?
+                        const fontSize = this.q; // ?size?
 
-                        var font = "bold " + right + "px Ubuntu";
-                        ctx.font = font;
-                        var left = ~~(0.2 * right);
-                        size.width = (ctx.measureText(line).width + 6) * factor;
-                        size.height = (right + left) * factor;
-                        ctx.font = font;
-                        ctx.scale(factor, factor);
-                        ctx.globalAlpha = 1;
-                        ctx.fillStyle = this.M;
+                        ctx.font = `900 ${fontSize}px Ubuntu`;
+                        const left = ~~(0.2 * fontSize);
+
+                        const width = (ctx.measureText(line).width) * scale;
+                        const height = (fontSize + left) * scale;
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        ctx.font = `900 ${fontSize}px Ubuntu`;;
+                        ctx.scale(scale, scale);
+
+                        ctx.fillStyle = "white";
                         if (UI.isShowTextStrokeLine) {
-                            ctx.lineWidth = 5;
-                            ctx.strokeStyle = this.r;
-                            if (this.O) {
-                                ctx.strokeText(line, 3, right - left / 2);
-                            }
+                            ctx.lineWidth = 30;
+                            ctx.strokeStyle = "black";
+
+                            ctx.strokeText(line, 3, fontSize - left / 2);
                         }
-                        ctx.fillText(line, 3, right - left / 2);
+                        ctx.fillText(line, 3, fontSize - left / 2);
+
                         if (!window.nameCache[this.w]) window.nameCache[this.w] = {};
-                        window.nameCache[this.w][compound] = this.l;
+                        window.nameCache[this.w][compound] = canvas;
                         return window.nameCache[this.w][compound];
                     }
                 };
