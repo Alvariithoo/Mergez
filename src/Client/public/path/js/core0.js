@@ -241,7 +241,7 @@ function UI() {
 		};
 
 		for (const property in UI.imageCanvas) {
-			console.log(property);
+			// console.log(property);
 			if (UI.imageCanvas.hasOwnProperty(property)) {
 				UI.imageCanvas[property] = new Image();
 				UI.imageCanvas[property].src = UI.imageURL[property];
