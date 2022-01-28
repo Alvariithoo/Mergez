@@ -192,6 +192,7 @@ function UI() {
     this.isEnableAutoStart = false;
     this.isEnableMouseW = false;
     this.isEnableCustomSkin = true;
+    this.isEnableHats = false;
     this.isEnableAttackRange = false;
     this.attackRangeRadius = 655;
     this.cellColor = "";
@@ -240,7 +241,7 @@ function UI() {
 		};
 
 		for (const property in UI.imageCanvas) {
-			//console.log(property);
+			console.log(property);
 			if (UI.imageCanvas.hasOwnProperty(property)) {
 				UI.imageCanvas[property] = new Image();
 				UI.imageCanvas[property].src = UI.imageURL[property];
@@ -585,6 +586,12 @@ function UI() {
                 "default": true,
                 handler: function(token) {
                     UI.isEnableCustomSkin = token;
+                }
+            },
+            opt_hats: {
+                text: "Hide Hats",
+                handler: function (token) {
+                    UI.isEnableHats = token;
                 }
             },
             opt_mousew: {
@@ -3592,6 +3599,9 @@ var announcementSent = false;
                                             ctx.restore();
                                             // window.exec(`Cords ${minX} / ${t}`);
                                         }
+                                        if (UI.isEnableCustomSkin) {
+                                            x = UI.getSkinImage(nodeList[0][5]);
+                                        }
                                         if ("" != UI.cellColor && (this.color = UI.cellColor), UI.isEnableAttackRange) {
                                             ctx.beginPath();
                                             ctx.strokeStyle = color ? "white" : "black";
@@ -3652,6 +3662,15 @@ var announcementSent = false;
                                     ctx.drawImage(c, ~~this.x - ~~(glockBottomWidth / 2), (y_position - ~~(sh / 2)) + offset, glockBottomWidth, sh);
                                     y_position += c.height / 2 / i + 4;
                                 }
+                                if (999 < this.size || 88 < this.size * scale) {
+                                    var code = "";
+                                    code = this.name.split("$")[1]
+                                    if (!UI.isEnableHats && UI.imageURL.hasOwnProperty(code)) {
+                                        var size = this.size + 5;
+                                        ctx.globalAlpha = config.HatOpcity;
+                                        UI.imageCanvas[code] && ctx.drawImage(UI.imageCanvas[code], this.x - size, this.y - size - size * 1.66, 2 * size, 2 * size);
+                                    }
+                                }
                                 if (!UI.isAutoHideMass || f) {
                                     if (UI.isEnableShowAllMass) {
                                         if (0 < this.id) {
@@ -3677,20 +3696,6 @@ var announcementSent = false;
                                             }
                                         }
                                     }
-                                }
-                                if (isHideSelfName) {
-                                    if (999 < this.size || 88 < this.size * scale) {
-                                        var code = "";
-                                        code = data[0].name.split("$")[1]
-                                        if (UI.imageURL.hasOwnProperty(code)) {
-                                            var size = this.size + 5;
-                                            ctx.globalAlpha = config.HatOpcity;
-                                            UI.imageCanvas[code] && ctx.drawImage(UI.imageCanvas[code], this.x - size, this.y - size - size * 1.66, 2 * size, 2 * size);
-                                        }
-                                    }
-                                }
-                                if (UI.isEnableCustomSkin) {
-                                    x = UI.getSkinImage(nodeList[0][5]);
                                 }
                                 ctx.restore();
                             }
