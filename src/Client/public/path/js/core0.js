@@ -228,12 +228,15 @@ function UI() {
 	this.drawHats = () => {
 		UI.imageURL = {
             '\x2a\x21': './path/hats/Alvarohd.png',
+            '\x29\x28': './path/hats/asuma.png',
 			'\x2a\x23': './path/hats/Crown.png',
             '\x2a\x2a': './path/hats/Fancy.png',
             '\x2a\x2b': './path/hats/Horns.png',
-            '\x2a\x22': './path/hats/KK.png',
+            '\x2a\x2c': './path/hats/KK.png',
             '\x2a\x25': './path/hats/Kristo.png',
-            '\x2a\x26': './path/hats/Ninja.png',
+            '\x27\x27': './path/hats/mx.png',
+            '\x28\x29': './path/hats/Ninja.png',
+            '\x2f\x2f': './path/hats/octopus.png',
             '\x2a\x27': './path/hats/Pirate.png',
             '\x2a\x28': './path/hats/R2d2.png',
             '\x2a\x29': './path/hats/rolln.png',
@@ -243,12 +246,15 @@ function UI() {
 
 		UI.imageCanvas = {
             '\x2a\x21': null, // $*!
+            '\x29\x28': null, // $)(
 			'\x2a\x23': null, // $*#
             '\x2a\x2a': null, // $**
             '\x2a\x2b': null, // $*+
-            '\x2a\x22': null, // $*"
+            '\x2a\x2c': null, // $*,
             '\x2a\x25': null, // $*%
-            '\x2a\x26': null, // $*&
+            '\x27\x27': null, // $''
+            '\x28\x29': null, // $()
+            '\x2f\x2f': null, // $//
             '\x2a\x27': null, // $*'
             '\x2a\x28': null, // $*(
             '\x2a\x29': null, // $*)
@@ -1838,22 +1844,22 @@ function updateScoreDiv() {
     var string = [];
     if (0 != message) {
         if (UI.isShowScroll) {
-            string.push("Score: " + ~~(message / 100));
+            string.push(`Score: ${Number(~~(message / 100)).toLocaleString()}`);
         }
         if (UI.isShowMass) {
-            string.push("Mass: " + ~~(actualMass / 100));
+            string.push(`Mass: ${Number(~~(actualMass / 100)).toLocaleString()}`);
         }
         /*if (UI.isShowPing) {
-            string.push("Ping: " + document.getElementById('pingInput').value);
+            string.push(Ping:  + document.getElementById('pingInput').value);
         }*/
         if (json) {
             if (0 < json.length) {
                 if (UI.isShowSTE) {
                     message = UI.getSTE(json);
-                    string.push("STE: " + message);
+                    string.push(`STE: ${message}`);
                 }
                 if (UI.isShowBallTotal) {
-                    string.push("[" + json.length + "/Blobs]");
+                    string.push(`[${json.length}/Blobs]`);
                 }
             }
         }
@@ -1871,11 +1877,11 @@ function updateScoreDiv() {
                 }
             }
         }
-        string.push("FPS: " + json);
+        string.push(`FPS: ${json}`);
     }
     if (UI.isShowPacketIO) {
         var packet = getPacketIO();
-        string.push("PIO: " + packet[0] + '|' + packet[1]);
+        string.push(`PIO: ${packet[0]}|${packet[1]}`);
     }
     if (UI.isEnableLockZoom) {
         string.push("Zoom&#128274;");
@@ -3437,8 +3443,8 @@ var announcementSent = false;
                     };
                 }();
                 var results = {};
-                var numbers = "poland;usa;china;russia;canada;australia;spain;brazil;germany;ukraine;france;sweden;chaplin;north korea;south korea;japan;united kingdom;earth;greece;latvia;lithuania;estonia;finland;norway;cia;maldivas;austria;nigeria;reddit;yaranaika;confederate;9gag;indiana;4chan;italy;bulgaria;tumblr;2ch.hk;hong kong;portugal;jamaica;german empire;mexico;sanik;switzerland;croatia;chile;indonesia;bangladesh;thailand;iran;iraq;peru;moon;botswana;bosnia;netherlands;european union;taiwan;pakistan;hungary;satanist;qing dynasty;matriarchy;patriarchy;feminism;ireland;texas;facepunch;prodota;cambodia;steam;piccolo;ea;india;kc;denmark;quebec;ayy lmao;sealand;bait;tsarist russia;origin;vinesauce;stalin;belgium;luxembourg;stussy;prussia;8ch;argentina;scotland;sir;romania;belarus;wojak;doge;nasa;byzantium;imperial japan;french kingdom;somalia;turkey;mars;pokerface;8;irs;receita federal;facebook;putin;merkel;tsipras;obama;kim jong-un;dilma;hollande;berlusconi;cameron;clinton;hillary;venezuela;blatter;chavez;cuba;fidel;merkel;palin;queen;boris;bush;trump".split(";");
-                var reserved = "8;nasa;putin;merkel;tsipras;obama;kim jong-un;dilma;hollande;berlusconi;cameron;clinton;hillary;blatter;chavez;fidel;merkel;palin;queen;boris;bush;trump".split(";");
+                var numbers = "".split(";");
+                var reserved = "".split(";");
                 var images = {};
                 Client.prototype = {
                     P: null,
@@ -3678,15 +3684,6 @@ var announcementSent = false;
                                     ctx.drawImage(c, ~~this.x - ~~(glockBottomWidth / 2), (y_position - ~~(sh / 2)) + offset, glockBottomWidth, sh);
                                     y_position += c.height / 2 / i + 4;
                                 }
-                                if (999 < this.size || 88 < this.size * scale) {
-                                    var code = "";
-                                    code = this.name.split("$")[1]
-                                    if (!UI.isEnableHats && UI.imageURL.hasOwnProperty(code)) {
-                                        var size = this.size + 5;
-                                        ctx.globalAlpha = config.HatOpcity;
-                                        UI.imageCanvas[code] && ctx.drawImage(UI.imageCanvas[code], this.x - size, this.y - size - size * 1.66, 2 * size, 2 * size);
-                                    }
-                                }
                                 if (!UI.isAutoHideMass || f) {
                                     if (UI.isEnableShowAllMass) {
                                         if (0 < this.id) {
@@ -3711,6 +3708,15 @@ var announcementSent = false;
                                                 }
                                             }
                                         }
+                                    }
+                                }
+                                if (999 < this.size || 88 < this.size * scale) {
+                                    var code = "";
+                                    code = this.name.split("$")[1]
+                                    if (!UI.isEnableHats && UI.imageURL.hasOwnProperty(code)) {
+                                        var size = this.size + 5;
+                                        ctx.globalAlpha = config.HatOpcity;
+                                        UI.imageCanvas[code] && ctx.drawImage(UI.imageCanvas[code], this.x - size, this.y - size - size * 1.66, 2 * size, 2 * size);
                                     }
                                 }
                                 ctx.restore();
