@@ -227,17 +227,33 @@ function UI() {
 	this.imageCanvas = null;
 	this.drawHats = () => {
 		UI.imageURL = {
-			'\x2a\x23': 'http://49.12.231.126:3333/path/hats/Crown.png',
-            '\x2a\x21': 'http://49.12.231.126:3333/path/hats/Alvarohd.png',
-            '\x2a\x2a': 'http://49.12.231.126:3333/path/hats/Fancy.png',
-            '\x21\x21': 'http://49.12.231.126:3333/path/hats/Horns.png'
+            '\x2a\x21': './path/hats/Alvarohd.png',
+			'\x2a\x23': './path/hats/Crown.png',
+            '\x2a\x2a': './path/hats/Fancy.png',
+            '\x2a\x2b': './path/hats/Horns.png',
+            '\x2a\x22': './path/hats/KK.png',
+            '\x2a\x25': './path/hats/Kristo.png',
+            '\x2a\x26': './path/hats/Ninja.png',
+            '\x2a\x27': './path/hats/Pirate.png',
+            '\x2a\x28': './path/hats/R2d2.png',
+            '\x2a\x29': './path/hats/rolln.png',
+            '\x2a\x2e': './path/hats/Santa.png',
+            '\x2a\x2f': './path/hats/Troll.png'
 		};
 
 		UI.imageCanvas = {
-			'\x2a\x23': null, // $*#
             '\x2a\x21': null, // $*!
+			'\x2a\x23': null, // $*#
             '\x2a\x2a': null, // $**
-            '\x21\x21': null // $!!
+            '\x2a\x2b': null, // $*+
+            '\x2a\x22': null, // $*"
+            '\x2a\x25': null, // $*%
+            '\x2a\x26': null, // $*&
+            '\x2a\x27': null, // $*'
+            '\x2a\x28': null, // $*(
+            '\x2a\x29': null, // $*)
+            '\x2a\x2e': null, // $*.
+            '\x2a\x2f': null  // $*/
 		};
 
 		for (const property in UI.imageCanvas) {
