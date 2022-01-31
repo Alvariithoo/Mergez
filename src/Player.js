@@ -238,18 +238,18 @@ class Player {
         this.spectate = false;
         this.freeRoam = false;
         this.spectateTarget = null;
-
+        var client = this.socket.client;
         // some old clients don't understand ClearAll message
         // so we will send update for them
         if (this.socket.client.protocol < 6) {
-            this.socket.sendPacket(new Packet.UpdateNodes(this, [], [], [], this.clientNodes));
+            client.sendPacket(new Packet.UpdateNodes(this, [], [], [], this.clientNodes));
         }
-        this.socket.sendPacket(new Packet.ClearAll());
+        client.sendPacket(new Packet.ClearAll());
         this.clientNodes = [];
         this.scramble();
         if (this.server.config.serverScrambleLevel < 2) {
             // no scramble / lightweight scramble
-            this.socket.sendPacket(new Packet.SetBorder(this, this.server.border));
+            client.sendPacket(new Packet.SetBorder(this, this.server.border));
         }
         else if (this.server.config.serverScrambleLevel == 3) {
             // Scramble level 3 (no border)
@@ -260,7 +260,7 @@ class Player {
                 maxx: this.server.border.maxx + (0x10000 + 10000000 * Math.random()),
                 maxy: this.server.border.maxy + (0x10000 + 10000000 * Math.random())
             };
-            this.socket.sendPacket(new Packet.SetBorder(this, border));
+            client.sendPacket(new Packet.SetBorder(this, border));
         }
         this.spawnCounter++;
 
@@ -343,7 +343,7 @@ class Player {
             }
             this.sendCameraPacket();
         }
-
+        const client = this.socket.client;
         if (this.server.config.serverScrambleLevel == 2) {
             // scramble (moving border)
             if (this.borderCounter == 0) {
@@ -353,7 +353,7 @@ class Player {
                     maxx: Math.min(this.server.border.maxx, this.viewBox.maxx + this.viewBox.halfWidth),
                     maxy: Math.min(this.server.border.maxy, this.viewBox.maxy + this.viewBox.halfHeight)
                 };
-                this.socket.sendPacket(new Packet.SetBorder(this, bound));
+                client.sendPacket(new Packet.SetBorder(this, bound));
             }
             this.borderCounter++;
             if (this.borderCounter >= 20)
@@ -403,7 +403,7 @@ class Player {
         this.clientNodes = this.viewNodes;
 
         // Send packet
-        this.socket.sendPacket(new Packet.UpdateNodes(
+        client.sendPacket(new Packet.UpdateNodes(
             this,
             addNodes,
             updNodes,
@@ -416,7 +416,7 @@ class Player {
             this.tickLeaderboard = 0;
             if (this.server.leaderboardType >= 0) {
                 var packet = new Packet.UpdateLeaderboard(this, this.server.leaderboard, this.server.leaderboardType);
-                this.socket.sendPacket(packet);
+                client.sendPacket(packet);
             }
         }
         // Update minimap
@@ -425,7 +425,7 @@ class Player {
                 //50 (once per two second)
                 this.tickMinimap = 0;
                 var packet = new Packet.UpdateMinimap(this, this.server.clients);
-                this.socket.sendPacket(packet);
+                client.sendPacket(packet);
             }
         }
     };
@@ -594,7 +594,7 @@ class Player {
     };
 
     sendCameraPacket() {
-        this.socket.sendPacket(new Packet.UpdatePosition(
+        this.socket.client.sendPacket(new Packet.UpdatePosition(
             this,
             this.centerPos.x,
             this.centerPos.y,

@@ -1,6 +1,7 @@
 const FFA = require('./FFA');
 const BinaryWriter = require("../packet/BinaryWriter");
 const Entity = require('../entity');
+const stringToBytes = require('../modules/stringToBytes')
 
 class Ultra extends FFA {
     constructor() {
@@ -155,12 +156,3 @@ class Ultra extends FFA {
 }
 
 module.exports = Ultra;
-Ultra.prototype = new FFA();
-
-// others functs
-function stringToBytes(str) {
-    var writer = new BinaryWriter()
-    writer.writeStringZeroUnicode(str);
-    this._nameUnicode = writer.toBuffer();
-    return writer.toBuffer();
-};

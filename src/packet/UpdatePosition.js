@@ -1,22 +1,20 @@
-﻿function UpdatePosition(player, x, y, scale) {
-    this.player = player,
-    this.x = x;
-    this.y = y;
-    this.scale = scale;
+﻿const BinaryWriter = require("./BinaryWriter");
+
+class UpdatePosition {
+    constructor(player, x, y, scale) {
+        this.player = player,
+            this.x = x;
+        this.y = y;
+        this.scale = scale;
+    }
+    build(protocol) {
+        var writer = new BinaryWriter();
+        writer.writeUInt8(0x11);
+        writer.writeFloat(this.x + this.player.scrambleX);
+        writer.writeFloat(this.y + this.player.scrambleY);
+        writer.writeFloat(this.scale);
+        return writer.toBuffer();
+    }
 }
 
 module.exports = UpdatePosition;
-
-UpdatePosition.prototype.build = function (protocol) {
-    var buffer = new Buffer(13);
-    var offset = 0;
-    buffer.writeUInt8(0x11, offset, true);
-    offset += 1;
-    buffer.writeFloatLE(this.x + this.player.scrambleX, offset, true);
-    offset += 4;
-    buffer.writeFloatLE(this.y + this.player.scrambleY, offset, true);
-    offset += 4;
-    buffer.writeFloatLE(this.scale, offset, true);
-    offset += 4;
-    return buffer;
-};

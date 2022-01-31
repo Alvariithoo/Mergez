@@ -119,23 +119,6 @@ class Server {
             perMessageDeflate: false,
             maxPayload: 4096
         };
-        // Logger.info("WebSocket: " + this.config.serverWsModule);
-        // WebSocket = require(this.config.serverWsModule);
-        // Custom prototype functions^M
-        WebSocket.prototype.sendPacket = function (packet) {
-            if (packet == null) return;
-            if (this.readyState == WebSocket.OPEN) {
-                if (this._socket.writable != null && !this._socket.writable) {
-                    return;
-                }
-                var buffer = packet.build(this.player.socket.client.protocol);
-                if (buffer != null) {
-                    this.send(buffer, { binary: true });
-                }
-            } else {
-                this.readyState = WebSocket.CLOSED;
-            }
-        };
 
         this.wsServer = new WebSocket.Server(wsOptions);
         this.wsServer.on('error', this.onServerSocketError.bind(this));
@@ -158,10 +141,10 @@ class Server {
 
         // Player bots (Experimental)
         if (this.config.serverBots > 0) {
+            Logger.info("Added " + this.config.serverBots + " player bots");
             for (var i = 0; i < this.config.serverBots; i++) {
                 this.bots.addBot();
             }
-            Logger.info("Added " + this.config.serverBots + " player bots");
         }
     };
 
@@ -485,7 +468,7 @@ class Server {
         if (node.owner) {
             node.setColor(node.owner.getColor());
             node.owner.cells.push(node);
-            node.owner.socket.sendPacket(new Packet.AddNode(node.owner, node));
+            node.owner.socket.client.sendPacket(new Packet.AddNode(node.owner, node));
         }
 
         // Special on-add actions
@@ -1791,6 +1774,8 @@ class Server {
         // Create stats
         this.stats = "Test";
         this.getStats();
+        var getMassLimitBind = this.getMassLimit.bind(this);
+        setInterval(getMassLimitBind, 1000);
 
         Logger.info("STATS port: \x1b[34m" + port + '\x1b[0m');
         // Show stats
@@ -1862,6 +1847,24 @@ class Server {
         };
         s.ip = this.config.ip + ":" + this.config.serverPort;
         this.stats = JSON.stringify(s);
+    };
+
+    getMassLimit() {
+        if (this.config.serverMassLimit <= 0)
+            return;
+        for (var i = 0; i < this.clients.length; i++) {
+            var socket = this.clients[i];
+            var playerScore = socket.player.getScore();
+
+            if (playerScore / 100 > this.config.serverMassLimit) {
+                this.sendChatMessage(null, null, this.config.serverMassLimitMessage);
+                for (var j = 0; j < socket.player.cells.length; j++) {
+                    socket.player.cells[j].setSize(1);
+
+                    this.restart();
+                }
+            }
+        }
     };
 }
 

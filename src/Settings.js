@@ -71,7 +71,6 @@
 "serverName": "Ultrasplit",
 "serverWelcome1": "Connected to Ultrasplit",
 "serverWelcome2": "First to get 220k wins!",
-"restartMessage": "Server restarting...",
 
 // [Border]
 // Border size (vanilla 14142.135623730952)
@@ -137,11 +136,17 @@
 // Alvariithoo was here!
 // ultraRestartMassLimit: Mass limit for restarting server!
 // ultraRestartCounterDuration: seconds left for resatrt!
+// serverMassLimit: Mass limit which when its reached server will restart instantly (use 0 to disable)
+// restartMessage: vanilla "Server restarting..."
+// serverMassLimitMessage: vanilla "Server was restarted immediately because maximum amount of mass was reached!" (if serverMassLimit is enabled)
 // playerSplitDelay: Next Auto Split In Milliseconds for (Double, tripe, x16, etc.)
 // playerMergeType: 0 = Ultrasplit | 1 = Instant | 2 = Normal
 // chatCooldown: Next msg in Milliseconds
 "ultraRestartMassLimit": 220000,
 "ultraRestartCounterDuration": 25,
+"serverMassLimit": 1000000,
+"restartMessage": "Server restarting...",
+"serverMassLimitMessage": "Restarted immediately, maximum amount of mass reached!",
 "playerSplitDelay": 40,
 "playerMergeType": 0,
 "chatCooldown": 25 * 2,

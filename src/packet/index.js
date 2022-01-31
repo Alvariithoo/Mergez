@@ -4,7 +4,6 @@
     ChatMessage: require('./ChatMessage'),
     AddNode: require('./AddNode'),
     ClearAll: require('./ClearAll'),
-    EnableSpectate: require('./EnableSpectate'),
     ClearOwned: require('./ClearOwned'),
     UpdatePosition: require('./UpdatePosition'),
     ServerStat: require('./ServerStat'),
@@ -13,7 +12,5 @@
     UpdateLeaderboard: require('./UpdateLeaderboard'),
     UpdateMinimap: require('./UpdateMinimap'),
     UpdateRedArea: require('./UpdateRedArea'),
-    DrawLine: require('./DrawLine'),
     SetParams: require('./SetParams'),
-    PlayerList: require('./PlayerList'),
 };

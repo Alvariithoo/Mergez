@@ -1,14 +1,10 @@
-var figlet = require('figlet');
-var runclient = require('./Client/client')
+const runclient = require('./Client/client');
 runclient()
 
-////////////////////////////////////////
-////////////////////////////////////////
-
 // Imports
-var Logger = require('./modules/Logger');
-var Commands = require('./modules/CommandList');
-var Server = require('./Server');
+const Logger = require('./modules/Logger');
+const Commands = require('./modules/CommandList');
+const Server = require('./Server');
 
 // Init variables
 var showConsole = true;
@@ -29,18 +25,15 @@ process.on('uncaughtException', function (err) {
 console.log(require('chalk').cyan(require('figlet').textSync(('Mergez.io'))))
 
 // Run MultiOgar
-var server = new Server();
-Logger.info("\u001B[1m\u001B[32mMultiOgar " + server.version + "\u001B[37m - An open source multi-protocol By Alvariithoo\u001B[0m");
+const instance = new Server();
+instance.start();
 
-server.start();
+Logger.info("\u001B[1m\u001B[32mMultiOgar " + instance.version + "\u001B[37m - An open source multi-protocol By Alvariithoo\u001B[0m");
 
 // Add command handler
-server.commands = Commands.list;
+instance.commands = Commands.list;
 
-// Run Minimap & Skins Server
-// require('./socket');
-
-// Initialize the server console
+// Initialize the instance console
 if (showConsole) {
     var readline = require('readline');
     var in_ = readline.createInterface({
@@ -51,7 +44,6 @@ if (showConsole) {
 }
 
 // Console functions
-
 function prompt() {
     in_.question(">", function (str) {
         try {
@@ -79,9 +71,9 @@ function parseCommands(str) {
     var first = split[0].toLowerCase();
     
     // Get command function
-    var execute = server.commands[first];
+    var execute = instance.commands[first];
     if (typeof execute != 'undefined') {
-        execute(server, split);
+        execute(instance, split);
     } else {
         Logger.warn("Invalid Command!");
     }
