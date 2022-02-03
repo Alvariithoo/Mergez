@@ -241,6 +241,7 @@ function UI() {
             '\x2a\x28': './path/hats/R2d2.png',
             '\x2a\x29': './path/hats/rolln.png',
             '\x2a\x2e': './path/hats/Santa.png',
+            '\x29\x28': './path/hats/Tor.png',
             '\x2a\x2f': './path/hats/Troll.png'
 		};
 
@@ -259,6 +260,7 @@ function UI() {
             '\x2a\x28': null, // $*(
             '\x2a\x29': null, // $*)
             '\x2a\x2e': null, // $*.
+            '\x29\x28': null, // $)(
             '\x2a\x2f': null  // $*/
 		};
 
