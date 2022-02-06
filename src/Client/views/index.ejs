@@ -5,11 +5,8 @@
     <title>Mergez.eu - Ultrasplit</title>
     <link id="favicon" rel="icon" type="image/png" href="./img/icon.png">
     <!-- STYLESHEETS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="./path/css/font.css">
-    <link rel="stylesheet" type="text/css" href="./path/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="./path/css/animate.css">
     <link rel="stylesheet" type="text/css" href="./path/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://use.fonticons.com/902e63d5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/0.6.8/js/min/perfect-scrollbar.jquery.min.js"></script>
@@ -21,137 +18,131 @@
 <body>
     <noscript>Please enable JavaScript in your browser for game to work!</noscript>
     <div id="overlays">
-        <center>
-            <div class="ver-align opac0">
-                <h2 class="loader-text">Welcome To Mergez.io</h2>
-            </div>
-        </center>
+        <div class="ver-align opac0"><h2 class="loader-text">Welcome to Mergez.io</h2></div>
         <div id="container" class="opac0 hided">
-            <div id="mainPanel">
-                <div id="helloContainer">
-                    <div id="left-container" class="side-container left-side">
+            <div id="helloContainer">
+                <div id="left-container" class="side-container left-side">
+                    <div class="UI-panel UI-side-panel UI-profiles">
+                        <ul class="nav nav-tabs">
+                            <button class="btn btn-danger btn-success" onclick="window.location=`<%= user && user.data ? '/logout' : '/login' %>`" id="login"><%= user && user.data ? 'LOGOUT' : 'LOGIN' %></button>
+                        </ul>
+                        <div class="profiles-panel">
+                            <div id="profile-bg" class="UIProfiles"></div>
+                            <div id="profile-bg2" class="UIProfiles"></div>
+                            <div id="profile-bg3" class="UIProfiles"></div>
+                            <div id="profile-bg4" class="UIProfiles"></div>
+                            <div id="profile-bg5" class="UIProfiles"></div>
+                        </div>
+                        <button class="btn btn-danger btn-success" id="hats">HATS SOON!</button>
+                    </div>
+                </div>
+                <div id="mainPanel">
+                    <center class="nav-center">
+                        <div href="home" class="icon-container"><i class="material-icons">home</i></div>
+                        <div href="settings" class="icon-container"><i class="material-icons">settings</i></div>
+                        <div href="sliders" class="icon-container"><i class="material-icons">linear_scale</i></div>
+                        <div onclick="$('#KeysPanel').fadeToggle();" class="icon-botton"><i class="material-icons">keyboard</i></div>
+                    </center>
+                    <div class="tab active" href="home" id="home">
+                        <div id="profile-main">
+                            <div id="profile-pic" class="picker-container clearfix">
+                                <div class="nav2 arrow-left"></div>
+                                <div id="preview-img-area"><img id="preview-img" onerror="DefaultSkin();"></div>
+                                <div class="nav2 arrow-right"></div>
+                            </div>
+                        </div>
+                        <div id="profile-container">
+                            <div id="teamNameContainer" class="input-group">
+                                <input type="text" id="team_name" class="form-control" placeholder="Team" spellcheck="false" maxlength="10">
+                            </div>
+                            <div id="nickContainer">
+                                <input id="nick" type="text" class="form-control" placeholder="Nickname" spellcheck="false" maxlength="15">
+                            </div>
+                            <input type="text" id="skin_url" class="form-control" spellcheck="false" placeholder="Skin URL ( Imgur Link )">
+                        </div>
+                        <button id="main-play" onclick="UI.play(); return false" class="btn btn-play btn-success"><i id="icon" class="material-icons">play_arrow</i></button>
+                        <button onclick="spectate(); return false" class="btn btn-warning btn-spectate"><i id="icon" class="material-icons">visibility</i></button>
+                    </div>
+                    <div class="tab" href="settings" id="settings">
+                        <div id="radio-container">
+                        </div>
+                        <div class="container">
+                            <div class="settingsRow">
+                                <div class="col-xs-6 firstSettings"></div>
+                                <div class="col-xs-6 secondSettings"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab" href="sliders" id="sliders">
+                        <hr id="server-hr">
+                        <div class="toggles">
+                            <div>
+                                <p class="picker-text">Cell Text Position</p>
+                                <select class="select-theming" onchange="config.TextPost=($(this).val()).toLowerCase()">
+                                    <option disabled>Cell Text Position</option>
+                                    <option>Top</option>
+                                    <option selected="selected">Middle</option>
+                                    <option>Bottom</option>
+                                </select>
+                            </div>
+                            <hr id="server-hr">
+                            <div class="range-container">
+                                <div id="AnimationDelay"></div>
+                                <div id="HatsCell"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab" href="keybinds" id="keybinds">yes yes yes yess!</div>
+                </div>
+                <div class="side-container right-side">
+                    <div class="side-container right-side">
                         <div class="UI-panel UI-side-panel UI-profiles">
                             <ul class="nav nav-tabs">
-                                <button class="btn btn-danger btn-success" onclick="window.location=`<%= user && user.data ? '/logout' : '/login' %>`" id="login"><%= user && user.data ? 'LOGOUT' : 'LOGIN' %></button>
+                                <li class="active" id="spl">
+                                    <div id="userInfo">
+                                        <p><i class="fas fa-user"></i> Guest<a class="randomID"></a>
+                                            <script type="text/javascript">document.querySelector('.randomID').innerText = btoa(Math.random()).substring(0, 7)
+                                            </script>
+                                        </p>
+                                    </div>
+                                </li>
                             </ul>
-                            <div class="profiles-panel">
-                                <div id="profile-bg" class="UIProfiles"></div>
-                                <div id="profile-bg2" class="UIProfiles"></div>
-                                <div id="profile-bg3" class="UIProfiles"></div>
-                                <div id="profile-bg4" class="UIProfiles"></div>
-                                <div id="profile-bg5" class="UIProfiles"></div>
-                            </div>
-                            <button class="btn btn-danger btn-success" id="hats">HATS SOON!</button>
-                        </div>
-                    </div>
-                    <div id="mainPanel" class="UI-panel" style="display: inline-block !important">
-                        <center class="nav-center">
-                            <div class="nav" id="nav">
-                                <div href="home" class="icon-container"><i class="material-icons">home</i></div>
-                                <div href="settings" class="icon-container"><i class="material-icons">settings</i></div>
-                                <div href="sliders" class="icon-container"><i class="material-icons">linear_scale</i></div>
-                                <div onclick="$('#KeysPanel').fadeToggle();" class="icon-botton"><i class="material-icons">keyboard</i></div>
-                            </div>
-                        </center>
-                        <div class="tab active" href="home" id="home">
-                            <div id="profile-main">
-                                <div id="profile-pic" class="picker-container clearfix">
-                                    <div class="nav2 arrow-left"></div>
-                                    <div id="preview-img-area"><img id="preview-img" onerror="DefaultSkin();"></div>
-                                    <div class="nav2 arrow-right"></div>
+                            <div id="server-container" class="servers-panel">
+                                <div id="server" onclick="connect('ws://49.12.231.126:7251');">
+                                    <label id="server-label">Ultrasplit</label>
+                                    <label id="number-label">1</label>
                                 </div>
-                            </div>
-                            <div id="profile-container">
-                                <div id="teamNameContainer" class="input-group">
-                                    <input type="text" id="team_name" class="form-control" placeholder="Team" spellcheck="false" maxlength="10">
+                                <div id="server" onclick="connect('ws://49.12.231.126:8251');">
+                                    <label id="server-label">Ultrafeed</label>
+                                    <label id="number-label">2</label>
                                 </div>
-                                <div id="nickContainer">
-                                    <input id="nick" type="text" class="form-control" placeholder="Nickname" spellcheck="false" maxlength="15">
+                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                    <label id="server-label">Server Closed</label>
+                                    <label id="number-label">3</label>
                                 </div>
-                                <input type="text" id="skin_url" class="form-control" spellcheck="false" placeholder="Skin URL ( Imgur Link )">
-                            </div>
-                            <button id="main-play" onclick="UI.play(); return false" class="btn btn-play btn-success"><i id="icon" class="material-icons">play_arrow</i></button>
-                            <button onclick="spectate(); return false" class="btn btn-warning btn-spectate"><i id="icon" class="material-icons">visibility</i></button>
-                        </div>
-                        <div class="tab" href="settings" id="settings">
-                            <div id="radio-container">
-                            </div>
-                            <div class="container">
-                                <div class="settingsRow">
-                                    <div class="col-xs-6 firstSettings"></div>
-                                    <div class="col-xs-6 secondSettings"></div>
+                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                    <label id="server-label">Server Closed</label>
+                                    <label id="number-label">4</label>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="tab" href="sliders" id="sliders">
-                            <hr id="server-hr">
-                            <div class="toggles">
-                                <div>
-                                    <p class="picker-text">Cell Text Position</p>
-                                    <select class="select-theming" onchange="config.TextPost=($(this).val()).toLowerCase()">
-                                        <option disabled>Cell Text Position</option>
-                                        <option>Top</option>
-                                        <option selected="selected">Middle</option>
-                                        <option>Bottom</option>
-                                    </select>
+                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                    <label id="server-label">Server Closed</label>
+                                    <label id="number-label">5</label>
                                 </div>
-                                <hr id="server-hr">
-                                <div class="range-container">
-                                    <div id="AnimationDelay"></div>
-                                    <div id="HatsCell"></div>
+                                <div id="server" onclick="connect('ws://127.0.0.1:7251');">
+                                    <label id="server-label">Server Closed</label>
+                                    <label id="number-label">6</label>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="tab" href="keybinds" id="keybinds">yes yes yes yess!</div>
-                    </div>
-                    <div class="side-container right-side">
-                        <div class="side-container right-side">
-                            <div class="UI-panel UI-side-panel UI-profiles">
-                                <ul class="nav nav-tabs">
-                                    <li class="active" id="spl">
-                                        <div id="userInfo">
-                                            <p><i class="fas fa-user"></i> Guest<a class="randomID"></a>
-                                                <script type="text/javascript">document.querySelector('.randomID').innerText = btoa(Math.random()).substring(0, 7)
-                                                </script>
-                                            </p>
-                                        </div>
-                                    </li>
-                                </ul>
-                                <div id="server-container" class="servers-panel">
-                                    <div id="server" onclick="connect('ws://49.12.231.126:7251');">
-                                        <label id="server-label">Ultrasplit</label>
-                                        <label id="number-label">1</label>
-                                    </div>
-                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                        <label id="server-label">Server Closed</label>
-                                        <label id="number-label">2</label>
-                                    </div>
-                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                        <label id="server-label">Server Closed</label>
-                                        <label id="number-label">3</label>
-                                    </div>
-                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                        <label id="server-label">Server Closed</label>
-                                        <label id="number-label">4</label>
-                                    </div>
-                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                        <label id="server-label">Server Closed</label>
-                                        <label id="number-label">5</label>
-                                    </div>
-                                    <div id="server" onclick="connect('ws://127.0.0.1:7251');">
-                                        <label id="server-label">Server Closed</label>
-                                        <label id="number-label">6</label>
-                                    </div>
-                                    <div id="server" onclick="connect('ws://localhost:7251');">
-                                        <label id="server-label">Tests</label>
-                                        <label id="number-label">7</label>
-                                    </div>
+                                <div id="server" onclick="connect('ws://localhost:7251');">
+                                    <label id="server-label">Tests</label>
+                                    <label id="number-label">7</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="KeysPanel" class="general-box-shadow">
+            </div>
+            <div id="KeysPanel">
+                <div id="background" class="general-box-shadow">
                     <div id="uiBody">
                         <div id="uiModal">
                             <div id="KeysClose"><i class="material-icons">close</i></div>

@@ -7,7 +7,7 @@ var config = {
         bottom: 0.6
     },
 
-    animationDelay: 140,
+    animationDelay: 120,
     HatOpcity: 1,
     TextPost: 'middle',
 };
@@ -53,17 +53,12 @@ function mainLoader() {
         document.body.style.zoom = "80%";
     }
 
-    var child = $("#helloContainer");
-    child.css("transform", "none");
-    child.css("transform", "translate(-50%, -50%)");
-
     $(".icon-container").on("click", function () {
         $(".tab").removeClass("active");
         $("#" + this.attributes.href.value).addClass("active");
     });
 
     $("#input_box2").attr("placeholder", "Enter chat message...");
-    $("#input_box2").attr("onkeydown", "getText();");
 
     $("#profile-main").prependTo("#home");
     $("#preview-img").attr("src", $("#skin_url").val());
@@ -153,6 +148,9 @@ function UI() {
     };
     this.toggleKeys = function() {
         $("#KeysPanel").fadeToggle();
+        if (selectedHotkeyRow) {
+            selectedHotkeyRow.removeClass("table-row-selected");
+        }
     };
 
     var log = {
@@ -162,7 +160,7 @@ function UI() {
         warn: function(str) {
             console.warn("[WARN]", str);
         },
-        err: function(str) {
+        error: function(str) {
             console.error("[ERROR] ", str);
         },
         debug: function(str) {
@@ -391,13 +389,6 @@ function UI() {
                 } else {
                     log.error("Not valid URL");
                     $('#preview-img').attr('src', './img/error.png');
-                    swal({
-                        title: 'Not Valid URL',
-                        text: 'Try again with another link...',
-                        type: "warning",
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
                 }
             }
         });
@@ -435,7 +426,6 @@ function UI() {
         $(".btn-spectate").prop("disabled", false);
         $(".btn-spectate > i").replaceWith('<i id="icon" class="material-icons">visibility</i>');
         $("#nick").prop("disabled", false);
-        $(".nav").show();
         conn.leaveRoom(UI.getRoom());
     };
     this.afterGameLoaded = function() {
@@ -443,18 +433,6 @@ function UI() {
         updateLBCount = -1;
         $("#nick").prop("disabled", false);
         $("#ip_info").text("Server: " + $("#chooseServer option:selected").text());
-        setInterval(function() {
-            var startTime;
-            $.ajax({
-                beforeSend: function(xhr) {
-                    startTime = +new Date();
-                },
-                complete: function(xhr, state) {
-                    var latency = (new Date()) - startTime;
-                    $("#latency_info").text("Latency: " + latency);
-                }
-            });
-        }, 1500);
         moveTo(null, null);
         UI.specTeammate = null;
         UI.isStopMovement = false;
@@ -801,19 +779,6 @@ function UI() {
             setLocalStorage("HatsOpacty", config.HatOpcity);
         });
     };
-    this.scoreInfo = function(millis) {
-        if (!millis || !millis.length) {
-            return "";
-        }
-        var optsData = "";
-        return UI.isShowSTE && (optsData += "   STE: " + this.getSTE(millis)), UI.isShowBallTotal && (optsData += "   [" + millis.length + "/Blobs]"), optsData;
-    };
-    this.scoreTxt = function(dataAndEvents) {
-        return UI.isShowScroll ? dataAndEvents : "";
-    };
-    this.isShowScoreInfo = function() {
-        return UI.isShowScroll || (UI.isShowSTE || UI.isShowBallTotal);
-    };
     this.getSTE = function(codeSegments) {
         var w = 0;
         var i = 0;
@@ -848,16 +813,6 @@ function UI() {
     };
     this.getCurrentServer = function() {
         return currentIP
-    };
-    this.showMessage = function(message, options) {
-        if (0 == $("#message_dialog").length) {
-            UI.createMessageDialog();
-        }
-        $("#message_dialog_title").text(message);
-        $("#message_dialog_content").html(options);
-        $("#message_dialog").modal({
-            show: "true"
-        });
     };
     this.getName = function() {
         var val = $("#nick").val().trim();
@@ -897,8 +852,10 @@ function UI() {
                 defaultHotkey: "W",
                 name: "Macro W",
                 keyDown: function() {
-                    UI.autoW = true;
-                    handleQuickW();
+                    if (!UI.autoW) {
+                        UI.autoW = true;
+                        handleQuickW();
+                    }
                 },
                 keyUp: function() {
                     UI.autoW = false;
@@ -1012,70 +969,6 @@ function UI() {
                 },
                 type: "NORMAL"
             },
-            "hk_pause": {
-                defaultHotkey: "",
-                name: "Pause game for short moment",
-                keyDown: function() {
-                    var pause = (new Date).getTime();
-                    for (; pause + 500 >= (new Date).getTime();) {}
-                },
-                type: "NORMAL"
-            },
-            hk_zoom_a: {
-                defaultHotkey: "1",
-                name: "Zoom level 1",
-                keyDown: function() {
-                    if (!UI.isEnableLockZoom) {
-                        hotkeyConfig.hk_lock_zoom.keyDown();
-                    }
-                    setZoomLevel(0.75);
-                },
-                type: "NORMAL"
-            },
-            hk_zoom_b: {
-                defaultHotkey: "2",
-                name: "Zoom level 2",
-                keyDown: function() {
-                    if (!UI.isEnableLockZoom) {
-                        hotkeyConfig.hk_lock_zoom.keyDown();
-                    }
-                    setZoomLevel(0.3);
-                },
-                type: "NORMAL"
-            },
-            hk_zoom_c: {
-                defaultHotkey: "3",
-                name: "Zoom level 3",
-                keyDown: function() {
-                    if (!UI.isEnableLockZoom) {
-                        hotkeyConfig.hk_lock_zoom.keyDown();
-                    }
-                    setZoomLevel(0.15);
-                },
-                type: "NORMAL"
-            },
-            hk_zoom_d: {
-                defaultHotkey: "4",
-                name: "Zoom level 4",
-                keyDown: function() {
-                    if (!UI.isEnableLockZoom) {
-                        hotkeyConfig.hk_lock_zoom.keyDown();
-                    }
-                    setZoomLevel(0.08);
-                },
-                type: "NORMAL"
-            },
-            hk_zoom_e: {
-                defaultHotkey: "5",
-                name: "Zoom level 5",
-                keyDown: function() {
-                    if (!UI.isEnableLockZoom) {
-                        hotkeyConfig.hk_lock_zoom.keyDown();
-                    }
-                    setZoomLevel(0.05);
-                },
-                type: "NORMAL"
-            },
             hk_send_msg: {
                 defaultHotkey: "ENTER",
                 name: "Chatbox send message",
@@ -1149,6 +1042,10 @@ function UI() {
         setLocalStorage("chatCommand", chatCommand);
         localStorage.setItem("xTestRightMouse", $("#rightMouse").val());
         localStorage.setItem("xTestLeftMouse", $("#leftMouse").val());
+
+        if (selectedHotkeyRow) {
+            selectedHotkeyRow.removeClass("table-row-selected");
+        }
     };
     this.copyGameInfo = function() {
         var failuresLink;
@@ -1178,6 +1075,10 @@ function UI() {
         UI.refreshHotkeySettingPage();
         hotkeyMapping = e;
         defaultHotkeyMapping = null;
+
+        if (selectedHotkeyRow) {
+            selectedHotkeyRow.removeClass("table-row-selected");
+        }
     };
     this.refreshHotkeySettingPage = function() {
         var codeSegments = $(".hotkey");
@@ -1217,18 +1118,21 @@ function UI() {
             rendered.append($message);
         }
         return fragment.append(rendered),
-        html += $("<h1>Keysbinds Setup</h1>")[0].outerHTML,
+        html += $("<center><h1>Keysbinds Setup</h1><center>")[0].outerHTML,
         html += $("<hr id='server-hr'>")[0].outerHTML,
         html += $("<p class='ins-text'>Step 1: Click on the function item</p>")[0].outerHTML,
         html += $("<p class='ins-text'>Step 2: Press wanted hotkey to modify</p>")[0].outerHTML,
         html += $("<p class='ins-text'>Press [DEL] key to remove selected hotkey</p>")[0].outerHTML,
-        // html += $("<br></br>")[0].outerHTML,
+        html += $("<br></br>")[0].outerHTML,
         html += $("<hr id='server-hr'>")[0].outerHTML,
+        html += $("<br></br>")[0].outerHTML,
         html += $("<p class='ins-text'>Allowed hotkey combinations:</p>")[0].outerHTML,
         html += $("<p class='ins-text'>[CTRL] + [ALT] + 0-9, a-z, [TAB], [ENTER]</p>")[0].outerHTML,
         html += $("<br></br>")[0].outerHTML,
+        html += $("<hr id='server-hr'>")[0].outerHTML,
+        html += $("<br></br>")[0].outerHTML,
         html += $(`
-        <div style="width: 40%;float: left;font-size: 15px;margin-top: 15px;margin-right: 15px;margin-left: 10px;">
+        <div id="mouse-reqs">
             <span>Left Mouse</span>
             <select id="leftMouse" class="mouse-select">
                 <option disabled>Left Mouse</option>
@@ -1242,7 +1146,7 @@ function UI() {
         </div>
         `)[0].outerHTML,
         html += $(`
-        <div style="float: left;width: 40%;margin: 15px;font-size: 15px;">
+        <div id="mouse-reqs">
             <span>Right Mouse</span>
             <select id="rightMouse" class="mouse-select">
                 <option disabled>Right Mouse</option>
@@ -1257,7 +1161,6 @@ function UI() {
         `)[0].outerHTML,
         html += $('<button id="reset">Reset</button>')[0].outerHTML,
         html += $('<button id="save">Save</button>')[0].outerHTML,
-        html += $("<br></br>")[0].outerHTML,
         html += fragment[0].outerHTML,
         $("<div/>").append(html).html();
     };
@@ -1850,10 +1753,7 @@ function updateScoreDiv() {
         }
         if (UI.isShowMass) {
             string.push(`Mass: ${Number(~~(actualMass / 100)).toLocaleString()}`);
-        }
-        /*if (UI.isShowPing) {
-            string.push(Ping:  + document.getElementById('pingInput').value);
-        }*/
+        }        
         if (json) {
             if (0 < json.length) {
                 if (UI.isShowSTE) {
@@ -2114,7 +2014,6 @@ var announcementSent = false;
                     newEnd = 1;
                 }
                 to = true;
-                $("#mainPanel").show();
                 $("#overlays").show();
             }
         }
@@ -2127,7 +2026,6 @@ var announcementSent = false;
     function send() {
         if (Ze) {
             if (value) {
-                $("#connecting").show();
                 next();
             }
         }
@@ -2168,7 +2066,6 @@ var announcementSent = false;
         ws.onopen = function() {
             var buf;
             console.log("Socket Open");
-            $("#latency_info").show();
             buf = encode(5);
             buf.setUint8(0, 254);
             buf.setUint32(1, 5, true);
@@ -2531,8 +2428,6 @@ var announcementSent = false;
                     if (1 == data.length) {
                         centerX = item.x;
                         centerY = item.y;
-                        removeEventListener();
-                        document.getElementById("overlays").style.display = "none";
                         a = [];
                         pauseText = 0;
                         col = data[0].color;
@@ -2575,7 +2470,6 @@ var announcementSent = false;
 
     function stop() {
         c = "";
-        $("#connecting").hide();
         writeUTFBytes();
         if (save) {
             save();
@@ -3306,13 +3200,9 @@ var announcementSent = false;
             if ("undefined" == typeof console || ("undefined" == typeof DataView || ("undefined" == typeof WebSocket || (null == test_canvas || (null == test_canvas.getContext || null == self.localStorage))))) {
                 alert("You browser does not support this game, we recommend you to use Firefox or Google to play this");
             } else {
-                var old = null;
                 self.setNick = function(v) {
-                    if (self.ga) {
-                        self.ga("send", "event", "Nick", v.toLowerCase());
-                    }
                     _init();
-                    b = v;
+                    b = v || "Mergez.io";
                     writeUTFBytes();
                     closingAnimationTime = 0;
                     setLocalStorage("nick", v);
@@ -3320,14 +3210,8 @@ var announcementSent = false;
                     announcementSent = false;
                     resolve();
                 };
-                self.setSkins = function(err) {
-                    error = err;
-                };
                 self.setNames = function(newStatus) {
                     oldStatus = newStatus;
-                };
-                self.setDarkTheme = function(newColor) {
-                    color = newColor;
                 };
                 self.setColors = function(data) {
                     doneResults = data;
@@ -3441,7 +3325,6 @@ var announcementSent = false;
                         if (!handler() || 240 > Date.now() - min) {
                             render();
                         }
-                        throttledUpdate();
                     };
                 }();
                 var results = {};
@@ -3670,9 +3553,9 @@ var announcementSent = false;
                                     var offsetY = (c.height - size) / 2;
                                     var y = this.size + 5;
                                 }
-                                if (null != c && (ctx.save(), ctx.clip(), ctx.drawImage(c, startX, offsetY, size, size, this.x - y, this.y - y, 2 * y, 2 * y), ctx.restore()), f || ((doneResults || 15 < this.size), ctx.globalAlpha = 1), n = -1 != data.indexOf(this), y_position = ~~this.y, f = this.f || (300 < this.size || 1000 < this.size * scale), !(isHideSelfName && UI.isHideSelfName || UI.isAutoHideName && !f) && (0 != this.id && ((oldStatus || n) && (this.name && (this.k && (null == c || -1 == reserved.indexOf(i))))))) {
+                                if (null != c && (ctx.save(), ctx.clip(), ctx.drawImage(c, startX, offsetY, size, size, this.x - y, this.y - y, 2 * y, 2 * y), ctx.restore()), f || ((doneResults || 15 < this.size), ctx.globalAlpha = 1), n = -1 != data.indexOf(this), y_position = ~~this.y, f = this.f || (300 < this.size || 1000 < this.size * scale), !(isHideSelfName && UI.isHideSelfName || UI.isAutoHideName && !f) && (0 != this.id && ((oldStatus || n) && (this.name.split("$")[0] && (this.k && (null == c || -1 == reserved.indexOf(i))))))) {
                                     c = this.k;
-                                    c.u(this.name.split("$")[0]);
+                                    // c.u(this.name);
                                     c.G(this.i() / 0.9);
                                     i = 0 >= this.id ? 1 : Math.ceil(5 * scale) / 10;
                                     c.U(i);
@@ -3856,89 +3739,6 @@ var announcementSent = false;
                         };
                     }
                 })();
-                var removeEventListener = function() {
-                    var self = new set(0, 0, 0, 32, "#ED1C24", "");
-                    var cnv = document.createElement("canvas");
-                    cnv.width = 32;
-                    cnv.height = 32;
-                    var s = cnv.getContext("2d");
-                    return function() {
-                        if (0 < data.length) {
-                            self.color = data[0].color;
-                            self.t(data[0].name);
-                        }
-                        s.clearRect(0, 0, 32, 32);
-                        s.save();
-                        s.translate(16, 16);
-                        s.scale(0.4, 0.4);
-                        self.s(s);
-                        s.restore();
-                        var originalFavicon = document.getElementById("favicon");
-                        var newNode = originalFavicon.cloneNode(true);
-                        originalFavicon.parentNode.replaceChild(newNode, originalFavicon);
-                    };
-                }();
-                $(function() {
-                    removeEventListener();
-                });
-                var throttledUpdate = function() {
-                    function render(d, map, str, size, data) {
-                        var s = map.getContext("2d");
-                        var len = map.width;
-                        map = map.height;
-                        d.color = data;
-                        d.t(str);
-                        d.size = size;
-                        s.save();
-                        s.translate(len / 2, map / 2);
-                        d.s(s);
-                        s.restore();
-                    }
-                    var data = new set(-1, 0, 0, 32, "#5bc0de", "");
-                    var dir = new set(-1, 0, 0, 32, "#5bc0de", "");
-                    var codeSegments = "#0791ff #5a07ff #ff07fe #ffa507 #ff0774 #077fff #3aff07 #ff07ed #07a8ff #ff076e #3fff07 #ff0734 #07ff20 #ff07a2 #ff8207 #07ff0e".split(" ");
-                    var items = [];
-                    var i = 0;
-                    for (; i < codeSegments.length; ++i) {
-                        var bisection = i / codeSegments.length * 12;
-                        var radius = 30 * Math.sqrt(i / codeSegments.length);
-                        items.push(new set(-1, Math.cos(bisection) * radius, Math.sin(bisection) * radius, 10, codeSegments[i], ""));
-                    }
-                    shuffle(items);
-                    var map = document.createElement("canvas");
-                    return map.getContext("2d"), map.width = map.height = 70, render(dir, map, "", 26, "#ebc0de"),
-                        function() {
-                            $(".cell-spinner").filter(":visible").each(function() {
-                                var body = $(this);
-                                var x = Date.now();
-                                var width = this.width;
-                                var height = this.height;
-                                var context = this.getContext("2d");
-                                context.clearRect(0, 0, width, height);
-                                context.save();
-                                context.translate(width / 2, height / 2);
-                                var y = 0;
-                                for (; 10 > y; ++y) {
-                                    context.drawImage(map, (0.1 * x + 80 * y) % (width + 140) - width / 2 - 70 - 35, height / 2 * Math.sin((0.001 * x + y) % Math.PI * 2) - 35, 70, 70);
-                                }
-                                context.restore();
-                                if (body = body.attr("data-itr")) {
-                                    body = _(body);
-                                }
-                                render(data, this, body || "", +$(this).attr("data-size"), "#5bc0de");
-                            });
-                            $("#statsPellets").filter(":visible").each(function() {
-                                $(this);
-                                var i = this.width;
-                                var height = this.height;
-                                this.getContext("2d").clearRect(0, 0, i, height);
-                                i = 0;
-                                for (; i < items.length; i++) {
-                                    render(items[i], this, "", items[i].size, items[i].color);
-                                }
-                            });
-                        };
-                }();
                 var a = [];
                 var pauseText = 0;
                 var col = "#000000";

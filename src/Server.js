@@ -622,21 +622,6 @@ class Server {
         this.sendChatMessage(from, to, message);
     };
 
-    // sendChatMessage(from, to, message) {
-    //     for (var i = 0; i < this.clients.length; i++) {
-    //         var client = this.clients[i];
-    //         if (client == null) continue;
-    //         if (!to || to == this.clients[i].player) {
-    //             if (this.config.separateChatForTeams && this.gameMode.haveTeams) {
-    //                 if (from == null /*server*/ || from.team === this.clients[i].player.team) {
-    //                     client.sendPacket(new Packet.ChatMessage(from, message, client.player));
-    //                 }
-    //             } else {
-    //                 client.sendPacket(new Packet.ChatMessage(from, message, client.player));
-    //             }
-    //         }
-    //     }
-    // };
     sendChatMessage(from, to, message) {
         for (var i = 0, len = this.clients.length; i < len; i++) {
             if (!this.clients[i])
@@ -654,6 +639,7 @@ class Server {
             }
         }
     };
+    
     timerLoop() {
         if (this.stop) {
             return;
