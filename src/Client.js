@@ -239,7 +239,7 @@ class Client {
         this.pressW = true;
     };
 
-    message_onChat(message, player, text) {
+    message_onChat(message, text) {
         if (message.length < 3) return;
         var tick = this.server.getTick();
         var dt = tick - this.lastChatTick;
@@ -247,11 +247,10 @@ class Client {
         if (dt < this.server.config.chatCooldown) {
             return;
         }
-        console.log("[" + day() + "] | " + "[CHAT] | [" + message + "]");
         var flags = message[1];    // flags
         var rvLength = (flags & 2 ? 4 : 0) + (flags & 4 ? 8 : 0) + (flags & 8 ? 16 : 0);
         if (message.length < 3 + rvLength) // second validation
-            return;
+            return; 
 
         var reader = new BinaryReader(message);
         reader.skipBytes(2 + rvLength);     // reserved
@@ -260,6 +259,7 @@ class Client {
             text = reader.readStringZeroUnicode();
         else
             text = reader.readStringZeroUtf8();
+        console.log(`[CHAT] Name:${this.socket.player._name} Msg:${message} [${day()}]`);
         this.server.onChatMessage(this.socket.player, null, text);
     };
 

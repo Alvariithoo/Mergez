@@ -450,7 +450,7 @@ input:focus {
 }
 
 #msg {
-    font-size: 15px;
+    font-size: 14px;
     overflow: hidden;
     color: #fff;
 }
@@ -592,7 +592,7 @@ input:focus {
 }
 
 #profile-main {
-    margin-top: 15px;
+    margin-top: 25px;
     margin-bottom: 25px;
 }
 
@@ -756,19 +756,6 @@ input:focus {
     margin-top: -1px;
 }
 
-#lb_detail {
-    text-align: left;
-    font-family: 'Ubuntu';
-    font-weight: 600;
-}
-
-#div_score {
-    background-color: rgba(0, 0, 0, .5);
-    cursor: default;
-    -khtml-user-select: none;
-    position: absolute
-}
-
 .nav2 {
     opacity: 0;
     transition: opacity 1s ease-in-out
@@ -821,10 +808,11 @@ input:focus {
     top: 0px;
     margin: 10px;
     text-align: center;
-    background: rgba(34, 34, 34, 0.45);
+    background: rgb(0 0 0 / 27%);
     color: #fff;
     padding: 15px;
     width: 260px;
+    border-radius: 5px;
 }
 
 .header {
@@ -833,8 +821,9 @@ input:focus {
     margin-bottom: 10px;
 }
 
-#lb_detail>div {
-    display: block;
+#lb_detail {
+    font-family: 'Ubuntu';
+    font-weight: 600;
 }
 
 #lb_detail .self {
@@ -847,11 +836,12 @@ input:focus {
     margin: 10px;
     font-size: 15px;
     font-family: 'Ubuntu';
-    background: rgba(34, 34, 34, 0.45);
+    background: rgb(0 0 0 / 27%);
     color: #fff;
     user-select: none;
     padding: 10px;
     position: absolute;
+    border-radius: 5px;
 }
 
 #team_name {
@@ -1203,7 +1193,7 @@ input[type=checkbox]:checked:before {
 n2 {
     font-size: 12px;
     color: #999;
-    font-family: Ruluko;
+    font-family: 'Ubuntu';
 }
 
 #github {
@@ -1443,7 +1433,6 @@ n2 {
 .prof-label {
     font-size: 12px;
     color: #999;
-    float: left;
     font-family: 'Ubuntu';
     margin: 20px;
 }

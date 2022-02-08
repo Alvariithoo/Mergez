@@ -17,27 +17,12 @@ class Ultra extends FFA {
         // if some player reach this limit, restart timer will be started
         this.restarting = false;
         this.winner;
-        // Gamemode Specific Variables
-        this.powerMinAmount2 = 20;
-        this.nodesPower2 = [];
         // Load Config
         this.config = require("../Settings.js");
     };
 
     onServerInit(server) {
-        var self = this;
-
-        Entity.Minions.prototype.onAdd = function () {
-            self.nodesPower2.push(this);
-        };
-        Entity.Minions.prototype.onRemove = function () {
-            var index = self.nodesPower2.indexOf(this);
-            if (index != -1) 
-            self.nodesPower2.splice(index, 1);
-        };
-
         this.config.serverMaxConnections = 33;
-
         this.config.serverSpectatorScale = 0.1;
 
         this.config.borderWidth = 27000;
@@ -140,19 +125,6 @@ class Ultra extends FFA {
             }
         }
     };
-
-    spawnMinions(server) {
-        if (this.nodesPower2.length >= this.powerMinAmount2) {
-            return;
-        }
-        var pos = server.randomPos();
-        if (server.willCollide(pos, 149)) {
-            // cannot find safe position => do not spawn
-            return;
-        }
-        var Power = new Entity.Minions(server, null, pos, null);
-        server.addNode(Power);
-    };   
 }
 
 module.exports = Ultra;

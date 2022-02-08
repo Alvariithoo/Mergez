@@ -72,31 +72,6 @@ function mainLoader() {
     UI.getVersion = "V2.2.2";
     $("n2").text("Mergez.io | " + UI.getVersion + " | By Alvariithoo & Mrozio");
 
-    $('#profile-bg').click(function() {
-        while (localStorage.getItem("selected_profile") != 0) {
-            $('.arrow-right').trigger('click');
-        }
-    });
-    $('#profile-bg2').click(function() {
-        while (localStorage.getItem("selected_profile") != 1) {
-            $('.arrow-right').trigger('click');
-        }
-    });
-    $('#profile-bg3').click(function() {
-        while (localStorage.getItem("selected_profile") != 2) {
-            $('.arrow-right').trigger('click');
-        }
-    });
-    $('#profile-bg4').click(function() {
-        while (localStorage.getItem("selected_profile") != 3) {
-            $('.arrow-right').trigger('click');
-        }
-    });
-    $('#profile-bg5').click(function() {
-        while (localStorage.getItem("selected_profile") != 4) {
-            $('.arrow-right').trigger('click');
-        }
-    });
     let time = 300;
     let element = [
         $(".ver-align"),
@@ -171,7 +146,7 @@ function UI() {
     this.play = function() {
        setNick(document.getElementById("nick").value);
     };
-    $.getJSON("http://49.12.231.126:3333/lbcolors" + (new Date()).getSeconds(), function(a) {
+    $.getJSON("http://49.12.231.126:3333/lbcolors?version=" + (new Date()).getSeconds(), function(a) {
         window.tagColors = a.tagcolors;
     });
 
@@ -186,9 +161,7 @@ function UI() {
     this.isShowSTE = false;
     this.isShowScroll = false;
     this.isEnableGridline = false;
-    this.isEnableShowAllMass = true;
     this.isEnableAutoStart = false;
-    this.isEnableMouseW = false;
     this.isEnableCustomSkin = true;
     this.isEnableHats = false;
     this.isEnableAttackRange = false;
@@ -208,17 +181,12 @@ function UI() {
     this.isSpectating = false;
     this.isEnableSplitInd = false;
     this.isShowTextStrokeLine = false;
-    this.isAutoHideName = true;
-    this.isAutoHideMass = true;
-    this.isTransparentCell = false;
     this.isShowFPS = true;
-    //this.isShowPing = true;
     this.isEnableOtherSkinSupport = !false;
     this.isEnableBorder = true;
     this.isShowMass = true;
     this.isShowPacketIO = false;
     this.isHideSelfName = false;
-    this.isRainbowFood = true;
     this.isEnabledLeaderboardColor = true;
 
     this.imageURL = null;
@@ -232,6 +200,7 @@ function UI() {
             '\x2a\x2b': './path/hats/Horns.png',
             '\x2a\x2c': './path/hats/KK.png',
             '\x2a\x25': './path/hats/Kristo.png',
+            '\x2b\x2c': './path/hats/Mireya.png',
             '\x27\x27': './path/hats/mx.png',
             '\x28\x29': './path/hats/Ninja.png',
             '\x2f\x2f': './path/hats/octopus.png',
@@ -251,6 +220,7 @@ function UI() {
             '\x2a\x2b': null, // $*+
             '\x2a\x2c': null, // $*,
             '\x2a\x25': null, // $*%
+            '\x2b\x2c': null, // $+,
             '\x27\x27': null, // $''
             '\x28\x29': null, // $()
             '\x2f\x2f': null, // $//
@@ -432,7 +402,6 @@ function UI() {
         UI.isSpectating = false;
         updateLBCount = -1;
         $("#nick").prop("disabled", false);
-        $("#ip_info").text("Server: " + $("#chooseServer option:selected").text());
         moveTo(null, null);
         UI.specTeammate = null;
         UI.isStopMovement = false;
@@ -492,13 +461,6 @@ function UI() {
                     UI.noLag = token;
                 }
             },
-            opt_self_name: {
-                text: "Hide my name",
-                "default": true,
-                handler: function(token) {
-                    UI.isHideSelfName = token;
-                }
-            },
             opt_name: {
                 text: "Hide Names",
                 handler: function(token) {
@@ -544,7 +506,7 @@ function UI() {
                     UI.isEnableMapGrid = token;
                 }
             },
-            "opt_border": {
+            opt_border: {
                 text: "Map Border",
                 default: true,
                 handler: function(token) {
@@ -557,13 +519,6 @@ function UI() {
                 handler: function(token) {
                     UI.isShowMass = token;
                 }
-            },
-            opt_ping: {
-                text: "Ping",
-                "default": true,
-                handler: function(token) {
-                    UI.isShowPing = token;
-                },disabled: true
             },
             opt_score: {
                 text: "Score",
@@ -596,42 +551,11 @@ function UI() {
                     UI.isEnableHats = token;
                 }
             },
-            opt_mousew: {
-                text: "Mouse Feed",
-                handler: function(token) {
-                    UI.isEnableMouseW = token;
-                }
-            },
             opt_teammate_indicator: {
                 text: "Cell Indicator",
                 "default": false,
                 handler: function(token) {
                     UI.isEnableTeammateIndicator = token;
-                }
-            },
-            opt_noskin: {
-                text: "Hide Skin URL",
-                disabled: false,
-                "default": false,
-                handler: function(token) {
-                    if (token) {
-                        $("#skin_url").css("cssText", "color: #fff!important");
-                    } else {
-                        $("#skin_url").css("cssText", "color: #000!important");
-                    }
-                }
-            },
-            opt_rainbowfood: {
-                text: 'Rainbow Food',
-                "default": true,
-                handler(token) {
-                    UI.isRainbowFood = token;
-                }
-            },
-            opt_color: {
-                text: "Hide blob colors",
-                handler: function(token) {
-                    setColors(token);
                 }
             },
             opt_cursorline: {
@@ -681,28 +605,6 @@ function UI() {
                 handler: function(token) {
                     UI.isShowPacketIO = token;
                 }
-            },
-            opt_transparent_cell: {
-                text: "Transparent Blobs",
-                handler: function(token) {
-                    UI.isTransparentCell = token;
-                }
-            },
-            opt_auto_hide_mass: {
-                text: "Auto Hide Mass",
-                disabled: true,
-                "default": true,
-                handler: function(token) {
-                    UI.isAutoHideMass = token;
-                }
-            },
-            opt_auto_hide_name: {
-                text: "Auto Hide Names",
-                "default": true,
-                handler: function(token) {
-                    UI.isAutoHideName = token;
-                },
-                disabled: true
             },
             opt_lock_zoom: {
                 text: "Auto Zoom",
@@ -1046,6 +948,7 @@ function UI() {
         if (selectedHotkeyRow) {
             selectedHotkeyRow.removeClass("table-row-selected");
         }
+        UI.toggleKeys();
     };
     this.copyGameInfo = function() {
         var failuresLink;
@@ -1316,7 +1219,7 @@ function ChatRoom() {
         $("#chatroom").append(`
             <div class="chatItem">
                 <span id="time">${this.getTimeStr()} 
-                <span class="chatHolder" style="color:${color}">${role}${escapeHtml(name.split("$")[0])} : 
+                <span class="chatHolder" style="color:${color}">${role}${escapeHtml(name.split("$")[0])}: 
                 <span id="msg">${escapeHtml(message)}
             <div/>
         `);
@@ -1387,7 +1290,7 @@ function Minimap() {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.globalAlpha = 0.2;
-        ctx.font = "12px Verdana";
+        ctx.font = "Ubuntu";
         ctx.fillStyle = "#FFFFFF";
         ctx.fillText("A1", w / 5 / 2, h / 5 / 2);
         ctx.fillText("A2", w / 5 / 2 * 3, h / 5 / 2);
@@ -1422,7 +1325,7 @@ function Minimap() {
         context.scale(1, 1);
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.font = "500 13px Ruluko";
+        context.font = "500 13px Ubuntu";
         this.hide();
         setInterval(function() {
             minimap.drawNodes();
@@ -1788,14 +1691,7 @@ function updateScoreDiv() {
     if (UI.isEnableLockZoom) {
         string.push("Zoom&#128274;");
     }
-    if (0 < string.length) {
-        if (!$("#div_score").is(":visible")) {
-            $("#div_score").show();
-        }
-        document.getElementById("div_score").innerHTML = string.join("&nbsp;&nbsp;&nbsp;").trim();
-    } else {
-        $("#div_score").hide();
-    }
+    document.getElementById("div_score").innerHTML = string.join("&nbsp;&nbsp;&nbsp;").trim();
     setTimeout(updateScoreDiv, 500);
 }
 var testingVal = 29;
@@ -2403,7 +2299,7 @@ var announcementSent = false;
                 item.n = item.size;
                 item.color = value;
             } else {
-                item = new set(id, node, obj, m, value, input);
+                item = new Cell(id, node, obj, m, value, input);
                 list.push(item);
                 queue[id] = item;
                 item.ia = node;
@@ -2428,6 +2324,7 @@ var announcementSent = false;
                     if (1 == data.length) {
                         centerX = item.x;
                         centerY = item.y;
+                        document.getElementById("overlays").style.display = "none";
                         a = [];
                         pauseText = 0;
                         col = data[0].color;
@@ -2849,7 +2746,7 @@ var announcementSent = false;
     }
 
     function create() {
-        if (img = null, (null != angles || 0 != users.length) && (null != angles || oldStatus)) {
+        if (img = null, (null != angles || 0 != users.length) && (null != angles || setNames)) {
             img = document.createElement("canvas");
             var ctx = img.getContext("2d");
             var i = 60;
@@ -2860,7 +2757,7 @@ var announcementSent = false;
                 i = 0;
                 for (; i < users.length; ++i) {
                     d = users[i].name || _("unnamed_cell");
-                    if (!oldStatus) {
+                    if (!setNames) {
                         d = _("unnamed_cell");
                     }
                     if (-1 != result.indexOf(users[i].id)) {
@@ -2898,7 +2795,7 @@ var announcementSent = false;
         this.b = b;
     }
 
-    function set(value, x, y, size, color, ms) {
+    function Cell(value, x, y, size, color, ms) {
         this.id = value;
         this.o = this.x = x;
         this.p = this.y = y;
@@ -2967,7 +2864,7 @@ var announcementSent = false;
         ctx.lineWidth = 20;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.font = 0.6 * barWidth + "px Ruluko";
+        ctx.font = 0.6 * barWidth + "px Ubuntu";
         ctx.fillStyle = "#1A1A1A"
         var j = 0;
         for (; 5 > j; j++) {
@@ -3121,12 +3018,12 @@ var announcementSent = false;
             var scale = 1;
             var value = null;
             var error = true;
-            var oldStatus = true;
-            var doneResults = false;
+            var setNames = true;
+            var setColors = false;
             var Ee = false;
             var closingAnimationTime = 0;
             var color = 1;
-            var $timeout = false;
+            var setShowMass = false;
             var chunk = centerX = ~~((right + left) / 2);
             var loc = centerY = ~~((top + computed) / 2);
             var crashed = 1;
@@ -3210,14 +3107,14 @@ var announcementSent = false;
                     announcementSent = false;
                     resolve();
                 };
-                self.setNames = function(newStatus) {
-                    oldStatus = newStatus;
+                self.setNames = function(data) {
+                    setNames = data;
                 };
                 self.setColors = function(data) {
-                    doneResults = data;
+                    setColors = data;
                 };
-                self.setShowMass = function(_$timeout_) {
-                    $timeout = _$timeout_;
+                self.setShowMass = function(data) {
+                    setShowMass = data;
                 };
                 self.getCurrentX = function() {
                     return data.length ? centerX - (left - 7071.067811865476) : "";
@@ -3338,7 +3235,7 @@ var announcementSent = false;
                     g: 0,
                     b: 0
                 };
-                set.prototype = {
+                Cell.prototype = {
                     id: 0,
                     a: null,
                     name: null,
@@ -3446,17 +3343,10 @@ var announcementSent = false;
                             var f = !false;
                             if (30 > this.size) {
                                 if (!UI.isEnableHideFood) {
-                                    if (UI.isRainbowFood) {
-                                        ctx.beginPath();
-                                        ctx.fillStyle = this.color;
-                                        ctx.arc(this.x, this.y, this.size + 5, 0, 2 * Math.PI, false);
-                                        ctx.fill();
-                                    } else {
-                                        ctx.beginPath();
-                                        ctx.fillStyle = "#651fff"
-                                        ctx.arc(this.x, this.y, this.size + 5, 0, 2 * Math.PI, false);
-                                        ctx.fill();
-                                    }
+                                    ctx.beginPath();
+                                    ctx.fillStyle = this.color;
+                                    ctx.arc(this.x, this.y, this.size + 5, 0, 2 * Math.PI, false);
+                                    ctx.fill();
                                 }
                             } else {
                                 ++this.S;
@@ -3482,9 +3372,6 @@ var announcementSent = false;
                                 var isHideSelfName = false;
                                 var x = null;
                                 if (v = this.name + this.color, v = v in playerDetailsByIdentifier ? playerDetailsByIdentifier[v] : void 0, i) {
-                                    if (UI.isTransparentCell) {
-                                        ctx.globalAlpha = 0.7;
-                                    }
                                     var c = 0;
                                     for (; c < result.length; c++) {
                                         if (this.id === result[c]) {
@@ -3553,48 +3440,48 @@ var announcementSent = false;
                                     var offsetY = (c.height - size) / 2;
                                     var y = this.size + 5;
                                 }
-                                if (null != c && (ctx.save(), ctx.clip(), ctx.drawImage(c, startX, offsetY, size, size, this.x - y, this.y - y, 2 * y, 2 * y), ctx.restore()), f || ((doneResults || 15 < this.size), ctx.globalAlpha = 1), n = -1 != data.indexOf(this), y_position = ~~this.y, f = this.f || (300 < this.size || 1000 < this.size * scale), !(isHideSelfName && UI.isHideSelfName || UI.isAutoHideName && !f) && (0 != this.id && ((oldStatus || n) && (this.name.split("$")[0] && (this.k && (null == c || -1 == reserved.indexOf(i))))))) {
-                                    c = this.k;
-                                    // c.u(this.name);
-                                    c.G(this.i() / 0.9);
-                                    i = 0 >= this.id ? 1 : Math.ceil(5 * scale) / 10;
-                                    c.U(i);
-                                    c = c.F();
-                                    var glockBottomWidth = ~~(c.width / i);
-                                    var sh = ~~(c.height / i);
-                                    if (config.TextPost !== 'middle' && config.TextPost !== 'top' && config.TextPost !== 'bottom') {
-                                        config.TextPost = 'middle'
-                                    }
-                                    var offset = this.k ? (this.size * config.position[config.TextPost]) : 1;
-                                    ctx.drawImage(c, ~~this.x - ~~(glockBottomWidth / 2), (y_position - ~~(sh / 2)) + offset, glockBottomWidth, sh);
-                                    y_position += c.height / 2 / i + 4;
-                                }
-                                if (!UI.isAutoHideMass || f) {
-                                    if (UI.isEnableShowAllMass) {
-                                        if (0 < this.id) {
-                                            if ($timeout) {
-                                                if (300 < this.size) {
-                                                    if (null == this.I) {
-                                                        this.I = new module(this.i() / 2, "#FFFFFF", true, "#000000");
-                                                    }
-                                                    n = this.I;
-                                                    n.G(this.i() / 0.9);
-                                                    n.u(~~(this.size * this.size / 100));
-                                                    i = Math.ceil(5 * scale) / 10;
-                                                    n.U(i);
-                                                    c = n.F();
-                                                    glockBottomWidth = ~~(c.width / i);
-                                                    sh = ~~(c.height / i);
-                                                    if (config.TextPost !== 'middle' && config.TextPost !== 'top' && config.TextPost !== 'bottom') {
-                                                        config.TextPost = 'middle'
-                                                    }
-                                                    var offset = this.k ? (this.size * 0.09) : 0;
-                                                    ctx.drawImage(c, ~~this.x - ~~(glockBottomWidth / 2), y_position - ~~(sh / 4.2), glockBottomWidth, sh);
-                                                }
+                                if (null != c && (ctx.save(), ctx.clip(), ctx.drawImage(c, startX, offsetY, size, size, this.x - y, this.y - y, 2 * y, 2 * y), ctx.restore()), f, n = -1 != data.indexOf(this), y_position = ~~this.y, f = this.f || (0 != this.id && (this.name.split("$")[0] && (this.k && (null == c || -1 == reserved.indexOf(i)))))) {
+                                    if (setNames) {
+                                        if (300 < this.size || 88 < this.size * scale) {
+                                            c = this.k;
+                                            c.u(this.name.split("$")[0]);
+                                            c.G(this.i() / 0.9);
+                                            i = 0 >= this.id ? 1 : Math.ceil(5 * scale) / 10;
+                                            c.U(i);
+                                            c = c.F();
+                                            var glockBottomWidth = ~~(c.width / i);
+                                            var sh = ~~(c.height / i);
+                                            if (config.TextPost !== 'middle' && config.TextPost !== 'top' && config.TextPost !== 'bottom') {
+                                                config.TextPost = 'middle'
                                             }
+                                            var offset = this.k ? (this.size * config.position[config.TextPost]) : 1;
+                                            ctx.drawImage(c, ~~this.x - ~~(glockBottomWidth / 2), (y_position - ~~(sh / 2)) + offset, glockBottomWidth, sh);
+                                            y_position += c.height / 2 / i + 4;
                                         }
                                     }
                                 }
+                                if (0 < this.id) {
+                                    if (setShowMass) {
+                                        if (300 < this.size || 88 < this.size * scale) {
+                                            if (null == this.I) {
+                                                this.I = new module(this.i() / 2, "#FFFFFF", true, "#000000");
+                                            }
+                                            n = this.I;
+                                            n.G(this.i() / 0.9);
+                                            n.u(~~(this.size * this.size / 100));
+                                            i = Math.ceil(5 * scale) / 10;
+                                            n.U(i);
+                                            c = n.F();
+                                            glockBottomWidth = ~~(c.width / i);
+                                            sh = ~~(c.height / i);
+                                            if (config.TextPost !== 'middle' && config.TextPost !== 'top' && config.TextPost !== 'bottom') {
+                                                config.TextPost = 'middle'
+                                            }
+                                            var offset = this.k ? (this.size * 0.09) : 0;
+                                            ctx.drawImage(c, ~~this.x - ~~(glockBottomWidth / 2), y_position - ~~(sh / 4.2), glockBottomWidth, sh);
+                                        }
+                                    }
+                                }                                
                                 if (999 < this.size || 88 < this.size * scale) {
                                     var code = "";
                                     code = this.name.split("$")[1]
@@ -3695,15 +3582,11 @@ var announcementSent = false;
                         ctx.font = `900 ${fontSize}px Ubuntu`;
                         const left = ~~(0.2 * fontSize);
 
-                        const width = (ctx.measureText(line).width) * scale;
-                        const height = (fontSize + left) * scale;
+                        canvas.width = (ctx.measureText(line).width) * scale;
+                        canvas.height = (fontSize + left) * scale;
 
-                        canvas.width = width;
-                        canvas.height = height;
-
-                        ctx.font = `900 ${fontSize}px Ubuntu`;;
+                        ctx.font = `900 ${fontSize}px Ubuntu`;
                         ctx.scale(scale, scale);
-
                         ctx.fillStyle = "white";
                         if (UI.isShowTextStrokeLine) {
                             ctx.lineWidth = 30;
@@ -3825,27 +3708,6 @@ UI.afterGameLogicLoaded(),
             }
         }
     }
-}), $("#overlays2").mousedown(function(e) {
-    if (0 === e.button) {
-        if (UI.isEnableMouseW) {
-            if ("input" != e.target.tagName.toLowerCase() || "textarea" != e.target.tagName.toLowerCase()) {
-                UI.autoW = true;
-                handleQuickW();
-                e.preventDefault();
-            }
-        }
-    }
-}), $("#overlays2").mouseup(function(e) {
-    if (0 === e.button) {
-        if (UI.isEnableMouseW) {
-            if ("input" != e.target.tagName.toLowerCase()) {
-                if ("textarea" != e.target.tagName.toLowerCase()) {
-                    UI.autoW = false;
-                    e.preventDefault();
-                }
-            }
-        }
-    }
 });
 var escapeHtml = function() {
     var buf = {
@@ -3907,142 +3769,3 @@ var handleResource = function(timeoutKey, url) {
         log.debug(" ** null in download object url, return;");
     }
 };
-
-var l = localStorage.getItem("player_profile");
-var profiles = JSON.parse(l);
-setTimeout(function() {
-    var name = profiles[0].name;
-    var url = profiles[0].skinurl;
-    $('#profile-bg').append('<img id="prof-1" class="profs" src="' + escapeHtml(url) + '" onerror="Error(this);"><label class="prof-label">' + escapeHtml(name) + '</label><br>');
-    var name = profiles[1].name;
-    var url = profiles[1].skinurl;
-    $('#profile-bg2').append('<img id="prof-2" class="profs" src="' + escapeHtml(url) + '" onerror="Error(this);"><label class="prof-label">' + escapeHtml(name) + '</label><br>');
-    var name = profiles[2].name;
-    var url = profiles[2].skinurl;
-    $('#profile-bg3').append('<img id="prof-3" class="profs" src="' + escapeHtml(url) + '" onerror="Error(this);"><label class="prof-label">' + escapeHtml(name) + '</label><br>');
-    var name = profiles[3].name;
-    var url = profiles[3].skinurl;
-    $('#profile-bg4').append('<img id="prof-4" class="profs" src="' + escapeHtml(url) + '" onerror="Error(this);"><label class="prof-label">' + escapeHtml(name) + '</label><br>');
-    var name = profiles[4].name;
-    var url = profiles[4].skinurl;
-    $('#profile-bg5').append('<img id="prof-5" class="profs" src="' + escapeHtml(url) + '" onerror="Error(this);"><label class="prof-label">' + escapeHtml(name) + '</label><br>');
-}, 500);
-
-function Error(image) {
-    image.onerror = "";
-    image.src = "./img/error.png";
-    return true;
-}
-
-function $respawn() {
-    $("#respawning").show();
-    $(".respawning").text('Respawning in 3 seconds...');
-    setTimeout(function() {
-        $(".respawning").text('Respawning in 2 seconds...');
-        setTimeout(function() {
-            $(".respawning").text('Respawning in 1 seconds...');
-            setTimeout(function() {
-                $("#respawning").hide();
-                $(".respawning").text('Respawning in 3 seconds...');
-            }, 1000);
-        }, 1000);
-    }, 1000);
-    setTimeout(function() {
-        connect(window.urlSocket);
-        setTimeout(function() {
-            $("#main-play").click();
-        }, 1000);
-    }, 3000);
-}
-
-$("#overlays2").mousedown((e) => {
-    if (e.button == 0) {
-        switch ($("#leftMouse").val()) {
-            case "Feed":
-                UI.autoW = true;
-                handleQuickW();
-                break;
-            case "Split16":
-                UI.quadSplit = true;
-                quadSplit();
-                break;
-            case "Split8":
-                UI.tripleSplit = true;
-                tripleSplit();
-                break;
-            case "Split4":
-                UI.doubleSplit = true;
-                doubleSplit();
-                break;
-            case "Split":
-                UI.oneSplit = true;
-                oneSplit();
-                break;
-        }
-    } else if (e.button == 2) {
-        switch ($("#rightMouse").val()) {
-            case "Feed":
-                UI.autoW = true;
-                handleQuickW();
-                break;
-            case "Split16":
-                UI.quadSplit = true;
-                quadSplit();
-                break;
-            case "Split8":
-                UI.tripleSplit = true;
-                tripleSplit();
-                break;
-            case "Split4":
-                UI.doubleSplit = true;
-                doubleSplit();
-                break;
-            case "Split":
-                UI.oneSplit = true;
-                oneSplit();
-                break;
-        }
-    }
-});
-
-$("#overlays2").mouseup((e) => {
-    if (e.button == 0) {
-        switch ($("#leftMouse").val()) {
-            case "Feed":
-                UI.autoW = false;
-                break;
-            case "Split16":
-                UI.quadSplit = false;
-                break;
-            case "Split8":
-                UI.tripleSplit = false;
-                break;
-            case "Split4":
-                UI.doubleSplit = false;
-                break;
-            case "Split":
-                UI.oneSplit = false;
-                break;
-        }
-    } else if (e.button == 2) {
-        switch ($("#rightMouse").val()) {
-            case "Feed":
-                UI.autoW = false;
-                break;
-            case "Split16":
-                UI.quadSplit = false;
-                break;
-            case "tripleSplit":
-                UI.tripleSplit = false;
-                break;
-            case "Split4":
-                UI.doubleSplit = false;
-                break;
-            case "Split":
-                UI.oneSplit = false;
-                break;
-        }
-    }
-});
-$("#respawning").css('color', 'white');
-$("#respawning").css('overflow', 'hidden');
