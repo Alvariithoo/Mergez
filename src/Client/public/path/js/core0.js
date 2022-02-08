@@ -69,7 +69,7 @@ function mainLoader() {
     $(".btn-green").insertBefore(".btn-blue");
     $(".btn-red").insertAfter(".btn-green");
 
-    UI.getVersion = "V2.2.2";
+    UI.getVersion = "V2.2.3";
     $("n2").text("Mergez.io | " + UI.getVersion + " | By Alvariithoo & Mrozio");
 
     let time = 300;
@@ -636,7 +636,7 @@ function UI() {
                 row.push(`<div class="setting-container">\n\t<p class="textSetting">${options[i]["text"]}</p>\n\t<input id="${i}" class="flip" type="checkbox"> \n\t<label class="setting" for="${i}"></label>\n</div>`);
             }
         }
-        var d = row.splice(0, 15);
+        var d = row.splice(0, 12);
         var j = 0;
         for (; j < d.length; j++) {
             $(".firstSettings").append(d[j]);
