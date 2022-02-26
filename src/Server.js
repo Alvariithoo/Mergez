@@ -281,16 +281,41 @@ class Server {
         ws.client.handleMessage(message);
     };
 
-    restart() { // Alvariithoo make this code :O
-        this.sendChatMessage(null, null, this.config.restartMessage);
-        while (this.nodes.length > 0) {
-            var node = this.nodes[0];
-            node && this.removeNode(node);
+    restart() {
+        if (this.run) {
+            this.run = false;
+            this.sendChatMessage(null, null, this.config.restartMessage);
+            setTimeout(this.restart.bind(this), 3000);
+            return;
         }
+        this.httpServer = null;
+        this.wsServer = null;
+        this.run = true;
+        this.lastNodeId = 1;
+        this.lastPlayerId = 1;
+        for (const client of this.clients) client.close();
+        this.nodes = [];
+        this.nodesVirus = [];
+        this.nodesFood = [];
+        this.nodesEjected = [];
+        this.nodesPlayer = [];
+        this.movingNodes = [];
+        if (this.config.serverBots) {
+            for (var i = 0; i < this.config.serverBots; i++)
+                this.bots.addBot();
+            Logger.info(`Added ${this.config.serverBots} player bots`);
+        }
+        this.commands;
+        this.ticks = 0;
         this.loadIpBanList();
         this.loadUserList();
         this.loadBadWords();
-    };
+        const now = new Date();
+        this.startTime = now.getTime();
+        const date = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`
+        const time = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+        Logger.info(`Restarted ${date} ${time}`);
+    }
 
     setBorder(width, height) {
         var hw = width / 2;
@@ -1836,19 +1861,19 @@ class Server {
     };
 
     getMassLimit() {
-        if (this.config.serverMassLimit <= 0)
-            return;
+        if (this.config.serverMassLimit <= 0) return;
         for (var i = 0; i < this.clients.length; i++) {
             var socket = this.clients[i];
             var playerScore = socket.player.getScore();
-
             if (playerScore / 100 > this.config.serverMassLimit) {
-                this.sendChatMessage(null, null, this.config.serverMassLimitMessage);
                 for (var j = 0; j < socket.player.cells.length; j++) {
                     socket.player.cells[j].setSize(1);
-
-                    this.restart();
+                    while (this.nodes.length > 0) {
+                        var node = this.nodes[0];
+                        node && this.removeNode(node);
+                    }
                 }
+                this.sendChatMessage(null, null, this.config.serverMassLimitMessage);
             }
         }
     };
