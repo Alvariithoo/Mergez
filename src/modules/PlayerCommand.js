@@ -356,7 +356,7 @@ var playerCommands = {
             var client = this.server.clients[i];
             if (client == null || !client.isConnected)
                 continue;
-            if (client.player.id == id) {
+            if (client.player.pID == id) {
                 ip = client._socket.remoteAddress;
                 break;
             }
