@@ -49,13 +49,13 @@ PlayerCommand.prototype.executeCommandLine = function (commandLine) {
     }
 };
 
-PlayerCommand.prototype.parsePluginCommands = function(str) {
+PlayerCommand.prototype.parsePluginCommands = function (str) {
     // Splits the string
     var args = str.split(" ");
-    
+
     // Process the first string value
     var first = args[0].toLowerCase();
-    
+
     // Get command function
     var execute = this.server.Plugins.playerCommands[first];
     if (typeof execute != 'undefined') {
@@ -157,7 +157,7 @@ var playerCommands = {
         for (var i = 0; i < sockets.length; i++) {
             var socket = sockets[i];
             var client = socket.player;
-            
+
             // Get ip (15 digits length)
             var ip = "[BOT]";
             if (socket.isConnected != null) {
@@ -212,7 +212,7 @@ var playerCommands = {
         for (var i = 0; i < sockets.length; i++) {
             var socket = sockets[i];
             var client = socket.player;
-            
+
             // Get ip (15 digits length)
             var ip = "[BOT]";
             id = fillChar((client.pID), ' ', 6, true);
@@ -262,22 +262,16 @@ var playerCommands = {
         while (this.player.cells.length) {
             var cell = this.player.cells[0];
             this.server.removeNode(cell);
-            // replace with food
-            /*var food = require('../entity/Food');
-            food = new food(this.server, null, cell.position, cell._size);
-            food.color = cell.color;
-            this.server.addNode(food);*/
         }
-        //this.writeLine("Respawned");
     },
-    kick: function(args) {
+    kick: function (args) {
         if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
             this.writeLine("ERROR: access denied!");
             return;
         }
         var id = args[1];
         var reason = args[2];
-        if(!reason) reason = " Reason: None";
+        if (!reason) reason = " Reason: None";
         else reason = " Reason: " + reason;
         if (id == null) {
             this.writeLine("Please specify a valid player ID!");
@@ -285,7 +279,7 @@ var playerCommands = {
         }
         //kick player
         var count = 0;
-        this.server.clients.forEach(function(socket) {
+        this.server.clients.forEach(function (socket) {
             if (socket.isConnected === false)
                 return;
             if (id !== 0 && socket.player.pID.toString() != id && socket.player.accountusername != id)
@@ -308,24 +302,24 @@ var playerCommands = {
         else this.writeLine("Player with ID " + id + "not found!");
     },
     ban: function (args) {
-    	if (this.player.userRole != UserRoleEnum.ADMIN) {
+        if (this.player.userRole != UserRoleEnum.ADMIN) {
             this.writeLine("You don't have permission to use this command.");
             return;
         }
         // Error message
         var logInvalid = this.writeLine("Please specify a valid player ID or IP address!");
-        
+
         if (args[1] == null) {
             // If no input is given; added to avoid error
             this.writeLine(logInvalid);
             return;
         }
-        
+
         if (args[1].indexOf(".") >= 0) {
             // If input is an IP address
             var ip = args[1];
             var ipParts = ip.split(".");
-            
+
             // Check for invalid decimal numbers of the IP address
             for (var i in ipParts) {
                 if (i > 1 && ipParts[i] == "*") {
@@ -339,13 +333,13 @@ var playerCommands = {
                     return;
                 }
             }
-            
+
             if (ipParts.length != 4) {
                 // an IP without 3 decimals
                 this.writeLine(logInvalid);
                 return;
             }
-            
+
             this.server.banIp(ip);
             return;
         }
@@ -367,31 +361,28 @@ var playerCommands = {
                 break;
             }
         }
-        if (ip)
-            this.server.banIp(ip);
-        else
-            this.writeLine("Player ID " + id + " not found!");
+        if (ip) this.server.banIp(ip);
+        else this.writeLine("Player ID " + id + " not found!");
     },
-    mute: function(args) {
+    mute: function (args) {
         if (this.player.userRole != UserRoleEnum.ADMIN) {
             this.writeLine("ERROR: access denied!");
             return;
         }
         var id = args[1];
         var reason = args[2];
-        if(!reason) reason = " Reason: None";
+        if (!reason) reason = " Reason: None";
         else reason = " Reason: " + reason;
         if (id == null) {
-            this.writeline("Please specify a valid player ID!");
+            this.writeLine("Please specify a valid player ID!");
             return;
         }
-        //kick player
         var count = 0;
-        this.server.clients.forEach(function(socket) {
+        this.server.clients.forEach(function (socket) {
             // disconnect
             var name = socket.player._name;
             this.server.sendChatMessage(null, null, name + " was muted." + reason);
-            this.writeLine("You muted " + name + "." +reason);
+            this.writeLine("You muted " + name + "." + reason);
             console.log(name + " was muted." + reason);
             socket.player.isMuted = true;
             count++;
@@ -400,7 +391,7 @@ var playerCommands = {
         if (!id) this.writeLine("No players to mute!");
         else this.writeLine("Player with ID " + id + "not found!");
     },
-    unmute: function(args) {
+    unmute: function (args) {
         if (this.player.userRole != UserRoleEnum.ADMIN) {
             this.writeLine("ERROR: access denied!");
             return;
@@ -410,17 +401,16 @@ var playerCommands = {
             this.writeline("Please specify a valid player ID!");
             return;
         }
-        //kick player
         var count = 0;
-        this.server.clients.forEach(function(socket) {
+        this.server.clients.forEach(function (socket) {
             var name = socket.player._name;
-            if(socket.player.isMuted==false) {
-                this.writeLine(name+" isn't muted")
+            if (socket.player.isMuted == false) {
+                this.writeLine(name + " isn't muted")
             }
-            this.server.sendChatMessage(null, null, name+' was unmuted.');
-            this.writeLine("You unmuted " + name+'.')
-            console.log(name+' was unmuted.')
-            socket.player.isMuted=false;
+            this.server.sendChatMessage(null, null, name + ' was unmuted.');
+            this.writeLine("You unmuted " + name + '.')
+            console.log(name + ' was unmuted.')
+            socket.player.isMuted = false;
             count++;
         }, this);
         if (count) return;
@@ -436,7 +426,7 @@ var playerCommands = {
         var s = server.run ? "Unpaused" : "Paused";
         this.writeLine(s + " the game.");
     },
-    freeze: function(args) {
+    freeze: function (args) {
         if (this.player.userRole != UserRoleEnum.ADMIN) {
             this.writeLine("ERROR: access denied!");
             return;
@@ -448,20 +438,20 @@ var playerCommands = {
         }
         //kick player
         var count = 0;
-        this.server.clients.forEach(function(socket) {
+        this.server.clients.forEach(function (socket) {
             var name = socket.player._name;
             var client = socket.player;
             if (!client.cells.length) return this.writeLine('Player is not playing!')
-            if(!client.frozen){
-                client.frozen=true;
-                console.log(name+` is frozen now.`)
-                this.server.sendChatMessage(null, null, name+' is now frozen.');
+            if (!client.frozen) {
+                client.frozen = true;
+                console.log(name + ` is frozen now.`)
+                this.server.sendChatMessage(null, null, name + ' is now frozen.');
                 this.writeLine("You froze " + name)
-            }else{
-                client.frozen=false;
-                this.server.sendChatMessage(null, null, name+` isn't frozen now.`);
+            } else {
+                client.frozen = false;
+                this.server.sendChatMessage(null, null, name + ` isn't frozen now.`);
                 this.writeLine("You unfroze " + name);
-                console.log(name+` isn't frozen now.`)
+                console.log(name + ` isn't frozen now.`)
             }
             count++;
         }, this);
