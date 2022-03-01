@@ -293,18 +293,16 @@ class Server {
         this.run = true;
         this.lastNodeId = 1;
         this.lastPlayerId = 1;
-        for (const client of this.clients) client.close();
+        while (this.nodes.length > 0) {
+            var node = this.nodes[0];
+            node && this.removeNode(node);
+        }
         this.nodes = [];
         this.nodesVirus = [];
         this.nodesFood = [];
         this.nodesEjected = [];
         this.nodesPlayer = [];
         this.movingNodes = [];
-        if (this.config.serverBots) {
-            for (var i = 0; i < this.config.serverBots; i++)
-                this.bots.addBot();
-            Logger.info(`Added ${this.config.serverBots} player bots`);
-        }
         this.commands;
         this.ticks = 0;
         this.loadIpBanList();
