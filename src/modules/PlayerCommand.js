@@ -403,7 +403,7 @@ var playerCommands = {
         }
         var count = 0;
         this.server.clients.forEach(function (socket) {
-            var name = socket.player._name;
+            var name = socket.player._name.split("$")[0];
             if (socket.player.isMuted == false) {
                 this.writeLine(name + " isn't muted")
             }
