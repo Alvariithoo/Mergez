@@ -380,7 +380,7 @@ var playerCommands = {
         var count = 0;
         this.server.clients.forEach(function (socket) {
             // disconnect
-            var name = socket.player._name;
+            var name = socket.player._name.split("$")[0];
             this.server.sendChatMessage(null, null, name + " was muted." + reason);
             this.writeLine("You muted " + name + "." + reason);
             console.log(name + " was muted." + reason);
