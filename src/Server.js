@@ -245,7 +245,7 @@ class Server {
             this.socketCount--;
         }
         ws.isConnected = false;
-        ws.sendPacket = function (data) {};
+        ws.sendPacket = function (data) { };
         ws.closeReason = {
             code: ws._closeCode,
             message: ws._closeMessage
@@ -267,7 +267,7 @@ class Server {
     };
 
     onClientSocketError(ws, error) {
-        ws.sendPacket = function (data) {};
+        ws.sendPacket = function (data) { };
     };
 
     onClientSocketMessage(ws, message) {
@@ -285,14 +285,12 @@ class Server {
         if (this.run) {
             this.run = false;
             this.sendChatMessage(null, null, this.config.restartMessage);
-            setTimeout(this.restart.bind(this), 3000);
+            setTimeout(this.restart.bind(this), 1000);
             return;
         }
         this.httpServer = null;
         this.wsServer = null;
         this.run = true;
-        this.lastNodeId = 1;
-        this.lastPlayerId = 1;
         while (this.nodes.length > 0) {
             var node = this.nodes[0];
             node && this.removeNode(node);
@@ -662,7 +660,7 @@ class Server {
             }
         }
     };
-    
+
     timerLoop() {
         if (this.stop) {
             return;
@@ -1513,7 +1511,7 @@ class Server {
         if (skinName.length == 1 || skinName.length > 25) {
             return false;
         }
-        if (skinName[0] != '%' /* && skinName[0] != ':' */ ) {
+        if (skinName[0] != '%' /* && skinName[0] != ':' */) {
             return false;
         }
         for (var i = 1; i < skinName.length; i++) {
