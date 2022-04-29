@@ -48,3 +48,6 @@ src/Client/config/
 
 # Prevent certificate leak
 keys/
+
+# package-lock
+package-lock.json
