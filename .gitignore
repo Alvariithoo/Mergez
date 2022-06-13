@@ -40,7 +40,7 @@ src/.readwarning
 src/ipbanlist.txt
 
 # Prevent user settings overwrite
-src/plugins/
+src/plugins/base.js
 
 src/database/
 
