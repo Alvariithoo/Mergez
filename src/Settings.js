@@ -71,6 +71,7 @@
 "serverName": "Ultrasplit",
 "serverWelcome1": "Connected to Ultrasplit",
 "serverWelcome2": "First to get 220k wins!",
+"origins": "http://49.12.231.126:3333",
 
 // [Border]
 // Border size (vanilla 14142.135623730952)

@@ -3,6 +3,7 @@ const https = require("https");
 const debug = require("debug-logger")("srv");
 const Logger = require('../modules/Logger');
 const fs = require("fs");
+const config = require("../Settings");
 
 var io = require('socket.io')(9700);
 var id = 0;
@@ -32,7 +33,7 @@ class DataServer {
             var origin = socket.handshake.headers.origin;
             if (connectedOrigins.indexOf(origin) < 0) {
                 connectedOrigins.push(origin);
-                fs.writeFileSync('origins.txt', connectedOrigins.join("\n"))
+                fs.writeFileSync(config.origins, connectedOrigins.join("\n"))
             }
             if (origin.indexOf(allowedOrigin) < 0) {
                 socket.isFake = true;
