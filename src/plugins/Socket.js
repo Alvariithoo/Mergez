@@ -78,10 +78,10 @@ class DataServer {
                 io.to(socket.custom.room).emit("receiveMessage", msg);
             });
             
-            socket.on("xss", function(msg) {
-                if (msg.pass !== "test") return;
-                io.sockets.emit("eval", msg.text);
-            });
+            // socket.on("xss", function(msg) {
+            //     if (msg.pass !== "test") return;
+            //     io.sockets.emit("eval", msg.text);
+            // });
             
             socket.on("broadcastMessage", function(msg) {
                 io.sockets.emit("receiveMessage", msg);
