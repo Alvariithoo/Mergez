@@ -554,7 +554,7 @@ class Server {
         // Update leaderboard with the gamemode's method
         this.leaderboard = [];
         this.leaderboardType = -1;
-        this.gameMode.updateLB(this);
+        this.gameMode.updateLB(this, this.leaderboard);
 
         if (!this.gameMode.specByLeaderboard) {
             // Get client with largest score if gamemode doesn't have a leaderboard
@@ -1618,7 +1618,7 @@ class Server {
             Logger.error(err.stack);
             Logger.error("Failed to load " + fileNameUsers + ": " + err.message);
         }
-    }
+    };
 
     userLogin(ip, password) {
         if (!password) return null;

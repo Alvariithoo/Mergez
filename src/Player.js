@@ -128,7 +128,7 @@ class Player {
         return name;
     };
 
-    setName = function (name) {
+    setName(name) {
         this._name = name;
         if (!name || name.length < 1) {
             this._nameUnicode = null;
@@ -147,7 +147,7 @@ class Player {
         return this._name;
     };
 
-    setSkin = function (skin) {
+    setSkin(skin) {
         this._skin = skin;
         if (!skin || skin.length < 1) {
             this._skinUtf8 = null;
@@ -229,7 +229,7 @@ class Player {
     };
 
     // Functions
-    joinGame = function (name, skin) {
+    joinGame(name, skin) {
         if (this.cells.length > 0) return;
         if (name == null) name = "";
         this.setName(name);
@@ -518,7 +518,7 @@ class Player {
         }
     };
 
-    Split = function (splitAmount = 1) {
+    Split(splitAmount = 1) {
         if (this.spectate || !this.server.run) return;  // Check dead
         const self = this;
         (function split(i) {
@@ -528,7 +528,7 @@ class Player {
                 --i && split(i);
             }, splitDelay);
         })(splitAmount)
-    }
+    };
 
     nextSpectateTarget() {
         if (this.spectateTarget == null) {
@@ -581,7 +581,7 @@ class Player {
         this.viewNodes.sort(function (a, b) { return a.nodeId - b.nodeId; });
     };
 
-    setCenterPos = function (x, y) {
+    setCenterPos(x, y) {
         if (isNaN(x) || isNaN(y)) {
             throw new TypeError("Player.setCenterPos: NaN");
         }

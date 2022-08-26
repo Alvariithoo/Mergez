@@ -39,7 +39,7 @@ class Plugins {
 
 	addPlayerCommand(name, funct) {
 		this.playerCommands[name] = funct;
-	}
+	};
 
 	Log(message) {
 		console.log("\u001B[1m\u001B[32m[MODS] " + message);
@@ -57,7 +57,7 @@ class Plugins {
 			}
 		}
 		return files_;
-	}
+	};
 }
 
 module.exports = Plugins;
