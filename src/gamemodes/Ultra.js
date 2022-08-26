@@ -1,7 +1,4 @@
 const FFA = require('./FFA');
-const BinaryWriter = require("../packet/BinaryWriter");
-const Entity = require('../entity');
-const stringToBytes = require('../modules/stringToBytes')
 
 class Ultra extends FFA {
     constructor() {
@@ -78,21 +75,19 @@ class Ultra extends FFA {
         let congratolations = 'Congratolations to ' + this.winner + '!';
         server.sendChatMessage(null, null, congratolations);
         setTimeout(function () {
+            const reset = [" ", "reset"]; // restarted leaderboard
+            server.commands.board(server, reset);
             server.restart();
             this.downCounter = this.restartInterval / 1000;
             this.restarting = false;
         }.bind(this), this.restartInterval);
-
     };
 
     checkScoreLimit(server) {
         for (var i = 0; i < server.clients.length; i++) {
-            var client = server.clients[i];
-            if (client == null) continue;
-
-            var player = client.player;
-            if (player.isRemoved)
-                continue; // Don't add disconnected players to list
+            var player = server.clients[i].player;
+            if (player.isRemoved || !player.cells.length ||player.socket.isConnected == false)
+                continue;
 
             var playerScore = player.getScore();
 
@@ -104,27 +99,35 @@ class Ultra extends FFA {
         }
     };
 
-    updateLB(server) {
-        this.checkScoreLimit(server);
-        FFA.prototype.updateLB(server); //call parent method
-        
-        if (this.restarting) {
-            var lb = server.leaderboard;
-            lb.length = 0; //hide nicknames
-            var timeLeftLabel = "Restarting In " + this.downCounter-- + "s";
-            lb.push(this.lb_add(timeLeftLabel));
-            lb.push(this.lb_add(this.winner))
-            lb.push(this.lb_add("Won The Game!"))
+    updateLB(server, lb) {
+        server.leaderboardType = this.packetLB;
+        for (var i = 0, pos = 0; i < server.clients.length; i++) {
+            var player = server.clients[i].player;
+            if (player.isRemoved || !player.cells.length ||player.socket.isConnected == false)
+                continue;
+            for (var j = 0; j < pos; j++)
+                if (lb[j]._score < player._score)
+                    break;
+            lb.splice(j, 0, player);
+            pos++;
         }
-    };
+        this.rankOne = lb[0];
 
-    lb_add(str) {
-        return {
-            getNameUnicode: function () {
-                return stringToBytes(str);
-            }
+        // Make a messege in leaderboard
+        this.checkScoreLimit(server);
+        if (this.restarting) {
+            const counter = `${this.downCounter--}s`;
+            const winner = `${this.winner}`;
+            const restart = [
+                " ", // on leaderboard list this position is 0
+                "Restarting",
+                counter,
+                winner,
+                "Won The Game!"
+            ];
+            server.commands.board(server, restart);
         }
-    };
+    }
 }
 
 module.exports = Ultra;

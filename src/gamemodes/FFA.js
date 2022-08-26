@@ -1,77 +1,38 @@
-﻿var Mode = require('./Mode');
+﻿const Mode = require('./Mode');
 
-function FFA() {
-    Mode.apply(this, Array.prototype.slice.call(arguments));
-    
-    this.ID = 0;
-    this.name = "FFA";
-    this.specByLeaderboard = true;
+class FFA extends Mode {
+    constructor() {
+        super();
+        this.ID = 0;
+        this.name = "FFA";
+        this.specByLeaderboard = true;
+    }
+
+    // Override
+    onPlayerSpawn(server, player) {
+        const playerSize = server.config.playerStartSize;
+        const random = (Math.floor(Math.random() * 100) < 2);
+        player.setColor(player.isMinion ? { r: 240, g: 240, b: 255} : server.getRandomColor());
+        console.log('Joined: ' + player._name)
+        random ? server.sendChatMessage(null, player, 'You spawned with double mass!') : null;
+        server.spawnPlayer(player, null, random ? playerSize * 1.41 : playerSize);
+    };
+
+    updateLB(server, lb) {
+        server.leaderboardType = this.packetLB;
+        for (var i = 0, pos = 0; i < server.clients.length; i++) {
+            var player = server.clients[i].player;
+            if (player.isRemoved || !player.cells.length ||player.socket.isConnected == false)
+                continue;
+            for (var j = 0; j < pos; j++)
+                if (lb[j]._score < player._score)
+                    break;
+            lb.splice(j, 0, player);
+            pos++;
+        }
+        this.rankOne = lb[0];
+    }
 }
 
 module.exports = FFA;
 FFA.prototype = new Mode();
-
-// Gamemode Specific Functions
-
-FFA.prototype.leaderboardAddSort = function (player, leaderboard) {
-    // Adds the player and sorts the leaderboard
-    var len = leaderboard.length - 1;
-    var loop = true;
-    while ((len >= 0) && (loop)) {
-        // Start from the bottom of the leaderboard
-        if (player.getScore() <= leaderboard[len].getScore()) {
-            leaderboard.splice(len + 1, 0, player);
-            loop = false; // End the loop if a spot is found
-        }
-        len--;
-    }
-    if (loop) {
-        // Add to top of the list because no spots were found
-        leaderboard.splice(0, 0, player);
-    }
-};
-
-// Override
-FFA.prototype.onPlayerSpawn = function (server, player) {
-    const playerSize = server.config.playerStartSize;
-    const random = (Math.floor(Math.random() * 100) < 2);
-    player.setColor(player.isMinion ? { r: 240, g: 240, b: 255} : server.getRandomColor());
-    console.log('Joined: ' + player._name)
-    random ? server.sendChatMessage(null, player, 'You spawned with double mass!') : null;
-    server.spawnPlayer(player, null, random ? playerSize * 1.41 : playerSize);
-};
-
-FFA.prototype.updateLB = function (server) {
-    server.leaderboardType = this.packetLB;
-    var lb = server.leaderboard;
-    // Loop through all clients
-    for (var i = 0; i < server.clients.length; i++) {
-        var client = server.clients[i];
-        if (client == null) continue;
-        
-        var player = client.player;
-        if (player.isRemoved)
-            continue; // Don't add disconnected players to list
-        
-        var playerScore = player.getScore();
-        
-        if (player.cells.length <= 0)
-            continue;
-        
-        if (lb.length == 0) {
-            // Initial player
-            lb.push(player);
-            continue;
-        } else if (lb.length < server.config.serverMaxLB) {
-            this.leaderboardAddSort(player, lb);
-        } else {
-            // 10 in leaderboard already
-            if (playerScore > lb[server.config.serverMaxLB - 1].getScore()) {
-                lb.pop();
-                this.leaderboardAddSort(player, lb);
-            }
-        }
-    }
-    
-    this.rankOne = lb[0];
-}
