@@ -1,20 +1,18 @@
-﻿var Cell = require('./Cell');
+﻿const Cell = require('./Cell');
 
-function Food() {
-    Cell.apply(this, Array.prototype.slice.call(arguments));
-    
-    this.cellType = 1;
+class Food extends Cell {
+    constructor(server, owner, position, size) {
+        super(server, owner, position, size);
+        this.cellType = 1;
+    }
+
+    onAdd(server) {
+        server.currentFood++;
+    }
+
+    onRemove(server) {
+        server.currentFood--;
+    }
 }
 
 module.exports = Food;
-Food.prototype = new Cell();
-
-// Main Functions
-
-Food.prototype.onAdd = function (server) {
-    server.currentFood++;
-};
-
-Food.prototype.onRemove = function (server) {
-    server.currentFood--;
-};

@@ -5,7 +5,5 @@
     Virus: require('./Virus'),
     MotherCell: require('./MotherCell'),
     EjectedMass: require('./EjectedMass'),
-
-    // Made by Alvariithoo
     Minions: require('./Minions'),
 };
