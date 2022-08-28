@@ -35,4 +35,3 @@ class FFA extends Mode {
 }
 
 module.exports = FFA;
-FFA.prototype = new Mode();
