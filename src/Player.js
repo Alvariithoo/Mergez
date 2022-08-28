@@ -177,11 +177,11 @@ class Player {
         return this._skinUtf8;
     };
 
-    getColor = function (color) {
+    getColor(color) {
         return this.color;
     };
 
-    setColor = function (color) {
+    setColor(color) {
         this.color.r = color.r;
         this.color.g = color.g;
         this.color.b = color.b;
