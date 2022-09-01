@@ -7,17 +7,10 @@ class FFA extends Mode {
         this.name = "FFA";
         this.specByLeaderboard = true;
     }
-
-    // Override
     onPlayerSpawn(server, player) {
-        const playerSize = server.config.playerStartSize;
-        const random = (Math.floor(Math.random() * 100) < 2);
         player.setColor(player.isMinion ? { r: 240, g: 240, b: 255} : server.getRandomColor());
-        console.log('Joined: ' + player._name)
-        random ? server.sendChatMessage(null, player, 'You spawned with double mass!') : null;
-        server.spawnPlayer(player, null, random ? playerSize * 1.41 : playerSize);
-    };
-
+        server.spawnPlayer(player);
+    }
     updateLB(server, lb) {
         server.leaderboardType = this.packetLB;
         for (var i = 0, pos = 0; i < server.clients.length; i++) {

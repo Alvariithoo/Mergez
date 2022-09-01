@@ -10,11 +10,9 @@ class Virus extends Cell {
         this.isMotherCell = false; // Not to confuse bots
         this.setColor({ r: 0x33, g: 0xff, b: 0x33 });
     }
-
     canEat(cell) {
         return cell.cellType == 3; // virus can eat ejected mass only
     }
-
     onEat(prey) {
         // Called to eat prey cell
         this.setSize(Math.sqrt(this.getSizeSquared() + prey.getSizeSquared()));
@@ -24,17 +22,16 @@ class Virus extends Cell {
             this.server.shootVirus(this, prey.getAngle());
         }
     }
-
     onEaten(consumer) {
         var client = consumer.owner;
         if (client == null) return;
-        
+
         var maxSplit = this.server.config.playerMaxCells - consumer.owner.cells.length;
         var masses = this.server.splitMass(consumer.getMass(), maxSplit + 1);
         if (masses.length < 2) {
             return;
         }
-        
+
         // Balance mass around center & skip first mass (==consumer mass)
         var massesMix = [];
         for (var i = 1; i < masses.length; i += 2)
@@ -42,7 +39,7 @@ class Virus extends Cell {
         for (var i = 2; i < masses.length; i += 2)
             massesMix.push(masses[i]);
         masses = massesMix;
-        
+
         // Blow up the cell...
         var angle = 2 * Math.PI * Math.random();
         var step = 2 * Math.PI / masses.length;
@@ -56,11 +53,9 @@ class Virus extends Cell {
             }
         }
     }
-
     onAdd(server) {
         server.nodesVirus.push(this);
     }
-
     onRemove(server) {
         var index = server.nodesVirus.indexOf(this);
         if (index != -1) {

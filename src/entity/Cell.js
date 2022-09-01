@@ -10,14 +10,14 @@ function findLineIntersection(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
     var px = p2x + z2 * k2;
     var py = p2y + w2 * k2;
     if (isNaN(px) || isNaN(py)) return null;
-    return { x: px, y: py };
+    return { x: px, y: py }
 }
 
 class Cell {
     constructor(server, owner, position, size) {
         this.server = server;
         this.owner = owner;     // player that owns this cell
-        
+
         this.tickOfBirth = 0;
         this.color = { r: 0, g: 0, b: 0 };
         this.position = { x: 0, y: 0 };
@@ -30,12 +30,12 @@ class Cell {
         this.isAgitated = false;// If true, then this cell has waves on it's outline
         this.killedBy = null;   // Cell that ate this cell
         this.isMoving = false;  // Indicate that cell is in boosted mode
-        
+
         this.boostDistance = 0;
         this.boostDirection = { x: 1, y: 0, angle: Math.PI / 2 };
         this.boostMaxSpeed = 78;    // boost speed limit, sqrt(780*780/100)
         this.ejector = null;
-        
+
         if (this.server != null) {
             this.nodeId = this.server.getNextNodeId();
             this.tickOfBirth = this.server.getTick();
@@ -47,21 +47,17 @@ class Cell {
             }
         }
     }
-
     setColor(color) {
         this.color.r = color.r;
         this.color.g = color.g;
         this.color.b = color.b;
     }
-
     getColor() {
         return this.color;
     }
-
     getType() {
         return this.cellType;
     }
-
     setSize(size) {
         if (isNaN(size)) {
             throw new TypeError("Cell.setSize: size is NaN");
@@ -74,22 +70,18 @@ class Cell {
         if (this.owner)
             this.owner.massChanged();
     }
-
     getSize() {
         return this._size;
     }
-
     getSizeSquared() {
         return this._sizeSquared;
     }
-
     getMass() {
         if (this._mass == null) {
             this._mass = this.getSizeSquared() / 100;
         }
         return this._mass;
     }
-
     getSpeed() {
         if (this._speed == null) {
             var speed = 2.1106 / Math.pow(this.getSize(), 0.449);
@@ -98,7 +90,6 @@ class Cell {
         }
         return this._speed;
     }
-
     setAngle(angle) {
         this.boostDirection = {
             x: Math.sin(angle),
@@ -106,25 +97,20 @@ class Cell {
             angle: angle
         }
     }
-
     getAngle() {
         return this.boostDirection.angle;
     }
-
     // Returns cell age in ticks for specified game tick
     getAge(tick) {
         if (this.tickOfBirth == null) return 0;
         return Math.max(0, tick - this.tickOfBirth);
     }
-
     setKiller(cell) {
         this.killedBy = cell;
     }
-
     getKiller() {
         return this.killedBy;
     }
-
     setPosition(pos) {
         if (pos == null || isNaN(pos.x) || isNaN(pos.y)) {
             throw new TypeError("Cell.setPosition: position is NaN");
@@ -132,28 +118,22 @@ class Cell {
         this.position.x = pos.x;
         this.position.y = pos.y;
     }
-
     canEat(cell) {
         // by default cell cannot eat anyone
         return false;
     }
-
     onEat(prey) {
         // Called to eat prey cell
         this.setSize(Math.sqrt(this.getSizeSquared() + prey.getSizeSquared()));
     }
-
     onEaten(hunter) {
     }
-
     onAdd(server) {
         // Called when this cell is added to the world
     }
-
     onRemove(server) {
         // Called when this cell is removed
     }
-
     // Functions
     // Note: maxSpeed > 78 may leads to bug when cell can fly 
     //       through other cell due to high speed
@@ -171,7 +151,6 @@ class Cell {
                 this.server.movingNodes.push(this);
         }
     }
-
     move(border) {
         if (this.isMoving && this.boostDistance <= 0) {
             this.boostDistance = 0;
@@ -191,11 +170,10 @@ class Cell {
         this.position.y += v.y;
         this.checkBorder(border);
     }
-
     clipVelocity(v, border) {
         if (isNaN(v.x) || isNaN(v.y)) {
             throw new TypeError("Cell.clipVelocity: NaN");
-        };
+        }
         if (v.x == 0 && v.y == 0)
             return v; // zero move, no calculations :)
         var r = this.getSize() / 2;
@@ -204,7 +182,7 @@ class Cell {
             miny: border.miny + r,
             maxx: border.maxx - r,
             maxy: border.maxy - r
-        };
+        }
         var x = this.position.x + v.x;
         var y = this.position.y + v.y;
         // border check
@@ -264,7 +242,6 @@ class Cell {
         this.isMoving = true;
         return v;
     }
-
     checkBorder(border) {
         var r = this.getSize() / 2;
         var x = this.position.x;

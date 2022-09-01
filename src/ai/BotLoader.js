@@ -1,76 +1,69 @@
-﻿// Project imports
-const fs = require("fs");
-const Logger = require('../modules/Logger');
+﻿// Library imports
+const fs = require('fs');
+
+// Project imports
 const BotPlayer = require('./BotPlayer');
 const FakeSocket = require('./FakeSocket');
 const Client = require('../Client');
+const MinionPlayer = require('./MinionPlayer');
 
 class BotLoader {
     constructor(server) {
         this.server = server;
-        this.loadNames();
+        this.loodNames();
     }
-
     getName() {
         var name = "";
-        
         // Picks a random name for the bot
         if (this.randomNames.length > 0) {
             var index = (this.randomNames.length * Math.random()) >>> 0;
             name = this.randomNames[index];
         } else {
-            name = "bot" + ++this.nameIndex;
+            name = `bot${++this.nameIndex}`;
         }
-        
-        return name;
-    };
 
-    loadNames() {
+        return name;
+    }
+    loodNames() {
+        const botnameFile = "./ai/botnames.txt";
         this.randomNames = [];
-        
-        if (fs.existsSync("../src/ai/BotNames.txt")) {
-            // Read and parse the names - filter out whitespace-only names
-            this.randomNames = fs.readFileSync("../src/ai/BotNames.txt", "utf8").split(/[\r\n]+/).filter(function (x) {
+        if (fs.existsSync(botnameFile))
+            this.randomNames = fs.readFileSync(botnameFile, "utf8").split(/[\r\n]+/).filter(function (x) {
                 return x != ''; // filter empty names
             });
-        }
         this.nameIndex = 0;
-    };
-
+    }
     addBot() {
-        var s = new FakeSocket(this.server);
-        s.player = new BotPlayer(this.server, s);
-        s.client = new Client(this.server, s);
-        
-        // Add to client list
-        this.server.clients.push(s);
-        
-        // Add to world
-        s.client.setNickname(this.getName());
-    };
+        // Create a FakeSocket instance and assign its properties.
+        const socket = new FakeSocket(this.server);
+        socket.player = new BotPlayer(this.server, socket);
+        socket.client = new Client(this.server, socket);
 
-    addMinion(owner, name) {
-        var MinionPlayer = require('./MinionPlayer');
-        var s = new FakeSocket(this.server);
-        s.player = new MinionPlayer(this.server, s, owner);
-        s.client = new Client(this.server, s);
-        s.player.owner = owner;
+        const name = this.getName();
 
-        // Spawn minions at special size
-        var size = 100;
-        if (200 > size)
-            size = Math.random() * (this.server.config.minionMaxStartSize - size) + size;
-        s.player.spawnmass = 666;
-        
+        // Add to client list and spawn.
+        this.server.clients.push(socket);
+        socket.client.setNickname(name);
+    }
+    addMinion(owner, name, mass) {
+        // Aliases
+        const maxSize = this.server.config.minionMaxStartSize;
+        const defaultSize = this.server.config.minionStartSize;
+
+        const socket = new FakeSocket(this.server);
+        socket.player = new MinionPlayer(this.server, socket, owner);
+        socket.client = new Client(this.server, socket);
+        socket.player.owner = owner;
+
+        // Set minion spawn size
+        socket.player.spawnmass = mass || maxSize > defaultSize ? Math.floor(Math.random() * (maxSize - defaultSize) + defaultSize) : defaultSize;
+
         // Add to client list
-        this.server.clients.push(s);
+        this.server.clients.push(socket);
 
         // Add to world & set name
-        if (typeof name == "undefined" || name == "") {
-            name = name;
-        }
-        s.client.setNickname(name);
-    };
+        socket.client.setNickname(name == "" || !name ? this.server.config.defaultName : name);
+    }
 }
 
 module.exports = BotLoader;

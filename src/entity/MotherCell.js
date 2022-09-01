@@ -14,15 +14,13 @@ class MotherCell extends Virus {
         this.motherCellSpawnAmount = 2;
         if (!this.getSize()) {
             this.setSize(this.motherCellMinSize);
-        }
+        };
     }
-
     canEat(cell) {
         return cell.cellType == 0 ||    // can eat player cell
             cell.cellType == 2 ||       // can eat virus
             cell.cellType == 3;         // can eat ejected mass
     }
-
     onUpdate() {
         if (this.getSize() <= this.motherCellMinSize) {
             return;
@@ -37,30 +35,29 @@ class MotherCell extends Virus {
             size1 = Math.sqrt(size1 * size1 - size2 * size2);
             size1 = Math.max(size1, this.motherCellMinSize);
             this.setSize(size1);
-            
+
             // Spawn food with size2
             var angle = Math.random() * 2 * Math.PI;
             var r = this.getSize();
             var pos = {
                 x: this.position.x + r * Math.sin(angle),
                 y: this.position.y + r * Math.cos(angle)
-            };
-            
+            }
+
             // Spawn food
             var food = new Food(this.server, null, pos, size2);
             food.setColor(this.server.getRandomColor());
             this.server.addNode(food);
-            
+
             // Eject to random distance
             food.setBoost(35 + 35 * Math.random(), angle);
-            
+
             if (this.server.currentFood >= maxFood || size1 <= this.motherCellMinSize) {
                 break;
             }
         }
         this.server.updateNodeQuad(this);
     }
-
     onAdd() {}
     onRemove() {}
 }

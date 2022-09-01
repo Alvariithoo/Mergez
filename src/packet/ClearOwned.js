@@ -1,4 +1,4 @@
-﻿const BinaryWriter = require("./BinaryWriter");
+﻿const BinaryWriter = require('./BinaryWriter');
 
 class ClearOwned {
     constructor() { }

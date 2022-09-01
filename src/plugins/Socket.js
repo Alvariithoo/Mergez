@@ -1,9 +1,9 @@
-const http = require("http");
-const https = require("https");
-const debug = require("debug-logger")("srv");
+const http = require('http');
+const https = require('https');
+const debug = require('debug-logger')('srv');
 const Logger = require('../modules/Logger');
-const fs = require("fs");
-const config = require("../Settings");
+const fs = require('fs');
+const config = require('../Settings');
 
 var io = require('socket.io')(9700);
 var id = 0;
@@ -25,7 +25,6 @@ class DataServer {
         this.version = "1.0.0";
         this.active = true;
     }
-
     start() {
         io.on('connection', function(socket) {
             playersOnline++;
@@ -50,25 +49,20 @@ class DataServer {
                 socket.join(request.p);
                 
             });
-        
             socket.on("leaveRoom", function(room) {
                 socket.custom.room = null;
                 socket.leave(room);
             });
-        
             socket.on("playerEntered", function(data) {
                 socket.broadcast.to(data.socketRoom).emit("playerUpdated", data);
             });
-        
             socket.on("playerUpdated", function(data) {
                 socket.broadcast.to(data.socketRoom).emit("playerUpdated", data);
             });
-        
             socket.on("coords", function(requestData) {
                 requestData.id = socket.custom.id;
                 socket.broadcast.to(requestData.socketRoom).emit("updateCoords", requestData);
             });
-        
             socket.on("sendMessage", function(msg) {
                 socket.lastMessage = Date.now();
                 if (socket.isFake && msg.sender) msg.sender += "";
@@ -77,21 +71,18 @@ class DataServer {
                 console.log(msg);
                 io.to(socket.custom.room).emit("receiveMessage", msg);
             });
-            
             // socket.on("xss", function(msg) {
             //     if (msg.pass !== "test") return;
             //     io.sockets.emit("eval", msg.text);
             // });
-            
             socket.on("broadcastMessage", function(msg) {
                 io.sockets.emit("receiveMessage", msg);
             });
-        
             socket.on("disconnect", function() {
                 playersOnline--;
             });
         });
-    };
+    }
 }
 
 module.exports = DataServer;

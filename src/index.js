@@ -56,17 +56,17 @@ function prompt() {
 function parseCommands(str) {
     // Log the string
     Logger.write(">" + str);
-    
+
     // Don't process ENTER
     if (str === '')
         return;
-    
+
     // Splits the string
     var split = str.split(" ");
-    
+
     // Process the first string value
     var first = split[0].toLowerCase();
-    
+
     // Get command function
     var execute = instance.commands[first];
     if (typeof execute != 'undefined') {

@@ -1,5 +1,5 @@
 ﻿// Import
-const BinaryWriter = require("./BinaryWriter");
+const BinaryWriter = require('./BinaryWriter');
 
 function writeCount(writer, flag1, flag2) {
     writer.writeUInt8(flag1); // Packet ID
@@ -13,7 +13,6 @@ class UpdateLeaderboard {
         this.leaderboardType = leaderboardType;
         this.leaderboardCount = Math.min(leaderboard.length, player.server.config.serverMaxLB);
     }
-
     build(protocol) {
         switch (this.leaderboardType) {
             case 48:
@@ -37,7 +36,6 @@ class UpdateLeaderboard {
                 return null;
         }
     }
-
     // User text all other protocols
     buildUserText(protocol) {
         var writer = new BinaryWriter();
@@ -53,7 +51,6 @@ class UpdateLeaderboard {
         }
         return writer.toBuffer();
     }
-
     // User text 14
     buildUserText14() {
         var writer = new BinaryWriter();
@@ -65,7 +62,6 @@ class UpdateLeaderboard {
         }
         return writer.toBuffer();
     }
-
     // FFA protocol 5
     buildFfa5() {
         var writer = new BinaryWriter();
@@ -86,7 +82,6 @@ class UpdateLeaderboard {
         }
         return writer.toBuffer();
     }
-
     // FFA protocol 6
     buildFfa6() {
         var writer = new BinaryWriter();
@@ -105,7 +100,6 @@ class UpdateLeaderboard {
         }
         return writer.toBuffer();
     }
-
     // FFA protocol 13/14
     buildFfa(protocol) {
         var writer = new BinaryWriter();
@@ -138,7 +132,6 @@ class UpdateLeaderboard {
         }
         return writer.toBuffer();
     }
-
     // Party
     // TODO: Implement the "minimap"
     buildParty() {
@@ -175,7 +168,6 @@ class UpdateLeaderboard {
         }
         return writer.toBuffer();
     }
-
     // Team
     buildTeam() {
         var writer = new BinaryWriter();

@@ -9,13 +9,11 @@ class Plugins {
 		this.plugins = {};
 		this.commands = {};
 		this.playerCommands = {};
-	};
-
+	}
 	load() {
 		this.pluginsdir = this.getFiles('../src/plugins');
 		this.start();
-	};
-
+	}
 	start() {
 		this.Log(this.pluginsdir.length + " Plugins loaded!");
 		for (var i in this.pluginsdir) {
@@ -31,20 +29,16 @@ class Plugins {
 			this.Log(plugin.name + " " + plugin.version + " By " + plugin.author + " Has been loaded!");
 			plugin.start();
 		}
-	};
-
+	}
 	addCommand(name, funct) {
 		this.commands[name] = funct;
-	};
-
+	}
 	addPlayerCommand(name, funct) {
 		this.playerCommands[name] = funct;
-	};
-
+	}
 	Log(message) {
 		console.log("\u001B[1m\u001B[32m[MODS] " + message);
-	};
-	
+	}
 	getFiles(dir, files_) {
 		files_ = files_ || [];
 		var files = fs.readdirSync(dir);
@@ -57,7 +51,7 @@ class Plugins {
 			}
 		}
 		return files_;
-	};
+	}
 }
 
 module.exports = Plugins;

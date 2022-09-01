@@ -1,9 +1,9 @@
-﻿const WebSocket = require("ws");
+﻿const WebSocket = require('ws');
 const pjson = require('../package.json');
 const Packet = require('./packet');
 const BinaryReader = require('./packet/BinaryReader');
 const Logger = require('./modules/Logger');
-const day = require('./modules/date');
+const Day = require('./modules/date');
 const UserRoleEnum = require('./enum/UserRoleEnum');
 
 class Client {
@@ -30,15 +30,13 @@ class Client {
             254: this.handshake_onProtocol.bind(this),
         };
     }
-
     handleMessage(message) {
         if (!this.handler.hasOwnProperty(message[0])) {
             return;
         }
         this.handler[message[0]](message);
         this.socket.lastAliveTime = this.server.stepDateTime;
-    };
-
+    }
     handshake_onProtocol(message) {
         if (message.length !== 5) return;
         this.handshakeProtocol = message[1] | (message[2] << 8) | (message[3] << 16) | (message[4] << 24);
@@ -49,8 +47,7 @@ class Client {
         this.handler = {
             255: this.handshake_onKey.bind(this),
         };
-    };
-
+    }
     handshake_onKey(message) {
         if (message.length !== 5) return;
         this.handshakeKey = message[1] | (message[2] << 8) | (message[3] << 16) | (message[4] << 24);
@@ -59,8 +56,7 @@ class Client {
             return;
         }
         this.handshake_onCompleted(this.handshakeProtocol, this.handshakeKey);
-    };
-
+    }
     handshake_onCompleted(protocol, key) {
         this.handler = {
             0: this.message_onJoin.bind(this),
@@ -96,8 +92,7 @@ class Client {
             this.server.sendChatMessage(null, this.socket.player, "This server's chat is disabled.");
         if (this.protocol < 4)
             this.server.sendChatMessage(null, this.socket.player, "WARNING: Protocol " + this.protocol + " assumed as 4!");
-    };
-
+    }
     message_onJoin(message) {
         var tick = this.server.getTick();
         var dt = tick - this.lastJoinTick;
@@ -113,29 +108,25 @@ class Client {
         else
             text = reader.readStringZeroUtf8();
         this.setNickname(text);
-    };
-
+    }
     message_onAbility(message) {
         var reader = new BinaryReader(message);
         reader.skipBytes(1);
         let id = reader.readUInt8();
         this.server.useAbility(id, this.socket.player);
-    };
-
+    }
     message_onSpectate(message) {
         if (message.length !== 1 || this.socket.player.cells.length !== 0) {
             return;
         }
         this.socket.player.spectate = true;
-    };
-
+    }
     // message_getOwnersID(message) {
     //     if (message.length !== 1) {
     //         return;
     //     }
     //     this.socket.player.sendOwner = true;
-    // };
-
+    // }
     // message_getUsersID(message) {
     //     if (message.length !== 9) {
     //         return;
@@ -148,8 +139,7 @@ class Client {
     //     this.socket.player.userID = reader.readDouble();
 
     //     console.log("message_getUsersID: " + this.socket.player.userID);
-    // };
-
+    // }
     message_setParams(message) {
         var player = this.socket.player;
         var reader = new BinaryReader(message);
@@ -192,31 +182,25 @@ class Client {
 
         var logStr = (joined ? "Joined " : "SetParams ") + player.userID + " sm: " + startingMass + " cl_ver: " + player.clientVersion;
         Logger.info(logStr)
-    };
-
+    }
     message_onMouse(message) {
         if (message.length !== 13 && message.length !== 9 && message.length !== 21) {
             return;
         }
         this.mouseData = Buffer.concat([message]);
-    };
-
+    }
     onSplit() {
         this.socket.player.Split();
-    };
-
+    }
     onDoubleSplit() {
         this.socket.player.Split(2);
-    };
-
+    }
     onTripleSplit() {
         this.socket.player.Split(3);
-    };
-
+    }
     onSixteenSplit() {
         this.socket.player.Split(4);
-    };
-    
+    }
     message_onKeyQ(message) {
         if (message.length !== 1) return;
         var tick = this.server.getTick();
@@ -226,8 +210,7 @@ class Client {
         }
         this.lastQTick = tick;
         this.pressQ = true;
-    };
-
+    }
     message_onKeyW(message) {
         if (message.length !== 1) return;
         var tick = this.server.getTick();
@@ -237,8 +220,7 @@ class Client {
         }
         this.lastWTick = tick;
         this.pressW = true;
-    };
-
+    }
     message_onChat(message, text) {
         if (message.length < 3) return;
         var tick = this.server.getTick();
@@ -259,10 +241,9 @@ class Client {
             text = reader.readStringZeroUnicode();
         else
             text = reader.readStringZeroUtf8();
-        console.log(`[CHAT] Name:${this.socket.player._name} Msg:${message} [${day()}]`);
+        Logger.info(`[CHAT] Name:${this.socket.player._name} Message:${message} [${Day()}]`);
         this.server.onChatMessage(this.socket.player, null, text);
-    };
-
+    }
     message_onStat(message) {
         if (message.length !== 1) return;
         var tick = this.server.getTick();
@@ -272,8 +253,7 @@ class Client {
             return;
         }
         this.socket.sendPacket(new Packet.ServerStat(this.socket.player));
-    };
-
+    }
     processMouse() {
         if (this.mouseData == null) return;
         var client = this.socket.player;
@@ -297,13 +277,8 @@ class Client {
             }
         }
         this.mouseData = null;
-    };
-
+    }
     process() {
-        /*if (this.Split) { // Split cell
-            this.socket.player.Split();
-            this.Split = false;
-        }*/
         if (this.pressW) { // Eject mass
             this.socket.player.pressW();
             this.pressW = false;
@@ -313,8 +288,7 @@ class Client {
             this.pressQ = false;
         }
         this.processMouse();
-    };
-
+    }
     setNickname(text) {
         var name = "";
         var skin = null;
@@ -345,7 +319,6 @@ class Client {
             name = name.substring(0, this.server.config.playerMaxNickLength);
         }
         */
-
         if (name.trim().toLowerCase() == "dev" && +this.socket.player.userID > 10) {
             name = "fake dev";
         }
@@ -355,8 +328,7 @@ class Client {
             name = "";
         }
         this.socket.player.joinGame(name, skin);
-    };
-
+    }
     sendPacket(packet) {
         var socket = this.socket;
         if (!packet || !socket.isConnected || socket.player.isMi || socket.player.isBot) return;
@@ -364,7 +336,7 @@ class Client {
             var buffer = packet.build(this.protocol);
             if (buffer) socket.send(buffer, { binary: true });
         }
-    };
+    }
 }
 
 module.exports = Client;

@@ -7,7 +7,7 @@
  *
  */
 
-var fs = require("fs");
+var fs = require('fs');
 var util = require('util');
 var EOL = require('os').EOL;
 var LogLevelEnum = require('../enum/LogLevelEnum');
@@ -233,7 +233,7 @@ function start() {
         consoleLog = null;
         writeCon(colorRed + colorBright, LogLevelEnum.ERROR, err.message);
     }
-}
+};
 
 function shutdown() {
     writeShutdown = true;

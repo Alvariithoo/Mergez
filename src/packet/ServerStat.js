@@ -1,11 +1,10 @@
 ﻿// Import
-const BinaryWriter = require("./BinaryWriter");
+const BinaryWriter = require('./BinaryWriter');
 
 class ServerStat {
     constructor(player) {
         this.player = player;
-    };
-
+    }
     build(protocol) {
         var server = this.player.server;
         // Get server statistics
@@ -38,7 +37,7 @@ class ServerStat {
         writer.writeUInt8(254);             // Message Id
         writer.writeStringZeroUtf8(json);   // JSON
         return writer.toBuffer();
-    };
+    }
 }
 
 module.exports = ServerStat;

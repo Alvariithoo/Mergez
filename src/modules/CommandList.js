@@ -5,9 +5,10 @@ var ini = require('./ini.js');
 var Logger = require('./Logger');
 var heapdump = null;
 
-
-function Commands() {
-    this.list = {}; // Empty
+class Commands {
+    constructor() {
+        this.list = {}; // Empty
+    }
 }
 
 module.exports = Commands;
@@ -1025,7 +1026,6 @@ Commands.list = {
 };
 
 // functions from Server
-
 function playerById(id, server) {
     if (!id) return null;
     for (var i = 0; i < server.clients.length; i++) {
@@ -1038,7 +1038,7 @@ function playerById(id, server) {
 }
 
 function saveIpBanList(server) {
-    var fs = require("fs");
+    var fs = require('fs');
     try {
         var blFile = fs.createWriteStream('../src/ipbanlist.txt');
         // Sort the blacklist and write.
@@ -1081,7 +1081,6 @@ function ban(server, split, ip) {
 }
 
 // functions from Player
-
 function getName(name) {
     if (!name.length)
         name = "Mergez.eu";
@@ -1095,7 +1094,7 @@ function getScore(client) {
         score += client.cells[i]._mass;
     }
     return score;
-};
+}
 
 function getPos(client) {
     for (var i = 0; i < client.cells.length; i++) {
@@ -1108,14 +1107,13 @@ function getPos(client) {
 }
 
 // functions from QuadNode
-
 function scanNodeCount(quad) {
     var count = 0;
     for (var i = 0; i < quad.childNodes.length; i++) {
         count += scanNodeCount(quad.childNodes[i]);
     }
     return 1 + count;
-};
+}
 
 function scanItemCount(quad) {
     var count = 0;
@@ -1123,4 +1121,4 @@ function scanItemCount(quad) {
         count += scanItemCount(quad.childNodes[i]);
     }
     return quad.items.length + count;
-};
+}

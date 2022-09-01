@@ -1,12 +1,10 @@
 ﻿// Import
-const BinaryWriter = require("./BinaryWriter");
-
+const BinaryWriter = require('./BinaryWriter');
 
 class SetParams {
     constructor(server) {
         this.server = server;
     }
-
     build(protocol) {
         var writer = new BinaryWriter();
         writer.writeUInt8(0x65); // Packet ID
@@ -22,7 +20,7 @@ class SetParams {
 
         writer.writeUInt32(flags); //flags
         return writer.toBuffer();
-    };
+    }
 }
 
 module.exports = SetParams;

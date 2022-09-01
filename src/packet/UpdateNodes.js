@@ -1,7 +1,5 @@
 ﻿// Import
-const BinaryWriter = require("./BinaryWriter");
-const Logger = require('../modules/Logger');
-
+const BinaryWriter = require('./BinaryWriter');
 const sharedWriter = new BinaryWriter(128 * 1024); // for about 25000 cells per client
 
 class UpdateNodes {
@@ -12,7 +10,6 @@ class UpdateNodes {
         this.eatNodes = eatNodes;
         this.delNodes = delNodes;
     }
-
     build(protocol) {
         if (!protocol) return null;
 
@@ -27,8 +24,7 @@ class UpdateNodes {
 
         this.writeRemoveItems(writer, protocol);
         return writer.toBuffer();
-    };
-
+    }
     // protocol 4
     writeUpdateItems4(writer) {
         var scrambleX = this.player.scrambleX;
@@ -99,8 +95,7 @@ class UpdateNodes {
                 writer.writeUInt16(0); // Name
         }
         writer.writeUInt32(0); // Cell Update record terminator
-    };
-
+    }
     // protocol 5
     writeUpdateItems5(writer) {
         var scrambleX = this.player.scrambleX;
@@ -190,8 +185,7 @@ class UpdateNodes {
             }
         }
         writer.writeUInt32(0 >> 0); // Cell Update record terminator
-    };
-
+    }
     // protocol 6
     writeUpdateItems6(writer) {
         var scrambleX = this.player.scrambleX;
@@ -276,8 +270,7 @@ class UpdateNodes {
                 writer.writeBytes(cellName); // Cell Name in UTF8
         }
         writer.writeUInt32(0); // Cell Update record terminator
-    };
-
+    }
     writeEatItems(writer) {
         var scrambleId = this.player.scrambleId;
 
@@ -291,8 +284,7 @@ class UpdateNodes {
             writer.writeUInt32((hunterId ^ scrambleId) >>> 0); // Hunter ID
             writer.writeUInt32((node.nodeId ^ scrambleId) >>> 0); // Prey ID
         }
-    };
-
+    }
     writeRemoveItems(writer, protocol) {
         var scrambleId = this.player.scrambleId;
 
@@ -309,7 +301,7 @@ class UpdateNodes {
             var node = this.delNodes[i];
             writer.writeUInt32((node.nodeId ^ scrambleId) >>> 0); // Cell ID
         }
-    };
+    }
 }
 
 module.exports = UpdateNodes;

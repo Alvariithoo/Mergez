@@ -7,7 +7,6 @@ class MinionPlayer extends Player {
         this.isMi = true; // Marks as minion
         this.socket.isConnected = true;
     }
-
     checkConnection() {
         if (this.socket.isCloseRequest) {
             while (this.cells.length) {
@@ -58,7 +57,7 @@ class MinionPlayer extends Player {
                 }
             }
         }
-    };
+    }
 }
 
 module.exports = MinionPlayer;

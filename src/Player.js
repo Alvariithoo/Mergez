@@ -1,6 +1,6 @@
 ﻿const Packet = require('./packet');
-const BinaryWriter = require("./packet/BinaryWriter");
-const UserRoleEnum = require("./enum/UserRoleEnum");
+const BinaryWriter = require('./packet/BinaryWriter');
+const UserRoleEnum = require('./enum/UserRoleEnum');
 
 class Player {
     constructor(server, socket) {
@@ -15,7 +15,6 @@ class Player {
         this.userID = 0; //FB id
         this.deviceID = 0; // numeric hash code of device ID
         this.startingSize = server ? server.config.playerStartSize : 0;
-
 
         //meanin that client can handle pIDs in minimap. 
         //Also with this flag was migration from long to int user social ID
@@ -97,7 +96,6 @@ class Player {
             this.scramble();
         }
     }
-
     // Setters/Getters
     scramble() {
         if (!this.server.config.serverScrambleLevel) {
@@ -117,8 +115,7 @@ class Player {
             this.scrambleY = y;
         }
         this.borderCounter = 0;
-    };
-
+    }
     getFriendlyName() {
         var name = this.getName();
         if (!name) name = "";
@@ -126,8 +123,7 @@ class Player {
         if (name.length == 0)
             name = this.defaultName;
         return name;
-    };
-
+    }
     setName(name) {
         this._name = name;
         if (!name || name.length < 1) {
@@ -141,12 +137,10 @@ class Player {
         writer = new BinaryWriter()
         writer.writeStringZeroUtf8(name);
         this._nameUtf8 = writer.toBuffer();
-    };
-
+    }
     getName() {
         return this._name;
-    };
-
+    }
     setSkin(skin) {
         this._skin = skin;
         if (!skin || skin.length < 1) {
@@ -156,53 +150,43 @@ class Player {
         var writer = new BinaryWriter()
         writer.writeStringZeroUtf8(skin);
         this._skinUtf8 = writer.toBuffer();
-    };
-
+    }
     getSkin() {
         if (this.server.gameMode.haveTeams) {
             return "";
         }
         return this._skin;
-    };
-
+    }
     getNameUtf8() {
         return this._nameUtf8;
-    };
-
+    }
     getNameUnicode() {
         return this._nameUnicode;
-    };
-
+    }
     getSkinUtf8() {
         return this._skinUtf8;
-    };
-
+    }
     getColor(color) {
         return this.color;
-    };
-
+    }
     setColor(color) {
         this.color.r = color.r;
         this.color.g = color.g;
         this.color.b = color.b;
-    };
-
+    }
     getTeam() {
         return this.team;
-    };
-
+    }
     getScore() {
         if (this.isMassChanged)
             this.updateMass();
         return this._score;
-    };
-
+    }
     getScale() {
         if (this.isMassChanged)
             this.updateMass();
         return this._scale;
-    };
-
+    }
     updateMass() {
         var totalSize = 0;
         var totalScore = 0;
@@ -222,17 +206,15 @@ class Player {
             this._scale = Math.pow(Math.min(64 / totalSize, 1), 0.4);
         }
         this.isMassChanged = false;
-    };
-
+    }
     massChanged() {
         this.isMassChanged = true;
-    };
-
+    }
     // Functions
     joinGame(name, skin) {
         if (this.cells.length > 0) return;
         if (name == null) name = "";
-        this.setName(name);
+            this.setName(name);
         if (skin != null)
             this.setSkin(skin);
         this.spectate = false;
@@ -265,8 +247,7 @@ class Player {
         this.spawnCounter++;
 
         this.server.gameMode.onPlayerSpawn(this.server, this);
-    };
-
+    }
     checkConnection() {
         // Handle disconnection
         if (!this.socket.isConnected) {
@@ -298,8 +279,7 @@ class Player {
                 this.isCloseRequested = true;
             }
         }
-    };
-
+    }
     updateTick() {
         this.socket.client.process();
         if (this.spectate) {
@@ -317,8 +297,7 @@ class Player {
         }
         this.updateViewBox();
         this.updateVisibleNodes();
-    };
-
+    }
     sendUpdate() {
         if (this.isRemoved ||
             !this.socket.client.protocol ||
@@ -428,8 +407,7 @@ class Player {
                 client.sendPacket(packet);
             }
         }
-    };
-
+    }
     // Viewing box
     updateCenterInGame() { // Get center of cells
         var len = this.cells.length;
@@ -449,8 +427,7 @@ class Player {
         cx = (this.centerPos.x + cx) / 2;
         cy = (this.centerPos.y + cy) / 2;
         this.setCenterPos(cx, cy);
-    };
-
+    }
     updateCenterFreeRoam() {
         var dx = this.mouse.x - this.centerPos.x;
         var dy = this.mouse.y - this.centerPos.y;
@@ -470,8 +447,7 @@ class Player {
         var x = this.centerPos.x + nx * speed;
         var y = this.centerPos.y + ny * speed;
         this.setCenterPos(x, y);
-    };
-
+    }
     updateViewBox() {
         var scale = this.getScale();
         scale = Math.max(scale, this.server.config.serverMinScale);
@@ -492,8 +468,7 @@ class Player {
             halfWidth: halfWidth,
             halfHeight: halfHeight
         };
-    };
-
+    }
     pressQ() {
         if (this.spectate) {
             // Check for spam first (to prevent too many add/del updates)
@@ -507,8 +482,7 @@ class Player {
             //}
             //this.spectateTarget = null;
         }
-    };
-
+    }
     pressW() {
         if (this.spectate) {
             return;
@@ -516,8 +490,7 @@ class Player {
         else if (this.server.run) {
             this.server.ejectMass(this);
         }
-    };
-
+    }
     Split(splitAmount = 1) {
         if (this.spectate || !this.server.run) return;  // Check dead
         const self = this;
@@ -528,8 +501,7 @@ class Player {
                 --i && split(i);
             }, splitDelay);
         })(splitAmount)
-    };
-
+    }
     nextSpectateTarget() {
         if (this.spectateTarget == null) {
             this.spectateTarget = this.server.largestClient;
@@ -558,16 +530,14 @@ class Player {
         }
         // no alive players
         this.spectateTarget = null;
-    };
-
+    }
     getSpectateTarget() {
         if (this.spectateTarget == null || this.spectateTarget.isRemoved || this.spectateTarget.cells.length < 1) {
             this.spectateTarget = null;
             return this.server.largestClient;
         }
         return this.spectateTarget;
-    };
-
+    }
     updateVisibleNodes() {
         this.viewNodes = [];
         if (!this.isMinion) {
@@ -579,8 +549,7 @@ class Player {
         }
         this.viewNodes = this.viewNodes.concat(this.cells);
         this.viewNodes.sort(function (a, b) { return a.nodeId - b.nodeId; });
-    };
-
+    }
     setCenterPos(x, y) {
         if (isNaN(x) || isNaN(y)) {
             throw new TypeError("Player.setCenterPos: NaN");
@@ -591,8 +560,7 @@ class Player {
         y = Math.min(y, this.server.border.maxy);
         this.centerPos.x = x;
         this.centerPos.y = y;
-    };
-
+    }
     sendCameraPacket() {
         this.socket.client.sendPacket(new Packet.UpdatePosition(
             this,
@@ -600,12 +568,11 @@ class Player {
             this.centerPos.y,
             this.getScale()
         ));
-    };
-
+    }
     isValidForMiniMapPIDs() {
         //don't send additional data for old clients
         return (this.clientVersion >= 154 || /*iOS versions*/(this.clientVersion >= 4 && this.clientVersion < 100));
-    };
+    }
 }
 
 module.exports = Player;

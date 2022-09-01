@@ -1,6 +1,6 @@
 ﻿// Import
-const BinaryWriter = require("./BinaryWriter");
-const WebSocket = require("ws");
+const BinaryWriter = require('./BinaryWriter');
+const WebSocket = require('ws');
 
 class UpdateMinimap {
     constructor(player, clients) {
@@ -8,7 +8,6 @@ class UpdateMinimap {
         this.clients = clients;
         this.torunament = player.server.gameMode.IsTournament;
     }
-
     build(protocol) {
         var player = this.player;
         var clients = this.clients;
@@ -46,4 +45,5 @@ class UpdateMinimap {
         return writer.toBuffer();
     }
 }
+
 module.exports = UpdateMinimap;

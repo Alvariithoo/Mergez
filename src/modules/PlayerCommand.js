@@ -1,8 +1,8 @@
 ﻿var Entity = require('../entity');
 var Logger = require('./Logger');
-var UserRoleEnum = require("../enum/UserRoleEnum");
-var Packet = require("../packet");
-var CommandList = require("./CommandList");
+var UserRoleEnum = require('../enum/UserRoleEnum');
+var Packet = require('../packet');
+var CommandList = require('./CommandList');
 
 var fillChar = function (data, char, fieldLength, rTL) {
     if (data === undefined) return
@@ -15,69 +15,7 @@ var fillChar = function (data, char, fieldLength, rTL) {
             result = result.concat(char);
     }
     return result;
-};
-
-
-function PlayerCommand(server, player) {
-    this.server = server;
-    this.player = player;
 }
-
-module.exports = PlayerCommand;
-
-PlayerCommand.prototype.writeLine = function (text) {
-    this.server.sendChatMessage(null, this.player, text);
-};
-
-PlayerCommand.prototype.executeCommandLine = function (commandLine) {
-    if (!commandLine) return;
-
-    if (!this.parsePluginCommands(commandLine)) return;
-
-    // Splits the string
-    var args = commandLine.split(" ");
-
-    // Process the first string value
-    var first = args[0].toLowerCase();
-
-    // Get command function
-    var execute = playerCommands[first];
-    if (typeof execute != 'undefined') {
-        execute.bind(this)(args);
-    } else {
-        this.writeLine("ERROR: Unknown command, type /help for command list");
-    }
-};
-
-PlayerCommand.prototype.parsePluginCommands = function (str) {
-    // Splits the string
-    var args = str.split(" ");
-
-    // Process the first string value
-    var first = args[0].toLowerCase();
-
-    // Get command function
-    var execute = this.server.Plugins.playerCommands[first];
-    if (typeof execute != 'undefined') {
-        execute(this, args, this.player, this.server);
-        return false;
-    } else return true;
-}
-
-PlayerCommand.prototype.userLogin = function (ip, password) {
-    if (!password) return null;
-    password = password.trim();
-    if (!password) return null;
-    for (var i = 0; i < this.server.userList.length; i++) {
-        var user = this.server.userList[i];
-        if (user.password != password)
-            continue;
-        if (user.ip && user.ip != ip && user.ip != "*") // * - means any IP
-            continue;
-        return user;
-    }
-    return null;
-};
 
 var playerCommands = {
     help: function (args) {
@@ -676,4 +614,63 @@ var playerCommands = {
         Logger.warn("SHUTDOWN REQUEST FROM " + this.player.socket.remoteAddress + " as " + this.player.userAuth);
         process.exit(0);
     },
-};
+}
+
+class PlayerCommand {
+    constructor(server, player) {
+        this.server = server;
+        this.player = player;
+    }
+    writeLine(text) {
+        this.server.sendChatMessage(null, this.player, text);
+    }
+    executeCommandLine(commandLine) {
+        if (!commandLine) return;
+
+        if (!this.parsePluginCommands(commandLine)) return;
+
+        // Splits the string
+        var args = commandLine.split(" ");
+
+        // Process the first string value
+        var first = args[0].toLowerCase();
+
+        // Get command function
+        var execute = playerCommands[first];
+        if (typeof execute != 'undefined') {
+            execute.bind(this)(args);
+        } else {
+            this.writeLine("ERROR: Unknown command, type /help for command list");
+        }
+    }
+    parsePluginCommands(str) {
+        // Splits the string
+        var args = str.split(" ");
+
+        // Process the first string value
+        var first = args[0].toLowerCase();
+
+        // Get command function
+        var execute = this.server.Plugins.playerCommands[first];
+        if (typeof execute != 'undefined') {
+            execute(this, args, this.player, this.server);
+            return false;
+        } else return true;
+    }
+    userLogin(ip, password) {
+        if (!password) return null;
+        password = password.trim();
+        if (!password) return null;
+        for (var i = 0; i < this.server.userList.length; i++) {
+            var user = this.server.userList[i];
+            if (user.password != password)
+                continue;
+            if (user.ip && user.ip != ip && user.ip != "*") // * - means any IP
+                continue;
+            return user;
+        }
+        return null;
+    }
+}
+
+module.exports = PlayerCommand;

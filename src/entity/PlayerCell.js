@@ -11,7 +11,7 @@ class PlayerCell extends Cell {
         this.boostValue = 870;
 
         var gameMode = this.server.gameMode;
-        
+
         //ultra values
         if (gameMode.canRemergeLimit){
             this._canRemergeLimit = gameMode.canRemergeLimit;
@@ -21,7 +21,6 @@ class PlayerCell extends Cell {
             this.boostValue = gameMode.newPlayerCellBoostValue;
         } 
     }
-
     updateRemerge() {
         var age = this.getAge(this.server.getTick());
         var mergeType = this.server.config.playerMergeType;
@@ -43,20 +42,16 @@ class PlayerCell extends Cell {
             }
         }
     }
-
     canRemerge() {
         return this._canRemerge;
     }
-
     canEat(cell) {
         return true;
     }
-
     getSplitSize() {
         const splitMultiplier = 1 / Math.sqrt(2);
         return this.getSize() * splitMultiplier;
     }
-
     moveUser(border) {
         if (this.owner == null || this.owner.socket.isConnected === false) {
             return;
@@ -70,30 +65,28 @@ class PlayerCell extends Cell {
         var dy = ~~(y - this.position.y);
         var squared = dx * dx + dy * dy;
         if (squared < 1) return;
-        
+
         // distance
-        var d = Math.sqrt(squared);
-        
+        var distance = Math.sqrt(squared);
+
         // normal
-        var invd = 1 / d;
+        var invd = 1 / distance;
         var nx = dx * invd;
         var ny = dy * invd;
-        
+
         // normalized distance (0..1)
-        d = Math.min(d, 32) / 32;
-        var speed = this.getSpeed() * d;
+        distance = Math.min(distance, 32) / 32;
+        var speed = this.getSpeed() * distance;
         if (speed <= 0) return;
-        
+
         this.position.x += nx * speed;
         this.position.y += ny * speed;
         this.checkBorder(border);
     }
-
     onAdd(server) {
         // Gamemode actions
         server.gameMode.onCellAdd(this);
     }
-
     onRemove(server) {
         var index;
         // Remove from player cell list

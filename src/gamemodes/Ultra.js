@@ -1,4 +1,5 @@
 const FFA = require('./FFA');
+const Logger = require('../modules/Logger');
 
 class Ultra extends FFA {
     constructor() {
@@ -15,9 +16,8 @@ class Ultra extends FFA {
         this.restarting = false;
         this.winner;
         // Load Config
-        this.config = require("../Settings.js");
-    };
-
+        this.config = require('../Settings.js');
+    }
     onServerInit(server) {
         this.config.serverMaxConnections = 33;
         this.config.serverSpectatorScale = 0.1;
@@ -38,9 +38,9 @@ class Ultra extends FFA {
         this.config.ejectSizeLoss = 32.23;
         this.config.ejectCooldown = 0;
 
-        this.config.playerMinSize = 84;//85
+        this.config.playerMinSize = 84;
         this.config.playerMaxSize = 150000000;
-        this.config.playerMinSplitSize = 121; //121
+        this.config.playerMinSplitSize = 121;
         this.config.playerStartSize = 1200;
         this.config.playerMaxCells = 138;
         this.config.playerSpeed = 1.6;
@@ -55,18 +55,25 @@ class Ultra extends FFA {
         this.scoreLimit = this.config.ultraRestartMassLimit;
         this.winner;
 
-        // dsc
+        // discord Mergez
         server.sendChatMessage(null, null, 'discord.gg/xXcvpgJuJJ');
         setInterval(()=>{
             server.sendChatMessage(null, null, 'discord.gg/xXcvpgJuJJ');
         }, 5 * 60000 * 3)
-    };
-
+    }
+    onPlayerSpawn(server, player) {
+        const playerSize = server.config.playerStartSize;
+        const random = (Math.floor(Math.random() * 100) < 2);
+        player.setColor(player.isMinion ? { r: 240, g: 240, b: 255} : server.getRandomColor());
+        Logger.info('Joined: ' + player._name)
+        random ? server.sendChatMessage(null, player, 'You spawned with double mass!') : null;
+        server.spawnPlayer(player, null, random ? playerSize * 1.41 : playerSize);
+    }
     startRestartTimer(server, nick) {
         nick.split('$')[1]
 
         this.winner = nick.split("$")[0];
-        
+
         if (this.restarting) {
             return;
         }
@@ -81,8 +88,7 @@ class Ultra extends FFA {
             this.downCounter = this.restartInterval / 1000;
             this.restarting = false;
         }.bind(this), this.restartInterval);
-    };
-
+    }
     checkScoreLimit(server) {
         for (var i = 0; i < server.clients.length; i++) {
             var player = server.clients[i].player;
@@ -97,8 +103,7 @@ class Ultra extends FFA {
                 this.startRestartTimer(server, player._name);
             }
         }
-    };
-
+    }
     updateLB(server, lb) {
         server.leaderboardType = this.packetLB;
         for (var i = 0, pos = 0; i < server.clients.length; i++) {

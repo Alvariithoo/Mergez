@@ -152,4 +152,19 @@
 "playerMergeType": 0,
 "chatCooldown": 25 * 2,
 
+// [MINIONS]
+// Custom minion settings
+// minionStartSize: Start size of minions (mass: val*val/100: 10 mass)
+// minionMaxStartSize: Maximum value of random start size for minions (set value higher than minionStartSize to enable)
+// minionCollideTeam: Determines whether minions colide with their team in the Teams gamemode (0: OFF, 1: ON)
+// serverMinions: Amount of minions each player gets once they spawn
+// defaultName: Default name for all minions if name is not specified using command (put <r> before the name for random skins!)
+// minionsOnLeaderboard: Whether or not to show minions on the leaderboard. (Set 0 to disable)
+"minionStartSize": 31.6227766017,
+"minionMaxStartSize": 31.6227766017,
+// "minionCollideTeam": 0,
+// "serverMinions": 0,
+"defaultName": "minion",
+// "minionsOnLeaderboard": 0,
+
 })

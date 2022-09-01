@@ -12,7 +12,6 @@ class Minions extends Cell {
         this.power = 2;
         this.server = server;
     }
-
     onEaten(server) {
         var player = server.owner;
         var self = this;
@@ -29,11 +28,9 @@ class Minions extends Cell {
             }, this.powertimer);
         }
     }
-
     onAdd(server) {
         server.nodesVirus.push(this);
     }
-
     onRemove(server) {
         var index = server.nodesVirus.indexOf(this);
         if (index != -1) {

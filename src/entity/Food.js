@@ -5,11 +5,9 @@ class Food extends Cell {
         super(server, owner, position, size);
         this.cellType = 1;
     }
-
     onAdd(server) {
         server.currentFood++;
     }
-
     onRemove(server) {
         server.currentFood--;
     }
