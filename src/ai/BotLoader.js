@@ -10,7 +10,7 @@ const MinionPlayer = require('./MinionPlayer');
 class BotLoader {
     constructor(server) {
         this.server = server;
-        this.loodNames();
+        this.loadNames();
     }
     getName() {
         var name = "";
@@ -24,7 +24,7 @@ class BotLoader {
 
         return name;
     }
-    loodNames() {
+    loadNames() {
         const botnameFile = "./ai/botnames.txt";
         this.randomNames = [];
         if (fs.existsSync(botnameFile))
