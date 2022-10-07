@@ -49,6 +49,7 @@ var playerCommands = {
             this.writeLine("/minion - gives yourself or other player minions");
             this.writeLine("/minion remove - removes all of your minions or other players minions");
             this.writeLine("/addbot - Adds AI Bots to the Server");
+            this.writeLine("/tp [Player ID] [Cords X] [Cords X] - teleport a(n) (player's)");
             this.writeLine("/shutdown - SHUTDOWNS THE SERVER");
             this.writeLine("/status - Shows Status of the Server");
             this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -553,6 +554,43 @@ var playerCommands = {
         }
         Logger.warn(this.player.socket.remoteAddress + "ADDED " + add + " BOTS");
         this.writeLine("Added " + add + " Bots");
+    },
+    tp: function (args) {
+        if (this.player.userRole != UserRoleEnum.ADMIN) {
+            this.writeLine("ERROR: access denied!");
+            return;
+        }
+        var id = parseInt(args[1]);
+        if (isNaN(id)) {
+            this.writeLine("Please specify a valid player ID!");
+            return;
+        }
+
+        // Make sure the input values are numbers
+        var pos = {
+            x: parseInt(args[2]),
+            y: parseInt(args[3])
+        };
+        if (isNaN(pos.x) || isNaN(pos.y)) {
+            this.writeLine("Invalid coordinates");
+            return;
+        }
+
+        // Spawn
+        for (var i in this.server.clients) {
+            if (this.server.clients[i].player.pID == id) {
+                var client = this.server.clients[i].player;
+                if (!client.cells.length) return this.writeLine("That player is either dead or not playing!");
+                for (var j in client.cells) {
+                    client.cells[j].position.x = pos.x;
+                    client.cells[j].position.y = pos.y;
+                    this.server.updateNodeQuad(client.cells[j]);
+                }
+                Logger.print("Teleported " + client._name + " to (" + pos.x + " , " + pos.y + ")");
+                break;
+            }
+        }
+        if (client == null) return void this.writeLine("That player ID is non-existant!");
     },
     status: function (args) {
         if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
