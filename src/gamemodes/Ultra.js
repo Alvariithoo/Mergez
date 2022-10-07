@@ -82,8 +82,6 @@ class Ultra extends FFA {
         let congratolations = 'Congratolations to ' + this.winner + '!';
         server.sendChatMessage(null, null, congratolations);
         setTimeout(function () {
-            const reset = [" ", "reset"]; // restarted leaderboard
-            server.commands.board(server, reset);
             server.restart();
             this.downCounter = this.restartInterval / 1000;
             this.restarting = false;
@@ -121,16 +119,14 @@ class Ultra extends FFA {
         // Make a messege in leaderboard
         this.checkScoreLimit(server);
         if (this.restarting) {
-            const counter = `${this.downCounter--}s`;
-            const winner = `${this.winner}`;
             const restart = [
-                " ", // on leaderboard list this position is 0
                 "Restarting",
-                counter,
-                winner,
+                this.downCounter-- + "s",
+                this.winner,
                 "Won The Game!"
             ];
-            server.commands.board(server, restart);
+            server.leaderboard = restart;
+            server.leaderboardType = 48;
         }
     }
 }
