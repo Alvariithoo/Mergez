@@ -74,7 +74,6 @@ class Client {
             //19: AFK
             22: this.message_onKeyW.bind(this),
             99: this.message_onChat.bind(this),
-            101: this.message_onAbility.bind(this),
             254: this.message_onStat.bind(this),
         };
         this.protocol = protocol;
@@ -108,12 +107,6 @@ class Client {
         else
             text = reader.readStringZeroUtf8();
         this.setNickname(text);
-    }
-    message_onAbility(message) {
-        var reader = new BinaryReader(message);
-        reader.skipBytes(1);
-        let id = reader.readUInt8();
-        this.server.useAbility(id, this.socket.player);
     }
     message_onSpectate(message) {
         if (message.length !== 1 || this.socket.player.cells.length !== 0) {
@@ -223,12 +216,6 @@ class Client {
     }
     message_onChat(message, text) {
         if (message.length < 3) return;
-        var tick = this.server.getTick();
-        var dt = tick - this.lastChatTick;
-        this.lastChatTick = tick;
-        if (dt < this.server.config.chatCooldown) {
-            return;
-        }
         var flags = message[1];    // flags
         var rvLength = (flags & 2 ? 4 : 0) + (flags & 4 ? 8 : 0) + (flags & 8 ? 16 : 0);
         if (message.length < 3 + rvLength) // second validation
