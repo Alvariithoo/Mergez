@@ -592,6 +592,64 @@ var playerCommands = {
         }
         if (client == null) return void this.writeLine("That player ID is non-existant!");
     },
+    spawn: function (arg){
+        if (this.player.userRole != UserRoleEnum.ADMIN) {
+            this.writeLine("ERROR: access denied!");
+            return;
+        }
+        var ent = arg[1];
+        if (ent != "virus" && ent != "food" && ent != "mothercell" && ent != "minion") {
+            this.writeLine("Please specify either virus, food, minion, or mothercell");
+            return;
+        }
+
+        var pos = {
+            x: parseInt(arg[2]),
+            y: parseInt(arg[3])
+        };
+        var mass = parseInt(arg[4]);
+
+        // Make sure the input values are numbers
+        if (isNaN(pos.x) || isNaN(pos.y)) {
+            this.writeLine("Invalid coordinates");
+            return;
+        }
+
+        // Start size for each entity 
+        if (ent == "virus") {
+            var size = this.server.config.virusMinSize;
+        } else if (ent == "mothercell") {
+            size = this.server.config.virusMinSize * 2.5;
+        } else if (ent == "food") {
+            size = this.server.config.foodMinMass;
+        }else if (ent == "minion") {
+            size = this.server.config.virusMinSize;
+        }
+
+        if (!isNaN(mass)) {
+            size = Math.sqrt(mass * 100);
+        }
+
+        // Spawn for each entity
+        if (ent == "virus") {
+            var virus = new Entity.Virus(this.server, null, pos, size);
+            this.server.addNode(virus);
+            this.writeLine("Spawned 1 virus at (" + pos.x + " , " + pos.y + ")");
+        } else if (ent == "food") {
+            var food = new Entity.Food(this.server, null, pos, size);
+            food.color = this.server.getRandomColor();
+            this.server.addNode(food);
+            this.writeLine("Spawned 1 food cell at (" + pos.x + " , " + pos.y + ")");
+        } else if (ent == "mothercell") {
+            var mother = new Entity.MotherCell(this.server, null, pos, size);
+            this.server.addNode(mother);
+            this.writeLine("Spawned 1 mothercell at (" + pos.x + " , " + pos.y + ")");
+        } else if (ent == "minion") {
+            var mother = new Entity.Minions(this.server, null, pos, size);
+            this.server.addNode(mother);
+            this.writeLine("Spawned 1 minion at (" + pos.x + " , " + pos.y + ")");
+        }
+    },
     status: function (args) {
         if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
             this.writeLine("ERROR: access denied!");
