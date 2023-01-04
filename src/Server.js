@@ -533,16 +533,15 @@ class Server {
         }
     }
     onChatMessage(from, to, message) {
-        if (message == null) return;
-        message = message.trim();
-        if (message == "") return;
         var tick = this.getTick();
         var dt = tick - this.lastChatTick;
         this.lastChatTick = tick;
+
+        if (!message || !(message = message.trim()))
+            return;
         if (from && message.length > 0 && message[0] == '/') {
             // player command
-            message = message.slice(1, message.length);
-            from.socket.playerCommand.executeCommandLine(message);
+            from.socket.playerCommand.processMessage(from, message);
             return;
         } else if (dt < this.config.chatCooldown) {
             return;

@@ -70,8 +70,6 @@ class Ultra extends FFA {
         server.spawnPlayer(player, null, random ? playerSize * 1.41 : playerSize);
     }
     startRestartTimer(server, nick) {
-        nick.split('$')[1]
-
         this.winner = nick.split("$")[0];
 
         if (this.restarting) {

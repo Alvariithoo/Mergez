@@ -1,517 +1,313 @@
-﻿var Entity = require('../entity');
-var Logger = require('./Logger');
-var UserRoleEnum = require('../enum/UserRoleEnum');
-var Packet = require('../packet');
-var CommandList = require('./CommandList');
+﻿const Entity = require('../entity');
+const Logger = require('./Logger');
+const UserRoleEnum = require('../enum/UserRoleEnum');
 
-var fillChar = function (data, char, fieldLength, rTL) {
-    if (data === undefined) return
-    var result = data.toString();
-    if (rTL === true) {
-        for (var i = result.length; i < fieldLength; i++)
-            result = char.concat(result);
-    } else {
-        for (var i = result.length; i < fieldLength; i++)
-            result = result.concat(char);
+class Command {
+    constructor(name, usage, description, minimumCredential, handler) {
+        this.name = name;
+        this.description = description;
+        this.usage = usage;
+        this.minCred = minimumCredential;
+        this.handler = handler;
     }
-    return result;
 }
 
-var playerCommands = {
-    help: function (args) {
-        if (this.player.userRole == UserRoleEnum.MODER) {
-            this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            // this.writeLine("/skin %shark - change skin");
-            this.writeLine("/kill - self kill");
-            this.writeLine("/killall - kills everyone.")
-            this.writeLine("/help - this command list");
-            this.writeLine("/id - Gets your playerID");
-            this.writeLine("/pll - Get list of players, bots, ID's, etc");
-            this.writeLine("/kick PlayerID - Kick player or bot by client ID");
-            this.writeLine("/mass - gives mass to yourself or to other player");
-            this.writeLine("/minion - gives yourself or other player minions");
-            this.writeLine("/minion remove - removes all of your minions or other players minions");
-            // this.writeLine("/status - Shows Status of the Server");
-            this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        }
-        if (this.player.userRole == UserRoleEnum.ADMIN) {
-            this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            // this.writeLine("/skin %shark - change skin");
-            this.writeLine("/kill - self kill");
-            this.writeLine("/killall - kills everyone.")
-            this.writeLine("/help - this command list");
-            this.writeLine("/id - Gets your playerID");
-            this.writeLine("/pl - Get list of players, bots, ID's, etc");
-            this.writeLine("/ban [PlayerID | IP]  - bans a(n) (player's) IP");
-            this.writeLine("/kick PlayerID - Kick player or bot by client ID");
-            this.writeLine("/mass - gives mass to yourself or to other player");
-            this.writeLine("/spawnmass - gives yourself or other player spawnmass");
-            this.writeLine("/minion - gives yourself or other player minions");
-            this.writeLine("/minion remove - removes all of your minions or other players minions");
-            this.writeLine("/addbot - Adds AI Bots to the Server");
-            this.writeLine("/tp [Player ID] [Cords X] [Cords X] - teleport a(n) (player's)");
-            this.writeLine("/shutdown - SHUTDOWNS THE SERVER");
-            this.writeLine("/status - Shows Status of the Server");
-            this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        } else {
-            /*this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            this.writeLine("/skin %shark - change skin");
-            this.writeLine("/kill - self kill");
-            this.writeLine("/help - this command list");
-            this.writeLine("/id - Gets your playerID");
-            this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");*/
-        }
-    },
-    restart: function (server) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        this.writeLine("Restarting...");
-        this.server.restart();
-    },
-    id: function (args) {
-        this.writeLine("Your PlayerID is " + this.player.pID);
-    },
-    skinpopo: function (args) {
-        if (this.player.cells.length) {
-            this.writeLine("ERROR: Cannot change skin while player in game!");
-            return;
-        }
-        var skinName = "";
-        if (args[1]) skinName = args[1];
-        this.player.setSkin(skinName);
-        if (skinName == "")
-            this.writeLine("Your skin was removed");
-        else
-            this.writeLine("Your skin set to " + skinName);
-    },
-    pl: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("You don't have permission to use this command.");
-            return;
-        }
-        this.writeLine("Showing " + this.server.clients.length + " players: ");
-        var sockets = this.server.clients.slice(0);
-        for (var i = 0; i < sockets.length; i++) {
-            var socket = sockets[i];
-            var client = socket.player;
+const send = (player, msg) => player.server.sendChatMessage(null, player, msg);
+const findPlayer = (server, id) => {
+    const c = server.clients.find(c => c.player.pID == id);
+    return c && c.player;
+};
 
-            // Get ip (15 digits length)
+let commandMap = new Map();
+
+const commands = [
+    new Command("help", "[cmd]", "lists available commands, or command usage", UserRoleEnum.GUEST, (player, args) => {
+        let cmd = args[1];
+        if (cmd && (cmd = commandMap.get(cmd)))
+            return send(player, `usage: /${cmd.name} ${cmd.usage}`);
+        send(player, "~".repeat(70));
+        for (const cmd of commands)
+            if (player.userRole >= cmd.minCred)
+                send(player, `/${cmd.name} - ${cmd.description}.`)
+        send(player, "~".repeat(70));
+    }),
+    new Command("id", "", "gets your playerID", UserRoleEnum.GUEST, (player, args) => {
+        send(player, `Your PlayerID is ${player.pID}`);
+    }),
+    new Command("kill", "", "self kill", UserRoleEnum.GUEST, (player, args) => {
+        if (!player.cells.length) {
+            // send(player, "You cannot kill yourself, because you're still not joined to the game!");
+            return;
+        }
+        while (player.cells.length) {
+            const cell = player.cells[0];
+            player.server.removeNode(cell);
+        }
+    }),
+    new Command("gett", "<password>", "upgrade your credential to access more commands", UserRoleEnum.GUEST, (player, args) => {
+        let pass = args[1];
+        if (!pass || !(pass = pass.trim()))
+            return send(player, "ERROR: missing password argument!");
+        let user = player.server.userList.find(c => c.password == pass && (c.ip == player.socket.remoteAddress || c.ip == "*"));
+        if (!user) return send(player, "ERROR: login failed!");
+
+        Logger.write(`LOGIN ${player.socket.remoteAddress}:${player.socket.remotePort} as "${user.name}"`);
+        player.userRole = user.role;
+        player.userAuth = user.name;
+        send(player, `Login done as "${user.name}"`);
+    }),
+    new Command("logout", "", "remove your credentials", UserRoleEnum.GUEST, (player, args) => {
+        Logger.write("LOGOUT       " + player.socket.remoteAddress + ":" + player.socket.remotePort + " as \"" + player.userAuth + "\"");
+        player.userRole = UserRoleEnum.GUEST;
+        player.userAuth = null;
+        send(player, "Logout done");
+    }),
+    new Command("tp", "[id] <cords-x> <cords-y>", "teleport a(n) (player's)", UserRoleEnum.MODER, (player, args) => {
+        let id = parseInt(args[1]);
+        if (isNaN(id)) return send(player, "Please specify a valid player ID!");
+
+        // Make sure the input values are numbers
+        let pos = {
+            x: parseInt(args[2]),
+            y: parseInt(args[3])
+        }
+        if (isNaN(pos.x) || isNaN(pos.y)) return send(player, "Invalid coordinates");
+
+        // Spawn
+        for (let i in player.server.clients) {
+            if (player.server.clients[i].player.pID == id) {
+                var client = player.server.clients[i].player;
+                if (!client.cells.length) return send(player, "That player is either dead or not playing!");
+                for (let j in client.cells) {
+                    client.cells[j].position.x = pos.x;
+                    client.cells[j].position.y = pos.y;
+                    player.server.updateNodeQuad(client.cells[j]);
+                }
+                send(player, `Teleported ${client._name} to (${pos.x} , ${pos.y} + ")`);
+                break;
+            }
+        }
+        if (client == null) return void send(player, "That player ID is non-existant!");
+    }),
+    new Command("mass", "<mass> [id]", "gives mass to yourself or to other player", UserRoleEnum.MODER, (player, args) => {
+        const mass = parseInt(args[1]);
+        if (isNaN(mass)) return send(player, "ERROR: missing mass argument!");
+        const size = Math.sqrt(mass * 100);
+        const id = parseInt(args[2]);
+
+        let p;
+        if (isNaN(id)) {
+            send(player, "Warn: missing ID argument. This will change your mass.");
+            p = player;
+        } else p = findPlayer(player.server, id);
+        if (!p) return send(player, "Didn't find player with id " + id);
+        for (const cell of p.cells) cell.setSize(size);
+        send(player, `Set mass of ${player._name} to ${mass}`);
+        if (p != player) send(p, player._name + " changed your mass to " + mass);
+    }),
+    new Command("spawn", "[<virus>|<food>|<mothercell>|<minion>] <cords-x> <cords-y> <mass>", "spawn a entity", UserRoleEnum.MODER, (player, arg) => {
+        let ent = arg[1];
+        if (ent != "virus" && ent != "food" && ent != "mothercell" && ent != "minion") {
+            send(player, "Please specify either virus, food, minion, or mothercell");
+            return;
+        }
+
+        let pos = {
+            x: parseInt(arg[2]),
+            y: parseInt(arg[3])
+        }
+
+        let mass = parseInt(arg[4]);
+        if (!isNaN(mass)) size = Math.sqrt(mass * 100);
+
+        // Make sure the input values are numbers
+        if (isNaN(pos.x) || isNaN(pos.y)) return send(player, "Invalid coordinates");
+
+        // Start size for each entity 
+        let size;
+        if (ent == "virus") {
+            size = player.server.config.virusMinSize;
+        } else if (ent == "mothercell") {
+            size = player.server.config.virusMinSize * 2.5;
+        } else if (ent == "food") {
+            size = player.server.config.foodMinMass;
+        } else if (ent == "minion") {
+            size = player.server.config.virusMinSize;
+        }
+
+        // Spawn for each entity
+        if (ent == "virus") {
+            let virus = new Entity.Virus(player.server, null, pos, size);
+            player.server.addNode(virus);
+            Logger.print(`Spawned 1 virus at (${pos.x} , ${pos.y})`);
+        } else if (ent == "food") {
+            let food = new Entity.Food(player.server, null, pos, size);
+            food.color = player.server.getRandomColor();
+            player.server.addNode(food);
+            Logger.print(`Spawned 1 food cell at (${pos.x} , ${pos.y})`);
+        } else if (ent == "mothercell") {
+            let mother = new Entity.MotherCell(player.server, null, pos, size);
+            player.server.addNode(mother);
+            Logger.print(`Spawned 1 mothercell at (${pos.x} , ${pos.y})`);
+        } else if (ent == "minion") {
+            let mother = new Entity.Minions(player.server, null, pos, size);
+            player.server.addNode(mother);
+            Logger.print(`Spawned 1 minion at (${pos.x} , ${pos.y})`);
+        }
+    }),
+    /*new Command("skin", "[skin]", "change skin", UserRoleEnum.MODER, (player, args) => {
+        if (player.cells.length) {
+            send(player, "ERROR: Cannot change skin while player in game!");
+            return;
+        }
+        let skinName = "";
+        if (args[1]) skinName = args[1];
+        player.setSkin(skinName);
+        if (skinName == "")
+            send(player, "Your skin was removed");
+        else
+            send(player, "Your skin set to " + skinName);
+    }),*/
+    new Command("playerlist", "", "get list of players, bots, ID's, etc", UserRoleEnum.MODER, (player, args) => {
+        send(player, "Showing " + player.server.clients.length + " players: ");
+        let sockets = player.server.clients.slice(0);
+        for (let i = 0; i < sockets.length; i++) {
+            const socket = sockets[i];
+            const client = socket.player;
+
+            var nick = '';
+            var cells = '';
+            var data = '';
             var ip = "[BOT]";
+            var id = (client.pID);
+
             if (socket.isConnected != null) {
                 ip = socket.remoteAddress;
             }
-            id = fillChar((client.pID), ' ', 6, true);
-            var protocol = this.server.clients[i].client.protocol;
+            
+            const protocol = player.server.clients[i].client.protocol;
             if (protocol == null)
                 protocol = "?"
             // Get name and data
-            var nick = '',
-                cells = '',
-                data = '';
+            
             if (socket.closeReason != null) {
                 // Disconnected
-                var reason = "[DISCONNECTED] ";
+                const reason = "[DISCONNECTED] ";
                 if (socket.closeReason.code)
                     reason += "[" + socket.closeReason.code + "] ";
                 if (socket.closeReason.message)
                     reason += socket.closeReason.message;
-                this.writeLine(`ID: ${id} IP: ${ip} RS: ${reason}`);
+                send(player, `ID: ${id}, IP: ${ip}, REASON: ${reason}`);
             } else if (!socket.client.protocol && socket.isConnected) {
-                this.writeLine(`ID: ${id} IP: ${ip} [CONNECTING]`);
+                send(player, `ID: ${id}, IP: ${ip}, [CONNECTING]`);
             } else if (client.spectate) {
                 nick = "in free-roam";
                 if (!client.freeRoam) {
-                    var target = client.getSpectateTarget();
+                    const target = client.getSpectateTarget();
                     if (target != null) {
-                        nick = target.getName();
+                        nick = target._name;
                     }
                 }
-                data = fillChar("SPECTATING");
-                this.writeLine(`ID: ${id} IP: ${ip} DATA: ${data}`);
+                data = "SPECTATING";
+                send(player, `ID: ${id}, IP: ${ip}, DATA: ${data}`);
             } else if (client.cells.length > 0) {
-                nick = fillChar(client.getName(), ' ', this.server.config.playerMaxNickLength);
-                cells = fillChar(client.cells.length, ' ', 5, true);
-                this.writeLine(`NICK: ${nick} IP: ${ip} CELLS: ${cells} ID: ${id}`);
+                nick = client._name;
+                cells = client.cells.length;
+                send(player, `ID: ${id}, NICK: ${nick}, IP: ${ip}, CELLS: ${cells} `);
             } else {
                 // No cells = dead player or in-menu
-                data = fillChar("DEAD OR NOT PLAYING");
-                this.writeLine(`ID: ${id} IP: ${ip} DATA: ${data}`);
+                send(player, `ID: ${id}, IP: ${ip}, DEAD OR NOT PLAYING`);
             }
         }
-    },
-    pll: function (args) {
-        if (this.player.userRole != UserRoleEnum.MODER) {
-            this.writeLine("You don't have permission to use this command.");
-            return;
-        }
-        this.writeLine("Showing " + this.server.clients.length + " players: ");
-        var sockets = this.server.clients.slice(0);
-        for (var i = 0; i < sockets.length; i++) {
-            var socket = sockets[i];
-            var client = socket.player;
-
-            // Get ip (15 digits length)
-            var ip = "[BOT]";
-            id = fillChar((client.pID), ' ', 6, true);
-            var protocol = this.server.clients[i].client.protocol;
-            if (protocol == null)
-                protocol = "?"
-            // Get name and data
-            var nick = '',
-                cells = '',
-                data = '';
-            if (socket.closeReason != null) {
-                // Disconnected
-                var reason = "[DISCONNECTED] ";
-                if (socket.closeReason.code)
-                    reason += "[" + socket.closeReason.code + "] ";
-                if (socket.closeReason.message)
-                    reason += socket.closeReason.message;
-                this.writeLine(`ID: ${id} RS: ${reason}`);
-            } else if (!socket.client.protocol && socket.isConnected) {
-                this.writeLine(`ID: ${id} [CONNECTING]`);
-            } else if (client.spectate) {
-                nick = "in free-roam";
-                if (!client.freeRoam) {
-                    var target = client.getSpectateTarget();
-                    if (target != null) {
-                        nick = target.getName();
-                    }
-                }
-                data = fillChar("SPECTATING");
-                this.writeLine(`ID: ${id} DATA: ${data}`);
-            } else if (client.cells.length > 0) {
-                nick = fillChar(client.getName(), ' ', this.server.config.playerMaxNickLength);
-                cells = fillChar(client.cells.length, ' ', 5, true);
-                this.writeLine(`NICK: ${nick} CELLS: ${cells} ID: ${id}`);
-            } else {
-                // No cells = dead player or in-menu
-                data = fillChar("DEAD OR NOT PLAYING");
-                this.writeLine(`ID: ${id} DATA: ${data}`);
-            }
-        }
-    },
-    kill: function (args) {
-        if (!this.player.cells.length) {
-            //this.writeLine("You cannot kill yourself, because you're still not joined to the game!");
-            return;
-        }
-        while (this.player.cells.length) {
-            var cell = this.player.cells[0];
-            this.server.removeNode(cell);
-        }
-    },
-    kick: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var id = args[1];
-        var reason = args[2];
+    }),
+    new Command("kick", "[id] <reason>", "Kick player or bot", UserRoleEnum.MODER, (player, args) => {
+        let id = args[1];
+        let reason = args[2];
         if (!reason) reason = " Reason: None";
         else reason = " Reason: " + reason;
         if (id == null) {
-            this.writeLine("Please specify a valid player ID!");
+            send(player, "Please specify a valid player ID!");
             return;
         }
         //kick player
-        var count = 0;
-        this.server.clients.forEach(function (socket) {
+        const count = 0;
+        player.server.clients.forEach(function (socket) {
             if (socket.isConnected === false)
                 return;
             if (id !== 0 && socket.player.pID.toString() != id && socket.player.accountusername != id)
                 return;
             // remove player cells
-            for (var j = 0; j < socket.player.cells.length; j++) {
-                this.server.removeNode(socket.player.cells[0]);
+            for (let j = 0; j < socket.player.cells.length; j++) {
+                player.server.removeNode(socket.player.cells[0]);
                 count++;
             }
             // disconnect
-            var name = socket.player._name.split("$")[0];
-            this.server.sendChatMessage(null, null, name + " was kicked." + reason);
+            const name = socket.player._name.split("$")[0];
+            player.server.sendChatMessage(null, null, name + " was kicked." + reason);
             socket.close(1000, "Kicked from server");
-            this.writeLine("You kicked " + name + "." + reason)
+            send(player, "You kicked " + name + "." + reason)
             console.log(name + " was kicked." + reason)
             count++;
         }, this);
         if (count) return;
-        if (!id) this.writeLine("No players to kick!");
-        else this.writeLine("Player with ID " + id + "not found!");
-    },
-    ban: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("You don't have permission to use this command.");
-            return;
-        }
-        // Error message
-        var logInvalid = this.writeLine("Please specify a valid player ID or IP address!");
-
-        if (args[1] == null) {
-            // If no input is given; added to avoid error
-            this.writeLine(logInvalid);
-            return;
-        }
-
-        if (args[1].indexOf(".") >= 0) {
-            // If input is an IP address
-            var ip = args[1];
-            var ipParts = ip.split(".");
-
-            // Check for invalid decimal numbers of the IP address
-            for (var i in ipParts) {
-                if (i > 1 && ipParts[i] == "*") {
-                    // mask for sub-net
-                    continue;
-                }
-                // If not numerical or if it's not between 0 and 255
-                // TODO: Catch string "e" as it means "10^".
-                if (isNaN(ipParts[i]) || ipParts[i] < 0 || ipParts[i] >= 256) {
-                    this.writeLine(logInvalid);
-                    return;
-                }
-            }
-
-            if (ipParts.length != 4) {
-                // an IP without 3 decimals
-                this.writeLine(logInvalid);
-                return;
-            }
-
-            this.server.banIp(ip);
-            return;
-        }
-        // if input is a Player ID
-        var id = parseInt(args[1]);
-        if (isNaN(id)) {
-            // If not numerical
-            this.writeLine(logInvalid);
-            return;
-        }
-
-        var ip = null;
-        for (var i in this.server.clients) {
-            var client = this.server.clients[i];
-            if (client == null || !client.isConnected)
-                continue;
-            if (client.player.pID == id) {
-                ip = client._socket.remoteAddress;
-                break;
-            }
-        }
-        if (ip) this.server.banIp(ip);
-        else this.writeLine("Player ID " + id + " not found!");
-    },
-    mute: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var id = args[1];
-        var reason = args[2];
-        if (!reason) reason = " Reason: None";
-        else reason = " Reason: " + reason;
-        if (id == null) {
-            this.writeLine("Please specify a valid player ID!");
-            return;
-        }
-        var count = 0;
-        this.server.clients.forEach(function (socket) {
-            // disconnect
-            var name = socket.player._name.split("$")[0];
-            this.server.sendChatMessage(null, null, name + " was muted." + reason);
-            this.writeLine("You muted " + name + "." + reason);
-            console.log(name + " was muted." + reason);
-            socket.player.isMuted = true;
-            count++;
-        }, this);
-        if (count) return;
-        if (!id) this.writeLine("No players to mute!");
-        else this.writeLine("Player with ID " + id + "not found!");
-    },
-    unmute: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var id = args[1];
-        if (id == null) {
-            this.writeline("Please specify a valid player ID!");
-            return;
-        }
-        var count = 0;
-        this.server.clients.forEach(function (socket) {
-            var name = socket.player._name.split("$")[0];
-            if (socket.player.isMuted == false) {
-                this.writeLine(name + " isn't muted")
-            }
-            this.server.sendChatMessage(null, null, name + ' was unmuted.');
-            this.writeLine("You unmuted " + name + '.')
-            console.log(name + ' was unmuted.')
-            socket.player.isMuted = false;
-            count++;
-        }, this);
-        if (count) return;
-        if (!id) this.writeLine("No players to mute!");
-        else this.writeLine("Player with ID " + id + "not found!");
-    },
-    pause: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        this.server.run = !this.server.run; // Switches the pause state
-        var s = server.run ? "Unpaused" : "Paused";
-        this.writeLine(s + " the game.");
-    },
-    freeze: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var id = args[1];
-        if (id == null) {
-            this.writeline("Please specify a valid player ID!");
-            return;
-        }
-        //kick player
-        var count = 0;
-        this.server.clients.forEach(function (socket) {
-            var name = socket.player._name;
-            var client = socket.player;
-            if (!client.cells.length) return this.writeLine('Player is not playing!')
-            if (!client.frozen) {
-                client.frozen = true;
-                console.log(name + ` is frozen now.`)
-                this.server.sendChatMessage(null, null, name + ' is now frozen.');
-                this.writeLine("You froze " + name)
-            } else {
-                client.frozen = false;
-                this.server.sendChatMessage(null, null, name + ` isn't frozen now.`);
-                this.writeLine("You unfroze " + name);
-                console.log(name + ` isn't frozen now.`)
-            }
-            count++;
-        }, this);
-        if (count) return;
-        if (!id) this.writeLine("No players to mute!");
-        else this.writeLine("Player with ID " + id + "not found!");
-    },
-    killall: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var count = 0;
-        var cell = this.player.cells[0];
-        for (var i = 0; i < this.server.clients.length; i++) {
-            var player = this.server.clients[i].player;
+        if (!id) send(player, "No players to kick!");
+        else send(player, "Player with ID " + id + "not found!");
+    }),
+    new Command("killall", "", "kills everyone", UserRoleEnum.MODER, (player, args) => {
+        const count = 0;
+        for (let i = 0; i < player.server.clients.length; i++) {
+            const player = player.server.clients[i].player;
             while (player.cells.length > 0) {
-                this.server.removeNode(player.cells[0]);
+                player.server.removeNode(player.cells[0]);
                 count++;
             }
         }
-        this.writeLine("You killed everyone. (" + count + (" cells.)"));
-    },
-    mass: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var mass = parseInt(args[1]);
-        var id = parseInt(args[2]);
-        var size = Math.sqrt(mass * 100);
+        send(player, "You killed everyone. (" + count + (" cells.)"));
+    }),
+    new Command("spawnmass", "<mass> [id]", "gives spawn with mass to yourself or to other player", UserRoleEnum.MODER, (player, args) => {
+        const mass = parseInt(args[1]);
+        if (isNaN(mass))
+            return send(player, "ERROR: missing mass argument!");
+        const size = Math.sqrt(mass * 100);
+        const id = parseInt(args[2]);
 
-        if (isNaN(mass)) {
-            this.writeLine("ERROR: missing mass argument!");
-            return;
-        }
-
+        let p;
         if (isNaN(id)) {
-            this.writeLine("Warn: missing ID arguments. This will change your mass.");
-            for (var i in this.player.cells) {
-                this.player.cells[i].setSize(size);
-            }
-            this.writeLine("Set mass of " + this.player._name + " to " + size * size / 100);
-        } else {
-            for (var i in this.server.clients) {
-                var client = this.server.clients[i].player;
-                if (client.pID == id) {
-                    for (var j in client.cells) {
-                        client.cells[j].setSize(size);
-                    }
-                    this.writeLine("Set mass of " + client._name + " to " + size * size / 100);
-                    var text = this.player._name + " changed your mass to " + size * size / 100;
-                    this.server.sendChatMessage(null, client, text);
-                    break;
-                }
-            }
-        }
-
-    },
-    spawnmass: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var mass = parseInt(args[1]);
-        var id = parseInt(args[2]);
-        var size = Math.sqrt(mass * 100);
-
-        if (isNaN(mass)) {
-            this.writeLine("ERROR: missing mass argument!");
-            return;
-        }
-
-        if (isNaN(id)) {
-            this.player.spawnmass = size;
-            this.writeLine("Warn: missing ID arguments. This will change your spawnmass.");
-            this.writeLine("Set spawnmass of " + this.player._name + " to " + size * size / 100);
-        } else {
-            for (var i in this.server.clients) {
-                var client = this.server.clients[i].player;
-                if (client.pID == id) {
-                    client.spawnmass = size;
-                    this.writeLine("Set spawnmass of " + client._name + " to " + size * size / 100);
-                    var text = this.player._name + " changed your spawn mass to " + size * size / 100;
-                    this.server.sendChatMessage(null, client, text);
-                }
-            }
-        }
-    },
-    minion: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var add = args[1];
-        var id = parseInt(args[2]);
-        var player = this.player;
+            send(player, "Warn: missing ID argument. This will change your spawnmass.");
+            p = player;
+        } else p = findPlayer(player.server, id);
+        if (!p) return send(player, "Didn't find player with id " + id);
+        p.spawnmass = size; // it's called spawnmass, not spawnsize, but ok.
+        send(player, `Set spawnmass of ${p._name} to ` + mass);
+        if (p != player) send(p, player._name + " changed your spawn mass to " + mass);
+    }),
+    new Command("minion", "[id] <count>", "gives yourself or other player minions", UserRoleEnum.MODER, (player, args) => {
+        let add = args[1];
+        let id = parseInt(args[2]);
+        const p = player;
 
         /** For you **/
         if (isNaN(id)) {
-            this.writeLine("Warn: missing ID arguments. This will give you minions.");
+            send(player, "Warn: missing ID arguments. This will give you minions.");
             // Remove minions
-            if (player.minionControl == true && add == "remove") {
-                player.minionControl = false;
-                player.miQ = 0;
-                this.writeLine("Succesfully removed minions for " + player._name);
+            if (p.minionControl == true && add == "remove") {
+                p.minionControl = false;
+                p.miQ = 0;
+                send(player, "Succesfully removed minions for " + p._name);
                 // Add minions
             } else {
-                player.minionControl = true;
+                p.minionControl = true;
                 // Add minions for self
                 if (isNaN(parseInt(add))) add = 1;
-                for (var i = 0; i < add; i++) {
-                    this.server.bots.addMinion(player);
+                for (let i = 0; i < add; i++) {
+                    player.server.bots.addMinion(player);
                 }
-                this.writeLine("Added " + add + " minions for " + player._name);
+                send(player, "Added " + add + " minions for " + p._name);
             }
-
         } else {
             /** For others **/
-            for (var i in this.server.clients) {
-                var client = this.server.clients[i].player;
+            for (let i in player.server.clients) {
+                const client = player.server.clients[i].player;
                 if (client.pID == id) {
 
                     // Prevent the user from giving minions, to minions
@@ -524,248 +320,218 @@ var playerCommands = {
                     if (client.minionControl == true) {
                         client.minionControl = false;
                         client.miQ = 0;
-                        this.writeLine("Succesfully removed minions for " + client._name);
-                        var text = this.player._name + " removed all off your minions.";
-                        this.server.sendChatMessage(null, client, text);
+                        send(player, "Succesfully removed minions for " + client._name);
+                        const text = player._name + " removed all off your minions.";
+                        player.server.sendChatMessage(null, client, text);
                         // Add minions
                     } else {
                         client.minionControl = true;
                         // Add minions for client
                         if (isNaN(add)) add = 1;
-                        for (var i = 0; i < add; i++) {
-                            this.server.bots.addMinion(client);
+                        for (let i = 0; i < add; i++) {
+                            player.server.bots.addMinion(client);
                         }
-                        this.writeLine("Added " + add + " minions for " + client._name);
-                        var text = this.player._name + " gave you " + add + " minions.";
-                        this.server.sendChatMessage(null, client, text);
+                        send(player, "Added " + add + " minions for " + client._name);
+                        const text = player._name + " gave you " + add + " minions.";
+                        player.server.sendChatMessage(null, client, text);
                     }
                 }
             }
         }
-    },
-    addbot: function (args) {
-        var add = parseInt(args[1]);
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
+    }),
+    new Command("addbot", "<count>", "adds AI bots to the server", UserRoleEnum.MODER, (player, args) => {
+        const add = parseInt(args[1]);
+        for (let i = 0; i < add; i++) {
+            player.server.bots.addBot();
         }
-        for (var i = 0; i < add; i++) {
-            this.server.bots.addBot();
-        }
-        Logger.warn(this.player.socket.remoteAddress + "ADDED " + add + " BOTS");
-        this.writeLine("Added " + add + " Bots");
-    },
-    tp: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        var id = parseInt(args[1]);
-        if (isNaN(id)) {
-            this.writeLine("Please specify a valid player ID!");
+        Logger.warn(player.socket.remoteAddress + "ADDED " + add + " BOTS");
+        send(player, "Added " + add + " Bots");
+    }),
+    new Command("ban", "[id]", "bans a(n) (player's)", UserRoleEnum.ADMIN, (player, args) => {
+        // Error message
+        const logInvalid = send(player, "Please specify a valid player ID or IP address!");
+
+        if (args[1] == null) {
+            // If no input is given; added to avoid error
+            send(player, logInvalid);
             return;
         }
 
-        // Make sure the input values are numbers
-        var pos = {
-            x: parseInt(args[2]),
-            y: parseInt(args[3])
-        };
-        if (isNaN(pos.x) || isNaN(pos.y)) {
-            this.writeLine("Invalid coordinates");
-            return;
-        }
+        if (args[1].indexOf(".") >= 0) {
+            // If input is an IP address
+            let ip = args[1];
+            let ipParts = ip.split(".");
 
-        // Spawn
-        for (var i in this.server.clients) {
-            if (this.server.clients[i].player.pID == id) {
-                var client = this.server.clients[i].player;
-                if (!client.cells.length) return this.writeLine("That player is either dead or not playing!");
-                for (var j in client.cells) {
-                    client.cells[j].position.x = pos.x;
-                    client.cells[j].position.y = pos.y;
-                    this.server.updateNodeQuad(client.cells[j]);
+            // Check for invalid decimal numbers of the IP address
+            for (let i in ipParts) {
+                if (i > 1 && ipParts[i] == "*") {
+                    // mask for sub-net
+                    continue;
                 }
-                Logger.print("Teleported " + client._name + " to (" + pos.x + " , " + pos.y + ")");
+                // If not numerical or if it's not between 0 and 255
+                // TODO: Catch string "e" as it means "10^".
+                if (isNaN(ipParts[i]) || ipParts[i] < 0 || ipParts[i] >= 256) {
+                    send(player, logInvalid);
+                    return;
+                }
+            }
+
+            if (ipParts.length != 4) {
+                // an IP without 3 decimals
+                send(player, logInvalid);
+                return;
+            }
+
+            player.server.banIp(ip);
+            return;
+        }
+        // if input is a Player ID
+        let id = parseInt(args[1]);
+        if (isNaN(id)) {
+            // If not numerical
+            send(player, logInvalid);
+            return;
+        }
+
+        let ip = null;
+        for (let i in player.server.clients) {
+            const client = player.server.clients[i];
+            if (client == null || !client.isConnected)
+                continue;
+            if (client.player.pID == id) {
+                ip = client._socket.remoteAddress;
                 break;
             }
         }
-        if (client == null) return void this.writeLine("That player ID is non-existant!");
-    },
-    spawn: function (arg){
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
+        if (ip) player.server.banIp(ip);
+        else send(player, "Player ID " + id + " not found!");
+    }),
+    new Command("mute", "[id] <reason>", "mute (player's) from chat", UserRoleEnum.ADMIN, (player, args) => {
+        let id = args[1];
+        let reason = args[2];
+        if (!reason) reason = " Reason: None";
+        else reason = " Reason: " + reason;
+        if (id == null) {
+            send(player, "Please specify a valid player ID!");
             return;
         }
-        var ent = arg[1];
-        if (ent != "virus" && ent != "food" && ent != "mothercell" && ent != "minion") {
-            this.writeLine("Please specify either virus, food, minion, or mothercell");
+        const count = 0;
+        player.server.clients.forEach(function (socket) {
+            // disconnect
+            const name = socket.player._name.split("$")[0];
+            player.server.sendChatMessage(null, null, name + " was muted." + reason);
+            send(player, "You muted " + name + "." + reason);
+            console.log(name + " was muted." + reason);
+            socket.player.isMuted = true;
+            count++;
+        }, this);
+        if (count) return;
+        if (!id) send(player, "No players to mute!");
+        else send(player, "Player with ID " + id + "not found!");
+    }),
+    new Command("unmute", "[id]", "unmute (player's) from chat", UserRoleEnum.ADMIN, (args) => {
+        let id = args[1];
+        if (id == null) {
+            this.writeline("Please specify a valid player ID!");
             return;
         }
-
-        var pos = {
-            x: parseInt(arg[2]),
-            y: parseInt(arg[3])
-        };
-        var mass = parseInt(arg[4]);
-
-        // Make sure the input values are numbers
-        if (isNaN(pos.x) || isNaN(pos.y)) {
-            this.writeLine("Invalid coordinates");
+        const count = 0;
+        player.server.clients.forEach(function (socket) {
+            const name = socket.player._name.split("$")[0];
+            if (socket.player.isMuted == false) {
+                send(player, name + " isn't muted")
+            }
+            player.server.sendChatMessage(null, null, name + ' was unmuted.');
+            send(player, "You unmuted " + name + '.')
+            console.log(name + ' was unmuted.')
+            socket.player.isMuted = false;
+            count++;
+        }, this);
+        if (count) return;
+        if (!id) send(player, "No players to mute!");
+        else send(player, "Player with ID " + id + "not found!");
+    }),
+    new Command("pause", "", "freeze game", UserRoleEnum.ADMIN, (player, args) => {
+        player.server.run = !player.server.run; // Switches the pause state
+        let s = server.run ? "Unpaused" : "Paused";
+        send(player, s + " the game.");
+    }),
+    new Command("freeze", "[id]", "frozen (player's) or bots", UserRoleEnum.ADMIN, (player, args) => {
+        let id = args[1];
+        if (id == null) {
+            this.writeline("Please specify a valid player ID!");
             return;
         }
-
-        // Start size for each entity 
-        if (ent == "virus") {
-            var size = this.server.config.virusMinSize;
-        } else if (ent == "mothercell") {
-            size = this.server.config.virusMinSize * 2.5;
-        } else if (ent == "food") {
-            size = this.server.config.foodMinMass;
-        }else if (ent == "minion") {
-            size = this.server.config.virusMinSize;
-        }
-
-        if (!isNaN(mass)) {
-            size = Math.sqrt(mass * 100);
-        }
-
-        // Spawn for each entity
-        if (ent == "virus") {
-            var virus = new Entity.Virus(this.server, null, pos, size);
-            this.server.addNode(virus);
-            this.writeLine("Spawned 1 virus at (" + pos.x + " , " + pos.y + ")");
-        } else if (ent == "food") {
-            var food = new Entity.Food(this.server, null, pos, size);
-            food.color = this.server.getRandomColor();
-            this.server.addNode(food);
-            this.writeLine("Spawned 1 food cell at (" + pos.x + " , " + pos.y + ")");
-        } else if (ent == "mothercell") {
-            var mother = new Entity.MotherCell(this.server, null, pos, size);
-            this.server.addNode(mother);
-            this.writeLine("Spawned 1 mothercell at (" + pos.x + " , " + pos.y + ")");
-        } else if (ent == "minion") {
-            var mother = new Entity.Minions(this.server, null, pos, size);
-            this.server.addNode(mother);
-            this.writeLine("Spawned 1 minion at (" + pos.x + " , " + pos.y + ")");
-        }
-    },
-    status: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN && this.player.userRole != UserRoleEnum.MODER) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
+        //kick player
+        const count = 0;
+        player.server.clients.forEach(function (socket) {
+            const name = socket.player._name;
+            const client = socket.player;
+            if (!client.cells.length) return send(player, 'Player is not playing!')
+            if (!client.frozen) {
+                client.frozen = true;
+                console.log(name + ` is frozen now.`)
+                player.server.sendChatMessage(null, null, name + ' is now frozen.');
+                send(player, "You froze " + name)
+            } else {
+                client.frozen = false;
+                player.server.sendChatMessage(null, null, name + ` isn't frozen now.`);
+                send(player, "You unfroze " + name);
+                console.log(name + ` isn't frozen now.`)
+            }
+            count++;
+        }, this);
+        if (count) return;
+        if (!id) send(player, "No players to mute!");
+        else send(player, "Player with ID " + id + "not found!");
+    }),
+    new Command("status", "", "show status of the Server", UserRoleEnum.ADMIN, (player, args) => {
         // Get amount of humans/bots
-        var humans = 0,
+        let humans = 0,
             bots = 0;
-        for (var i = 0; i < this.server.clients.length; i++) {
-            if ('_socket' in this.server.clients[i]) {
+        for (let i = 0; i < player.server.clients.length; i++) {
+            if ('_socket' in player.server.clients[i]) {
                 humans++;
             } else {
                 bots++;
             }
         }
-        var ini = require('./ini.js');
-        this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        this.writeLine("Connected players: " + this.server.clients.length + "/" + this.server.config.serverMaxConnections);
-        this.writeLine("Players: " + humans + " - Bots: " + bots);
-        this.writeLine("Server has been running for " + Math.floor(process.uptime() / 60) + " minutes");
-        this.writeLine("Current memory usage: " + Math.round(process.memoryUsage().heapUsed / 1048576 * 10) / 10 + "/" + Math.round(process.memoryUsage().heapTotal / 1048576 * 10) / 10 + " mb");
-        this.writeLine("Current game mode: " + this.server.gameMode.name);
-        this.writeLine("Current update time: " + this.server.updateTimeAvg.toFixed(3) + " [ms]  (" + ini.getLagMessage(this.server.updateTimeAvg) + ")");
-        this.writeLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    },
-    gett: function (args) {
-        var password = args[1] + "";
-        if (password.length < 1) {
-            this.writeLine("ERROR: missing password argument!");
-            return;
-        }
-        var user = this.userLogin(this.player.socket.remoteAddress, password);
-        if (!user) {
-            this.writeLine("ERROR: login failed!");
-            return;
-        }
-        Logger.write("LOGIN        " + this.player.socket.remoteAddress + ":" + this.player.socket.remotePort + " as \"" + user.name + "\"");
-        this.player.userRole = user.role;
-        this.player.userAuth = user.name;
-        this.writeLine("Login done as \"" + user.name + "\"");
-        return;
-    },
-    logout: function (args) {
-        if (this.player.userRole == UserRoleEnum.GUEST) {
-            this.writeLine("ERROR: not logged in");
-            return;
-        }
-        Logger.write("LOGOUT       " + this.player.socket.remoteAddress + ":" + this.player.socket.remotePort + " as \"" + this.player.userAuth + "\"");
-        this.player.userRole = UserRoleEnum.GUEST;
-        this.player.userAuth = null;
-        this.writeLine("Logout done");
-    },
-    shutdown: function (args) {
-        if (this.player.userRole != UserRoleEnum.ADMIN) {
-            this.writeLine("ERROR: access denied!");
-            return;
-        }
-        Logger.warn("SHUTDOWN REQUEST FROM " + this.player.socket.remoteAddress + " as " + this.player.userAuth);
+        const ini = require('./ini.js');
+        send(player, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        send(player, "Connected players: " + player.server.clients.length + "/" + player.server.config.serverMaxConnections);
+        send(player, "Players: " + humans + " - Bots: " + bots);
+        send(player, "Server has been running for " + Math.floor(process.uptime() / 60) + " minutes");
+        send(player, "Current memory usage: " + Math.round(process.memoryUsage().heapUsed / 1048576 * 10) / 10 + "/" + Math.round(process.memoryUsage().heapTotal / 1048576 * 10) / 10 + " mb");
+        send(player, "Current game mode: " + player.server.gameMode.name);
+        send(player, "Current update time: " + player.server.updateTimeAvg.toFixed(3) + " [ms]  (" + ini.getLagMessage(player.server.updateTimeAvg) + ")");
+        send(player, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    }),
+    new Command("restart", "", "restarts the server", UserRoleEnum.ADMIN, (player, server) => {
+        send(player, "Restarting...");
+        player.server.restart();
+    }),
+    new Command("shutdown", "", "SHUTS DOWN THE SERVER", UserRoleEnum.ADMIN, (args) => {
+        Logger.warn("SHUTDOWN REQUEST FROM " + player.socket.remoteAddress + " as " + player.userAuth);
         process.exit(0);
-    },
-}
+    }),
+]
+
+for (const cmd of commands) commandMap.set(cmd.name, cmd);
 
 class PlayerCommand {
     constructor(server, player) {
         this.server = server;
         this.player = player;
     }
-    writeLine(text) {
-        this.server.sendChatMessage(null, this.player, text);
-    }
-    executeCommandLine(commandLine) {
-        if (!commandLine) return;
-
-        if (!this.parsePluginCommands(commandLine)) return;
-
-        // Splits the string
-        var args = commandLine.split(" ");
-
-        // Process the first string value
-        var first = args[0].toLowerCase();
-
-        // Get command function
-        var execute = playerCommands[first];
-        if (typeof execute != 'undefined') {
-            execute.bind(this)(args);
-        } else {
-            this.writeLine("ERROR: Unknown command, type /help for command list");
-        }
-    }
-    parsePluginCommands(str) {
-        // Splits the string
-        var args = str.split(" ");
-
-        // Process the first string value
-        var first = args[0].toLowerCase();
-
-        // Get command function
-        var execute = this.server.Plugins.playerCommands[first];
-        if (typeof execute != 'undefined') {
-            execute(this, args, this.player, this.server);
-            return false;
-        } else return true;
-    }
-    userLogin(ip, password) {
-        if (!password) return null;
-        password = password.trim();
-        if (!password) return null;
-        for (var i = 0; i < this.server.userList.length; i++) {
-            var user = this.server.userList[i];
-            if (user.password != password)
-                continue;
-            if (user.ip && user.ip != ip && user.ip != "*") // * - means any IP
-                continue;
-            return user;
-        }
-        return null;
+    processMessage(from, msg) {
+        msg = msg.slice(1); // remove forward-slash
+        let args = msg.split(" ");
+        const cmdName = args[0];
+        const cmd = commandMap.get(cmdName);
+        if (cmd)
+            if (from.userRole >= cmd.minCred) cmd.handler(from, args);
+            else send(from, "ERROR: access denied! " + from.userRole + ", " + cmd.minCred);
+        else send(from, "Invalid command, please use /help to get a list of available commands");
     }
 }
 

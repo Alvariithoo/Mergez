@@ -1,12 +1,12 @@
 ﻿[
     { 
-        "ip": "", 
+        "ip": "*", 
         "password": "0_xazOutNoob36+",
         "role": "ADMIN",
         "name": "Administrator" 
     },
     { 
-        "ip":"", 
+        "ip":"*", 
         "password": "0_xazzOutAgain36+",
         "role": "MODER",
         "name": "Moderator" 

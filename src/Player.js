@@ -139,7 +139,7 @@ class Player {
         this._nameUtf8 = writer.toBuffer();
     }
     getName() {
-        return this._name;
+        return this._name.split("$")[0];
     }
     setSkin(skin) {
         this._skin = skin;
