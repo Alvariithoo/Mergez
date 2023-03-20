@@ -1198,14 +1198,14 @@ class Server {
                 }
             }
         }
-        Logger.debug("===Server.splitMass===");
-        Logger.debug("mass = " + mass.toFixed(3) + "  |  " + Math.sqrt(mass * 100).toFixed(3));
-        var sum = 0;
-        for (var i = 0; i < masses.length; i++) {
-           Logger.debug("mass[" + i + "] = " + masses[i].toFixed(3) + "  |  " + Math.sqrt(masses[i] * 100).toFixed(3));
-           sum += masses[i]
-        }
-        Logger.debug("sum  = " + sum.toFixed(3) + "  |  " + Math.sqrt(sum * 100).toFixed(3));
+        // Logger.debug("===Server.splitMass===");
+        // Logger.debug("mass = " + mass.toFixed(3) + "  |  " + Math.sqrt(mass * 100).toFixed(3));
+        // var sum = 0;
+        // for (var i = 0; i < masses.length; i++) {
+        //    Logger.debug("mass[" + i + "] = " + masses[i].toFixed(3) + "  |  " + Math.sqrt(masses[i] * 100).toFixed(3));
+        //    sum += masses[i]
+        // }
+        // Logger.debug("sum  = " + sum.toFixed(3) + "  |  " + Math.sqrt(sum * 100).toFixed(3));
         return masses;
     }
     splitCells(client) {
@@ -1700,18 +1700,6 @@ class Server {
                 res.end(this.stats);
                 return
             }
-            var urlSPLIT = url.split('');
-            var accURL = urlSPLIT[0] + urlSPLIT[1] + urlSPLIT[2] + urlSPLIT[3] + urlSPLIT[4] + urlSPLIT[5] + urlSPLIT[6] + urlSPLIT[7] + urlSPLIT[8] + urlSPLIT[9] + urlSPLIT[10]
-            console.log(url.replace(accURL, ''))
-            //var acc = require('underscore').find(fs.readFileSync('database/data.json'), ["id",url.replace(accURL,'')])
-            fs.readFileSync('./database/data.json', 'utf8', function (data) {
-                console.log('here')
-                var filtr = Object.values(JSON.parse(data).data).filter(account => account.id === url.replace(accURL, ''));
-                console.log(filtr.length)
-                res.write(filtr || 'Not Found');
-                res.end()
-            })
-
         }.bind(this));
         this.httpServer.on('error', function (err) {
             Logger.error("Stats Server: " + err.message);

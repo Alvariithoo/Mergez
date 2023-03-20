@@ -83,7 +83,7 @@ const commands = [
                     client.cells[j].position.y = pos.y;
                     player.server.updateNodeQuad(client.cells[j]);
                 }
-                send(player, `Teleported ${client._name} to (${pos.x} , ${pos.y} + ")`);
+                // send(player, `Teleported ${client._name} to (${pos.x} , ${pos.y} + ")`);
                 break;
             }
         }
@@ -105,9 +105,9 @@ const commands = [
         send(player, `Set mass of ${player._name} to ${mass}`);
         if (p != player) send(p, player._name + " changed your mass to " + mass);
     }),
-    new Command("spawn", "[<virus>|<food>|<mothercell>|<minion>] <cords-x> <cords-y> <mass>", "spawn a entity", UserRoleEnum.MODER, (player, arg) => {
+    new Command("spawn", "[<virus>|<food>|<mothercell>|<minion>|<kicker>] <cords-x> <cords-y> <mass>", "spawn a entity", UserRoleEnum.MODER, (player, arg) => {
         let ent = arg[1];
-        if (ent != "virus" && ent != "food" && ent != "mothercell" && ent != "minion") {
+        if (ent != "virus" && ent != "food" && ent != "mothercell" && ent != "minion" && ent != "kicker") {
             send(player, "Please specify either virus, food, minion, or mothercell");
             return;
         }
@@ -133,6 +133,8 @@ const commands = [
             size = player.server.config.foodMinMass;
         } else if (ent == "minion") {
             size = player.server.config.virusMinSize;
+        } else if (ent == "kicker") {
+            size = 50;
         }
 
         // Spawn for each entity
@@ -153,6 +155,10 @@ const commands = [
             let mother = new Entity.Minions(player.server, null, pos, size);
             player.server.addNode(mother);
             Logger.print(`Spawned 1 minion at (${pos.x} , ${pos.y})`);
+        } else if (ent == "kicker") {
+            let kicker = new Entity.Kicker(player.server, null, pos, size);
+            Logger.print(`Spawned 1 kicker at (${pos.x} , ${pos.y})`);
+            player.server.addNode(kicker);
         }
     }),
     /*new Command("skin", "[skin]", "change skin", UserRoleEnum.MODER, (player, args) => {
@@ -197,9 +203,9 @@ const commands = [
                     reason += "[" + socket.closeReason.code + "] ";
                 if (socket.closeReason.message)
                     reason += socket.closeReason.message;
-                send(player, `ID: ${id}, IP: ${ip}, REASON: ${reason}`);
+                send(player, `ID: ${id}, REASON: ${reason}`);
             } else if (!socket.client.protocol && socket.isConnected) {
-                send(player, `ID: ${id}, IP: ${ip}, [CONNECTING]`);
+                send(player, `ID: ${id}, [CONNECTING]`);
             } else if (client.spectate) {
                 nick = "in free-roam";
                 if (!client.freeRoam) {
@@ -209,14 +215,14 @@ const commands = [
                     }
                 }
                 data = "SPECTATING";
-                send(player, `ID: ${id}, IP: ${ip}, DATA: ${data}`);
+                send(player, `ID: ${id}, DATA: ${data}`);
             } else if (client.cells.length > 0) {
                 nick = client._name;
                 cells = client.cells.length;
-                send(player, `ID: ${id}, NICK: ${nick}, IP: ${ip}, CELLS: ${cells} `);
+                send(player, `ID: ${id}, NICK: ${nick}, CELLS: ${cells} `);
             } else {
                 // No cells = dead player or in-menu
-                send(player, `ID: ${id}, IP: ${ip}, DEAD OR NOT PLAYING`);
+                send(player, `ID: ${id}, DEAD OR NOT PLAYING`);
             }
         }
     }),
@@ -349,7 +355,7 @@ const commands = [
     }),
     new Command("ban", "[id]", "bans a(n) (player's)", UserRoleEnum.ADMIN, (player, args) => {
         // Error message
-        const logInvalid = send(player, "Please specify a valid player ID or IP address!");
+        const logInvalid = "Please specify a valid player ID or IP address!";
 
         if (args[1] == null) {
             // If no input is given; added to avoid error
