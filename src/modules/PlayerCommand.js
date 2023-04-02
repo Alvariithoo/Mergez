@@ -236,7 +236,7 @@ const commands = [
             return;
         }
         //kick player
-        const count = 0;
+        var count = 0;
         player.server.clients.forEach(function (socket) {
             if (socket.isConnected === false)
                 return;
