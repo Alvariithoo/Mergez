@@ -1,3 +1,4 @@
+'use strict';
 // Imports
 const Logger = require('./modules/Logger');
 const Commands = require('./modules/CommandList');

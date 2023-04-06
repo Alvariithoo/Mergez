@@ -9,7 +9,7 @@ var io = require('socket.io')(9700);
 var id = 0;
 
 var connectedOrigins = [];
-var allowedOrigin = "http://49.12.231.126:3333";
+var allowedOrigin = "http://mergez.eu";
 
 var playersOnline = 0;
 Logger.info("\x1b[34mMinimap\x1b[37m started successfully");
@@ -32,7 +32,7 @@ class DataServer {
             var origin = socket.handshake.headers.origin;
             if (connectedOrigins.indexOf(origin) < 0) {
                 connectedOrigins.push(origin);
-                fs.writeFileSync(config.origins, connectedOrigins.join("\n"))
+                fs.writeFileSync("../origins.txt", connectedOrigins.join("\n"))
             }
             if (origin.indexOf(allowedOrigin) < 0) {
                 socket.isFake = true;
