@@ -1708,18 +1708,16 @@ class Server {
     }
     getStats() {
         // Get server statistics
-        var totalPlayers = 0;
-        var alivePlayers = 0;
-        var spectatePlayers = 0;
-        for (var i = 0; i < this.clients.length; i++) {
-            var socket = this.clients[i];
-            if (socket == null || !socket.isConnected)
-                continue;
-            totalPlayers++;
-            if (socket.player.cells.length > 0)
-                alivePlayers++;
-            else
-                spectatePlayers++;
+        let alivePlayers = 0;
+        let spectatePlayers = 0;
+        let bots = 0;
+        let minions = 0;
+        for (const client of this.clients) {
+            if (!client || !client.isConnected) continue;
+            if (client.player.isBot) ++bots;
+            else if (client.player.isMi) ++minions;
+            else if (client.player.cells.length) ++alivePlayers;
+            else ++spectatePlayers;
         }
         var s = {
             'server_name': this.config.serverName,
@@ -1728,14 +1726,17 @@ class Server {
             'border_height': this.border.height,
             'gamemode': this.gameMode.name,
             'max_players': this.config.serverMaxConnections,
-            'current_players': totalPlayers,
+            'current_players': alivePlayers + spectatePlayers,
             'alive': alivePlayers,
             'spectators': spectatePlayers,
+            'bots': bots,
+            'minions': minions,
             'update_time': this.updateTimeAvg.toFixed(3),
             'uptime': Math.round((this.stepDateTime - this.startTime) / 1000 / 60),
-            'start_time': this.startTime
+            'start_time': this.startTime,
+            'stats_time': Date.now()
         };
-        s.ip = this.config.ip + ":" + this.config.serverPort;
+        this.statsObj = s;
         this.stats = JSON.stringify(s);
     }
     getMassLimit() {
