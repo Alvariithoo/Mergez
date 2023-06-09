@@ -15,18 +15,18 @@ class Plugins {
 		this.start();
 	}
 	start() {
-		this.Log(this.pluginsdir.length + " Plugins loaded!");
+		// this.Log(this.pluginsdir.length + " Plugins loaded!");
 		for (var i in this.pluginsdir) {
 			if (this.pluginsdir[i] == '../src/plugins/Readme.md')
 				continue;
 			var plugindir = require(this.pluginsdir[i]);
 			var plugin = new plugindir(this.server, this, function (message, name) {
-				console.log("\u001B[34m\u001B[1m[" + name + "] " + "\u001B[37m" + message);
+				// console.log("\u001B[34m\u001B[1m[" + name + "] " + "\u001B[37m" + message);
 			});
 			if (!plugin.active)
 				continue;
 			this.plugins[plugin.name] = plugin;
-			this.Log(plugin.name + " " + plugin.version + " By " + plugin.author + " Has been loaded!");
+			// this.Log(plugin.name + " " + plugin.version + " By " + plugin.author + " Has been loaded!");
 			plugin.start();
 		}
 	}

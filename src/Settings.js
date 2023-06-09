@@ -31,7 +31,7 @@
 // serverPort: Server port which will be used to listen for incoming connections
 // serverBind: Server network interface which will be used to listen for incoming connections (0.0.0.0 for all IPv4 interfaces)
 // serverTracker: Set to 1 if you want to show your server on the tracker http://ogar.mivabe.nl/master (check that your server port is opened for external connections before setting it to 1)
-// serverGamemode: 0 = FFA, 1 = Ultra
+// serverGamemode: 0 = FFA, 1 = Ultra, 2 = Wager
 // serverBots: Number of player bots to spawn (Experimental)
 // serverViewBase: Base view distance of players. Warning: high values may cause lag! Min value is 1920x1080
 // serverMinScale: Min scale for player (low value leads to lags due to large visible area for big cell)
@@ -47,7 +47,7 @@
 "serverVersionCode": 4,
 "serverTimeout": 900,
 "serverWsModule": "ws",
-"serverMaxConnections": 120,
+"serverMaxConnections": 33,
 "serverIpLimit": 0,
 "serverMinionIgnoreTime": 30,
 "serverMinionThreshold": 10,
@@ -55,12 +55,12 @@
 "serverPort": 7251,
 "serverBind": "0.0.0.0",
 "serverTracker": 0,
-"serverGamemode": 1,
-"serverBots": 3,
+"serverGamemode": 2,
+"serverBots": 0,
 "serverViewBaseX": 3072,
 "serverViewBaseY": 1296,
 "serverMinScale": 0.000001,
-"serverSpectatorScale": 0.35,
+"serverSpectatorScale": 0.1,
 "serverStatsPort": 8888,
 "serverStatsUpdate": 1,
 "serverScrambleLevel": 0,
@@ -68,14 +68,15 @@
 "serverChat": 1,
 "serverChatAscii": 0,
 "separateChatForTeams": 1,
-"serverName": "Ultrasplit",
-"serverWelcome1": "Connected to Ultrasplit",
-"serverWelcome2": "First to get 220k wins!",
+"serverName": "Wager",
+"serverWelcome1": "Connected to Wager",
+// "serverWelcome2": "First to get 150k wins!",
+"origins": "http://49.12.231.126:3333",
 
 // [Border]
 // Border size (vanilla 14142.135623730952)
-"borderWidth": 16142,
-"borderHeight": 16142,
+"borderWidth": 16000,
+"borderHeight": 16000,
 
 // [Spawn]
 // Each interval is 1 tick (40 ms)
@@ -83,8 +84,8 @@
 // foodMaxSize: vanilla 20 (mass = 20*20/100 = 4)
 "foodMinSize": 10,
 "foodMaxSize": 20,
-"foodMinAmount": 1000,
-"foodMaxAmount": 1500,
+"foodMinAmount": 500,
+"foodMaxAmount": 1000,
 "foodSpawnAmount": 59.16079783,
 "foodMassGrow": 1,
 "spawnInterval": 15,
@@ -94,7 +95,7 @@
 "virusMinSize": 100,
 "virusMaxSize": 141.421356237,
 "virusMinAmount": 0,
-"virusMaxAmount": 3,
+"virusMaxAmount": 0,
 
 // [Ejected Mass]
 // ejectSize: vanilla 37 (mass = 37*37/100 = 13.69)
@@ -102,8 +103,8 @@
 // ejectDistance: vanilla 780
 // ejectCooldown: Tick count until a player can eject mass again (1 tick = 40 ms)
 // ejectSpawnPlayer: if 1 then player may be spawned from ejected mass
-"ejectSize": 52.06,
-"ejectSizeLoss": 52.43,
+"ejectSize": 32.06,
+"ejectSizeLoss": 32.06,
 "ejectDistance": 880,
 "ejectCooldown": 0,
 "ejectSpawnPlayer": 0,
@@ -120,12 +121,12 @@
 // playerRecombineTime: Base time in seconds before a cell is allowed to recombine
 // playerDecayRate: Amount of size lost per second
 // playerDisconnectTime: Time in seconds before a disconnected player's cell is removed (Set to -1 to never remove)
-"playerMinSize": 31.6227766017,
+"playerMinSize": 84,
 "playerMaxSize": 15000000,
-"playerMinSplitSize": 59.16079783,
-"playerStartSize": 150,
-"playerMaxCells": 128,
-"playerSpeed": 1,
+"playerMinSplitSize": 121,
+"playerStartSize": 1680,
+"playerMaxCells": 138,
+"playerSpeed": 1.65,
 "playerDecayRate": 0,
 "playerRecombineTime": 0,
 "playerMaxNickLength": 15,
@@ -142,7 +143,7 @@
 // playerSplitDelay: Next Auto Split In Milliseconds for (Double, tripe, x16, etc.)
 // playerMergeType: 0 = Ultrasplit | 1 = Instant | 2 = Normal
 // chatCooldown: Next msg in Milliseconds
-"ultraRestartMassLimit": 220000,
+"ultraRestartMassLimit": 150000,
 "ultraRestartCounterDuration": 25,
 "serverMassLimit": 1000000,
 "restartMessage": "Server restarting...",

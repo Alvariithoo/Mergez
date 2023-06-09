@@ -233,10 +233,13 @@ class Client {
     }
     message_onStat(message) {
         if (message.length !== 1) return;
-        const dt = this.server.ticks - this.lastStatTick;
-        this.lastStatTick = this.server.ticks;
-        if (dt < 25) return;
-        this.sendPacket(new Packet.ServerStat(this.socket.player));
+        var tick = this.server.getTick();
+        var dt = tick - this.lastStatTick;
+        this.lastStatTick = tick;
+        if (dt < 25) {
+            return;
+        }
+        this.socket.sendPacket(new Packet.ServerStat(this.socket.player));
     }
     processMouse() {
         if (this.mouseData == null) return;

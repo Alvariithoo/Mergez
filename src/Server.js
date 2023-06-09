@@ -18,6 +18,7 @@ const BotLoader = require('./ai/BotLoader');
 const Logger = require('./modules/Logger');
 const UserRoleEnum = require('./enum/UserRoleEnum');
 const Plugins = require('./PluginsLoader');
+const Room = require('./modules/Room');
 
 // Files imports
 const fileNameBadWords = '../src/badwords.txt';
@@ -26,9 +27,10 @@ const fileNameUsers = '../src/modules/userRoles.json';
 
 // Server implementation
 class Server {
-    constructor() {
+    constructor(port) {
         this.httpServer = null;
         this.wsServer = null;
+        this.closed = false;
 
         // Startup
         this.run = true;
@@ -72,6 +74,7 @@ class Server {
 
         // Config
         this.config = require('./Settings.js');
+        this.port = port;
 
         this.ipBanList = [];
         this.minionTest = [];
@@ -85,6 +88,10 @@ class Server {
 
         this.setBorder(this.config.borderWidth, this.config.borderHeight);
         this.quadTree = new QuadNode(this.border, 64, 32);
+
+        // Room
+        this.room = new Room();
+        this.onClose = () => null;
     }
     start() {
         this.Plugins.load();
@@ -106,11 +113,11 @@ class Server {
                 key: fs.readFileSync(pathKey, 'utf8'),
                 cert: fs.readFileSync(pathCert, 'utf8')
             }
-            Logger.info("TLS: supported");
+            // Logger.info("TLS: supported");
             this.httpServer = HttpsServer.createServer(options);
         } else {
             // HTTP only
-            Logger.warn("TLS: not supported (SSL certificate not found!)");
+            // Logger.warn("TLS: not supported (SSL certificate not found!)");
             this.httpServer = http.createServer();
         }
         var wsOptions = {
@@ -122,9 +129,9 @@ class Server {
         this.wsServer = new WebSocket.Server(wsOptions);
         this.wsServer.on('error', this.onServerSocketError.bind(this));
         this.wsServer.on('connection', this.onClientSocketOpen.bind(this));
-        this.httpServer.listen(this.config.serverPort, this.config.serverBind, this.onHttpServerOpen.bind(this));
+        this.httpServer.listen(this.port, this.config.serverBind, this.onHttpServerOpen.bind(this));
 
-        this.startStatsServer(this.config.serverStatsPort);
+        // this.startStatsServer(this.config.serverStatsPort); nope.
     }
     onHttpServerOpen() {
         // Spawn starting food
@@ -134,8 +141,7 @@ class Server {
         setTimeout(this.timerLoopBind, 1);
 
         // Done
-        Logger.info("GAMESERVER'S PORT: \x1b[34m" + this.config.serverPort + "\x1b[0m");
-        Logger.info("Current game mode is: \x1b[34m" + this.gameMode.name + "\x1b[0m");
+        Logger.info("Opened Wager Room on port \x1b[34m" + this.port + "\x1b[0m");
 
         // Player bots (Experimental)
         if (this.config.serverBots > 0) {
@@ -149,14 +155,14 @@ class Server {
         Logger.error("WebSocket: " + error.code + " - " + error.message);
         switch (error.code) {
             case "EADDRINUSE":
-                Logger.error("Server could not bind to port " + this.config.serverPort + "!");
+                Logger.error("Server could not bind to port " + this.port + "!");
                 Logger.error("Please close out of Skype or change 'serverPort' in Settings.js to a different number.");
                 break;
             case "EACCES":
                 Logger.error("Please make sure you are running Ogar with root privileges.");
                 break;
         }
-        process.exit(1); // Exits the program
+        this.close();
     }
     onClientSocketOpen(ws) {
         var logip = ws._socket.remoteAddress + ":" + ws._socket.remotePort;
@@ -533,15 +539,16 @@ class Server {
         }
     }
     onChatMessage(from, to, message) {
+        if (message == null) return;
+        message = message.trim();
+        if (message == "") return;
         var tick = this.getTick();
         var dt = tick - this.lastChatTick;
         this.lastChatTick = tick;
-
-        if (!message || !(message = message.trim()))
-            return;
         if (from && message.length > 0 && message[0] == '/') {
             // player command
-            from.socket.playerCommand.processMessage(from, message);
+            message = message.slice(1, message.length);
+            from.socket.playerCommand.executeCommandLine(message);
             return;
         } else if (dt < this.config.chatCooldown) {
             return;
@@ -760,7 +767,7 @@ class Server {
 
         // pos = {x : 0, y: 0};
         var name = player.getName();
-        if (name.length > this.config.playerMaxNickLength) {
+        if (name.split('$')[0].length > this.config.playerMaxNickLength) {
             name = name.substring(0, this.config.playerMaxNickLength);
         }
         player.setName(name);
@@ -1198,14 +1205,14 @@ class Server {
                 }
             }
         }
-        // Logger.debug("===Server.splitMass===");
-        // Logger.debug("mass = " + mass.toFixed(3) + "  |  " + Math.sqrt(mass * 100).toFixed(3));
-        // var sum = 0;
-        // for (var i = 0; i < masses.length; i++) {
-        //    Logger.debug("mass[" + i + "] = " + masses[i].toFixed(3) + "  |  " + Math.sqrt(masses[i] * 100).toFixed(3));
-        //    sum += masses[i]
-        // }
-        // Logger.debug("sum  = " + sum.toFixed(3) + "  |  " + Math.sqrt(sum * 100).toFixed(3));
+        Logger.debug("===Server.splitMass===");
+        Logger.debug("mass = " + mass.toFixed(3) + "  |  " + Math.sqrt(mass * 100).toFixed(3));
+        var sum = 0;
+        for (var i = 0; i < masses.length; i++) {
+           Logger.debug("mass[" + i + "] = " + masses[i].toFixed(3) + "  |  " + Math.sqrt(masses[i] * 100).toFixed(3));
+           sum += masses[i]
+        }
+        Logger.debug("sum  = " + sum.toFixed(3) + "  |  " + Math.sqrt(sum * 100).toFixed(3));
         return masses;
     }
     splitCells(client) {
@@ -1517,7 +1524,7 @@ class Server {
                 i++;
             }
             this.userList = list;
-            Logger.info(this.userList.length + " user records loaded.");
+            // Logger.info(this.userList.length + " user records loaded.");
         } catch (err) {
             Logger.error(err.stack);
             Logger.error("Failed to load " + fileNameUsers + ": " + err.message);
@@ -1700,6 +1707,18 @@ class Server {
                 res.end(this.stats);
                 return
             }
+            var urlSPLIT = url.split('');
+            var accURL = urlSPLIT[0] + urlSPLIT[1] + urlSPLIT[2] + urlSPLIT[3] + urlSPLIT[4] + urlSPLIT[5] + urlSPLIT[6] + urlSPLIT[7] + urlSPLIT[8] + urlSPLIT[9] + urlSPLIT[10]
+            console.log(url.replace(accURL, ''))
+            //var acc = require('underscore').find(fs.readFileSync('database/data.json'), ["id",url.replace(accURL,'')])
+            fs.readFileSync('./database/data.json', 'utf8', function (data) {
+                console.log('here')
+                var filtr = Object.values(JSON.parse(data).data).filter(account => account.id === url.replace(accURL, ''));
+                console.log(filtr.length)
+                res.write(filtr || 'Not Found');
+                res.end()
+            })
+
         }.bind(this));
         this.httpServer.on('error', function (err) {
             Logger.error("Stats Server: " + err.message);
@@ -1708,16 +1727,18 @@ class Server {
     }
     getStats() {
         // Get server statistics
-        let alivePlayers = 0;
-        let spectatePlayers = 0;
-        let bots = 0;
-        let minions = 0;
-        for (const client of this.clients) {
-            if (!client || !client.isConnected) continue;
-            if (client.player.isBot) ++bots;
-            else if (client.player.isMi) ++minions;
-            else if (client.player.cells.length) ++alivePlayers;
-            else ++spectatePlayers;
+        var totalPlayers = 0;
+        var alivePlayers = 0;
+        var spectatePlayers = 0;
+        for (var i = 0; i < this.clients.length; i++) {
+            var socket = this.clients[i];
+            if (socket == null || !socket.isConnected)
+                continue;
+            totalPlayers++;
+            if (socket.player.cells.length > 0)
+                alivePlayers++;
+            else
+                spectatePlayers++;
         }
         var s = {
             'server_name': this.config.serverName,
@@ -1726,17 +1747,14 @@ class Server {
             'border_height': this.border.height,
             'gamemode': this.gameMode.name,
             'max_players': this.config.serverMaxConnections,
-            'current_players': alivePlayers + spectatePlayers,
+            'current_players': totalPlayers,
             'alive': alivePlayers,
             'spectators': spectatePlayers,
-            'bots': bots,
-            'minions': minions,
             'update_time': this.updateTimeAvg.toFixed(3),
             'uptime': Math.round((this.stepDateTime - this.startTime) / 1000 / 60),
-            'start_time': this.startTime,
-            'stats_time': Date.now()
+            'start_time': this.startTime
         };
-        this.statsObj = s;
+        s.ip = this.config.ip + ":" + this.port;
         this.stats = JSON.stringify(s);
     }
     getMassLimit() {
@@ -1755,6 +1773,26 @@ class Server {
                 this.sendChatMessage(null, null, this.config.serverMassLimitMessage);
             }
         }
+    }
+    close() {
+        if(this.closed || !this.wsServer || !this.httpServer) return;
+        for (var i = 0; i < this.clients.length; i++) {
+            var player = this.clients[i].player;
+            while (player.cells.length > 0) {
+                this.removeNode(player.cells[0]);
+            }
+        }
+        this.onClose();
+        setTimeout(()=>{
+            this.wsServer.close((err) => {
+                if (err) console.error(err);
+                // Logger.info("WS Server Closed.");
+            });
+            this.httpServer.close();
+            Logger.info("Room " + this.room.roomID + " closed!");
+            this.closed = true;
+        }, 1e3);
+        // goodbye!
     }
 }
 

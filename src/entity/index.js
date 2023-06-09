@@ -6,5 +6,4 @@
     MotherCell: require('./MotherCell'),
     EjectedMass: require('./EjectedMass'),
     Minions: require('./Minions'),
-    Kicker: require('./Kicker')
 };
