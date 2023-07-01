@@ -11,16 +11,22 @@ class Wager extends FFA {
         this.newPlayerCellBoostValue = 410;
 
         this.baseSpawnPoints = [{
-                x: 6000,
-                y: 0,
-                color: { r: 252, g: 3, b: 3 }
-            }, {
-                x: -6000,
-                y: 0,
-                color: {
-                    r: 36, g: 3, b: 252
-                }
+            x: 6000,
+            y: 0,
+            color: {
+                r: 252,
+                g: 3,
+                b: 3
             }
+        }, {
+            x: -6000,
+            y: 0,
+            color: {
+                r: 36,
+                g: 3,
+                b: 252
+            }
+        }
         ];
 
         this.contenders = [];
@@ -73,7 +79,7 @@ class Wager extends FFA {
             server.spawnPlayer(player, base);
             player.lastSplit = new Date().valueOf();
             this.contenders.push(player); // Add to contenders list
-            
+
             if (this.contenders.length == this.maxContenders) {
                 // Start the game once there is enough players
                 this.startGamePrep(server);
@@ -94,7 +100,7 @@ class Wager extends FFA {
     updateLB(server, lb) {
         server.leaderboardType = 48;
 
-        switch(this.gamePhase) {
+        switch (this.gamePhase) {
             case GamePhase.PREPARE_TO_START: {
                 lb[0] = "Game starting in";
                 lb[1] = this.timer.toString();
@@ -108,8 +114,6 @@ class Wager extends FFA {
                 break;
             }
             case GamePhase.GAME_IN_PROGRESS: {
-                // lb[0] = "Players Remaining";
-                // lb[1] = this.contenders.length + "/" + this.maxContenders;
                 lb[0] = "Time left:";
                 lb[1] = this.formatTime(this.timeLimit);
                 if (this.timeLimit < 0) {
@@ -165,12 +169,12 @@ class Wager extends FFA {
         var sec = time % 60;
         sec = (sec > 9) ? sec : "0" + sec.toString();
         return min + ":" + sec;
-    };
+    }
 
     onCellRemove = function (cell) {
-        var owner = cell.owner,
-        human_just_died = false;
-        
+        var owner = cell.owner;
+        var human_just_died = false;
+
         if (owner.cells.length <= 0) {
             // Remove from contenders list
             var index = this.contenders.indexOf(owner);
@@ -183,7 +187,7 @@ class Wager extends FFA {
                 }
                 if (this.teamPlayers) {
                     var index = this.teamPlayers[owner.team].indexOf(owner);
-                    if (index != -1 && owner.pos){
+                    if (index != -1 && owner.pos) {
                         owner.pos.free = true;
                         this.teamPlayers[owner.team].splice(index, 1)
                     }
@@ -210,56 +214,62 @@ class Wager extends FFA {
                 this.onPlayerDeath(cell.owner);
             }
         }
-    };
-    onClientSocketClose = function (server, socket) {
+    }
+
+    onClientSocketClose(server, socket) {
         var name = socket.player._name.split("$")[0];
 
         if (name.length > 0) {
             server.sendChatMessage(null, null, name + " left the game");
         }
-    };
+    }
 
-    startGame = function (server) {
+    startGame(server) {
         this.server.run = true;
         this.gamePhase = GamePhase.GAME_IN_PROGRESS;
         this.getSpectate(); // Gets a random person to spectate
         this.server.config.playerDisconnectTime = this.dcTime; // Reset config
         this.resetLastSplit();
     }
-    startGamePrep = function (server) {
+
+    startGamePrep(server) {
         this.gamePhase = GamePhase.PREPARE_TO_START;
         this.timer = this.prepTime; // 10 seconds
-    };
-    endGameTimeout = function (server) {
+    }
+
+    endGameTimeout(server) {
         this.server.run = false;
         this.gamePhase = GamePhase.END_GAME_TIMEOUT;
         this.timer = this.endTime;
     }
-    endGame = function () {
+
+    endGame() {
         this.winner = this.contenders[0];
         this.gamePhase = GamePhase.END_GAME;
         this.timer = this.endTime;
-        if(!this.winner) {
+        if (!this.winner) {
             // Everyone left the game
             this.server.close();
         }
-    };
+    }
 
     // 5 seconds recude rule mechanics
     onCellAdd(cell) {
         cell.owner.lastSplit = new Date().valueOf();
     }
+
     onTick(server) {
         this.contenders.forEach(contender => {
-            if(GamePhase.GAME_IN_PROGRESS && new Date().valueOf() - contender.lastSplit > 5e3) {
-                if(contender.cells.length <= 0) return;
-                for(var i in contender.cells) {
+            if (GamePhase.GAME_IN_PROGRESS && new Date().valueOf() - contender.lastSplit > 5e3) {
+                if (contender.cells.length <= 0) return;
+                for (var i in contender.cells) {
                     contender.cells[i].setSize(contender.cells[i].getSize() * .825);
                 }
                 contender.lastSplit = new Date().valueOf();
             }
         })
     }
+
     resetLastSplit() {
         this.contenders.forEach(contender => contender.lastSplit = new Date().valueOf());
     }

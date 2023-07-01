@@ -17,46 +17,48 @@ class Client {
             const Action = this.server.ActionEnum;
             this.socket.lastSeen = new Date().valueOf();
 
-            switch(data.type) {
+            switch (data.type) {
                 case Action.MESSAGE: {
                     const message = data.message;
-                    
-                    if(!data.message || !data.message.trim().length) return;
-                    if(this.server.checkBadWord(message)) {
+
+                    if (!data.message || !data.message.trim().length) return;
+
+                    if (this.server.checkBadWord(message)) {
                         this.sendChatMessage(null, "Stop insulting others! Keep calm and be friendly please");
                         return;
                     }
-                    if(this.chatMessages.filter(({ timestamp }) => new Date().valueOf() - timestamp <= this.server.chatMessagesThreshold * 1E3).length >= this.server.chatMessagesLimit) {
+
+                    if (this.chatMessages.filter(({ timestamp }) => new Date().valueOf() - timestamp <= this.server.chatMessagesThreshold * 1E3).length >= this.server.chatMessagesLimit) {
                         this.sendChatMessage(null, "Hey, calm down. You are sending messages too quickly!");
                         return;
                     }
 
                     const chatItem = {
                         timestamp: new Date().valueOf(),
-                        message: message.substr(0,64)
+                        message: message.substr(0, 64)
                     };
 
                     this.chatMessages.push(chatItem);
-                    this.emitChatMessage(message.substr(0,64));
+                    this.emitChatMessage(message.substr(0, 64));
                     break;
                 }
                 case Action.CREATE_ROOM: {
-                    if(this.room) return this.sendError("You have already created a room!");
+                    if (this.room) return this.sendError("You have already created a room!");
                     await this.createRoom();
                     break;
                 }
                 case Action.CLOSE_ROOM: {
-                    if(!this.room) return this.sendError("You haven't created a room yet!");
+                    if (!this.room) return this.sendError("You haven't created a room yet!");
                     this.closeRoom();
                     break;
                 }
                 case Action.JOIN_ROOM: {
-                    if(this.room) return this.sendError("You are already playing!");
+                    if (this.room) return this.sendError("You are already playing!");
                     this.joinRoom(data.code);
                     break;
                 }
                 case Action.SET_NICK: {
-                    if(!data.nickname || !data.nickname.length || !data.nickname.trim().length) return;
+                    if (!data.nickname || !data.nickname.length || !data.nickname.trim().length) return;
                     this.socket.nickname = data.nickname.substr(0, 32) || "Guest";
                     break;
                 }
@@ -69,6 +71,7 @@ class Client {
             // unexpected request
         }
     }
+
     send(message) {
         this.socket.send(JSON.stringify(message));
     }
@@ -123,7 +126,7 @@ class Client {
     }
 
     closeRoom() {
-        if(this.room.isRunning) return this.sendError("You are already playing!");
+        if (this.room.isRunning) return this.sendError("You are already playing!");
         this.server.rooms.delete(this.room.code);
         this.room.close();
         this.server.update();
@@ -133,8 +136,8 @@ class Client {
     joinRoom(code) {
         const room = this.server.rooms.get(code);
 
-        if(!room) return this.sendError("Room not found!");
-        if(room.isRunning) return this.sendError("Room is running!");
+        if (!room) return this.sendError("Room not found!");
+        if (room.isRunning) return this.sendError("Room is running!");
 
         room.join(this.socket);
     }
@@ -151,7 +154,7 @@ class Client {
     }
 
     close() {
-        if(this.room) {
+        if (this.room) {
             this.server.rooms.delete(this.room.code);
             this.room.close();
             this.update();
