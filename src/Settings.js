@@ -150,7 +150,7 @@
 "serverMassLimitMessage": "Restarted immediately, maximum amount of mass reached!",
 "playerSplitDelay": 40,
 "playerMergeType": 0,
-"chatCooldown": 25 * 2,
+"chatCooldown": 10,
 
 // [MINIONS]
 // Custom minion settings

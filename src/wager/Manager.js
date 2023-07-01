@@ -10,7 +10,7 @@ const fileNameBadWords = path.resolve(__dirname, '../badwords.txt');
 
 class Manager {
     constructor({ port }) {
-        this.version = "v0.0.1-BETA";
+        this.version = "v0.0.2-BETA";
         this.httpServer = http.createServer();
         this.port = port;
         this.sockets = new Set();
@@ -51,6 +51,7 @@ class Manager {
         this.wss = new WebSocket.Server(wsOptions);
         this.wss.on('connection', (socket) => {
             this.sockets.add(socket);
+            socket.setMaxListeners(0);
             socket.nickname = "Guest for now";
             socket.color = this.colors.randomColor();
             socket.client = new Client(this, socket);
@@ -62,7 +63,7 @@ class Manager {
             socket.on('message', (data) => {
                 socket.client.handleMessage(data);
             });
-            socket.on('close', () => {
+            socket.once('close', () => {
                 Logger.info("Player disconnected (" + socket._socket.remoteAddress + ":" + socket._socket.remotePort + ")")
                 socket.client.close();
                 this.update();
