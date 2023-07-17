@@ -275,43 +275,32 @@ class Client {
     }
     setNickname(text) {
         var name = "";
+        var hat = "";
         var skin = null;
+    
         if (text != null && text.length > 0) {
-            var skinName = null;
-            var userName = text;
-            var n = -1;
-            if (text[0] == '<' && (n = text.indexOf('>', 1)) >= 1) {
-                if (n > 1)
-                    skinName = "%" + text.slice(1, n);
-                else
-                    skinName = "";
-                userName = text.slice(n + 1);
+            // Check if text is in the JOSN format
+            // { name: "name", hat: "hatname", skin: "skinname" }
+            if (text.startsWith("{") && text.endsWith("}")) {
+                let obj = JSON.parse(text);
+                name = obj.name;
+                hat = obj.hat;
+                skin = obj.skin;
+                console.log(text);
+            } else {
+                name = text;
+                hat = "";
+                skin = null;
             }
-            else if (text[0] == "|" && (n = text.indexOf('|', 1)) >= 0) {
-                skinName = ":https://i.imgur.com/" + text.slice(1, n) + ".png";
-                userName = text.slice(n + 1);
-            }
-            if (skinName && !this.server.checkSkinName(skinName)) {
-                skinName = null;
-                userName = text;
-            }
-            skin = skinName;
-            name = userName;
-        }
-        /* //mover from here to another place due to %dev%mass% prefix
-        if (name.length > this.server.config.playerMaxNickLength) {
-            name = name.substring(0, this.server.config.playerMaxNickLength);
-        }
-        */
-        if (name.trim().toLowerCase() == "dev" && +this.socket.player.userID > 10) {
-            name = "fake dev";
         }
 
         if (this.server.checkBadWord(name)) {
-            skin = null;
             name = "";
+            hat = null;
+            skin = null;
         }
-        this.socket.player.joinGame(name, skin);
+
+        this.socket.player.joinGame(name, hat, skin);
     }
     sendPacket(packet) {
         var socket = this.socket;

@@ -16,7 +16,7 @@ class MinionPlayer extends Player {
             return;
         }
         if (this.owner.cells.length) {
-            this.joinGame(this.owner._name, this.owner._skin, true)
+            this.joinGame(this.owner._name, this.owner._hat, this.owner._skin, true)
             if (!this.cells.length) this.socket.close();
         }
         // remove if owner has disconnected or has no control

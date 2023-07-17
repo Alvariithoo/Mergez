@@ -248,7 +248,7 @@ const commands = [
                 count++;
             }
             // disconnect
-            const name = socket.player._name.split("$")[0];
+            const name = socket.player._name;
             player.server.sendChatMessage(null, null, name + " was kicked." + reason);
             socket.close(1000, "Kicked from server");
             send(player, "You kicked " + name + "." + reason)
@@ -424,7 +424,7 @@ const commands = [
         const count = 0;
         player.server.clients.forEach(function (socket) {
             // disconnect
-            const name = socket.player._name.split("$")[0];
+            const name = socket.player._name;
             player.server.sendChatMessage(null, null, name + " was muted." + reason);
             send(player, "You muted " + name + "." + reason);
             console.log(name + " was muted." + reason);
@@ -443,7 +443,7 @@ const commands = [
         }
         const count = 0;
         player.server.clients.forEach(function (socket) {
-            const name = socket.player._name.split("$")[0];
+            const name = socket.player._name;
             if (socket.player.isMuted == false) {
                 send(player, name + " isn't muted")
             }

@@ -139,7 +139,7 @@ class Player {
         this._nameUtf8 = writer.toBuffer();
     }
     getName() {
-        return this._name.split("$")[0];
+        return this._name;
     }
     setSkin(skin) {
         this._skin = skin;
@@ -211,10 +211,11 @@ class Player {
         this.isMassChanged = true;
     }
     // Functions
-    joinGame(name, skin) {
+    joinGame(name, hat, skin) {
         if (this.cells.length > 0) return;
         if (name == null) name = "";
             this.setName(name);
+        if (hat == null) hat = "";
         if (skin != null)
             this.setSkin(skin);
         this.spectate = false;
