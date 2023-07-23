@@ -27,12 +27,16 @@ class Player {
         this.isCloseRequested = false;
         this._name = "";
         this._skin = "";
+        this._hat = "";
+        this._id = "";
         this._nameUtf8 = null;
         this._nameUnicode = null;
 
         this.defaultName = "Mergez.eu";
 
         this._skinUtf8 = null;
+        this._hatUtf8 = null;
+        this._idUtf8 = null;
         this.color = { r: 0, g: 0, b: 0 };
         this.viewNodes = [];
         this.clientNodes = [];
@@ -157,6 +161,32 @@ class Player {
         }
         return this._skin;
     }
+    setHat(hat) {
+        this._hat = hat;
+        if (!hat || hat.length < 1) {
+            this._hatUtf8 = null;
+            return;
+        }
+        var writer = new BinaryWriter()
+        writer.writeStringZeroUtf8(hat);
+        this._hatUtf8 = writer.toBuffer();
+    }
+    getHat() {
+        return this._hat;
+    }
+    setID(uid) {
+        this._id = uid;
+        if (!uid || uid.length < 1) {
+            this._idUtf8 = null;
+            return;
+        }
+        var writer = new BinaryWriter()
+        writer.writeStringZeroUtf8(uid);
+        this._idUtf8 = writer.toBuffer();
+    }
+    getID() {
+        return this._id;
+    }
     getNameUtf8() {
         return this._nameUtf8;
     }
@@ -211,13 +241,21 @@ class Player {
         this.isMassChanged = true;
     }
     // Functions
-    joinGame(name, hat, skin) {
+    joinGame(name, hat, skin, uid) {
         if (this.cells.length > 0) return;
+
         if (name == null) name = "";
             this.setName(name);
+
         if (hat == null) hat = "";
-        if (skin != null)
+            this.setHat(hat);
+
+        if (skin == null) skin = "";
             this.setSkin(skin);
+
+        if (uid == null) uid = "";
+            this.setID(uid);
+            
         this.spectate = false;
         this.freeRoam = false;
         this.spectateTarget = null;

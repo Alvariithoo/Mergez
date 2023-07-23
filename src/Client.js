@@ -277,20 +277,23 @@ class Client {
         var name = "";
         var hat = "";
         var skin = null;
+        var uid = null;
     
         if (text != null && text.length > 0) {
             // Check if text is in the JOSN format
-            // { name: "name", hat: "hatname", skin: "skinname" }
+            // { name: "name", hat: "hatname", skin: "skinname", uid: "dicordID" }
             if (text.startsWith("{") && text.endsWith("}")) {
                 let obj = JSON.parse(text);
                 name = obj.name;
                 hat = obj.hat;
                 skin = obj.skin;
+                uid = obj.id;
                 console.log(text);
             } else {
                 name = text;
                 hat = "";
                 skin = null;
+                uid = null;
             }
         }
 
@@ -300,7 +303,7 @@ class Client {
             skin = null;
         }
 
-        this.socket.player.joinGame(name, hat, skin);
+        this.socket.player.joinGame(name, hat, skin, uid);
     }
     sendPacket(packet) {
         var socket = this.socket;

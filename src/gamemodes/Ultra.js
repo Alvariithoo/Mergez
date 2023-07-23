@@ -1,5 +1,6 @@
 const FFA = require('./FFA');
 const Logger = require('../modules/Logger');
+const EarnSystem = require('../modules/EarnSystem')
 
 class Ultra extends FFA {
     constructor() {
@@ -49,6 +50,9 @@ class Ultra extends FFA {
 
         this.config.ejectSpawnPlayer = 0;
 
+        this.RewardCoins = this.config.RewardCoins;
+        this.RewardExp = this.config.RewardExp;
+
         this.restartInterval = this.config.ultraRestartCounterDuration * 1000; // 10 sec
         this.downCounter = this.restartInterval / 1000; // counter to show on leaderboard
 
@@ -65,20 +69,28 @@ class Ultra extends FFA {
         const playerSize = server.config.playerStartSize;
         const random = (Math.floor(Math.random() * 100) < 2);
         player.setColor(player.isMinion ? { r: 240, g: 240, b: 255} : server.getRandomColor());
-        Logger.info('Joined: ' + player._name)
+        Logger.info(`Joined: ${player._name} | Discord ID: ${player._id || "unregister"}`)
         random ? server.sendChatMessage(null, player, 'You spawned with double mass!') : null;
         server.spawnPlayer(player, null, random ? playerSize * 1.41 : playerSize);
     }
-    startRestartTimer(server, nick) {
-        this.winner = nick;
+    startRestartTimer(server, name, uid) {
+        this.winner = name;
 
         if (this.restarting) {
             return;
         }
 
         this.restarting = true;
-        let congratolations = 'Congratolations to ' + this.winner + '!';
+        let congratolations = `Congratolations to ${this.winner}!`;
         server.sendChatMessage(null, null, congratolations);
+        server.sendChatMessage(null, null, 'For winning the server get:');
+        server.sendChatMessage(null, null, `Reward: ${this.RewardExp} EXP`);
+        server.sendChatMessage(null, null, `Reward: ${this.RewardCoins} Coins`);
+
+        const Earn = new EarnSystem();
+        const UserID = uid;
+        Earn.updateCoinsExp(UserID, this.RewardCoins, this.RewardExp);
+
         setTimeout(function () {
             server.restart();
             this.downCounter = this.restartInterval / 1000;
@@ -96,7 +108,7 @@ class Ultra extends FFA {
             if (!this.restarting &&
                 playerScore / 100 > this.scoreLimit &&
                 player.cells.length > 0) {
-                this.startRestartTimer(server, player._name);
+                this.startRestartTimer(server, player._name, player._id);
             }
         }
     }

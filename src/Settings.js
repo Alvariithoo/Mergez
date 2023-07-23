@@ -166,4 +166,18 @@
 "defaultName": "minion",
 // "minionsOnLeaderboard": 0,
 
+// [EARN VALUES]
+// Settings for earn ingame
+// RewardCoins: Replace with the number of coins to add (can be negative to subtract coins)
+// RewardExp: Replace with the number of xp points to add (can be negative to subtract xp)
+"RewardCoins": 100,
+"RewardExp": 1500,
+
+
+// [MONGODB DATA]
+// mongoUrl: Set up Mongodb Url
+// mongoDBName: Set up the name of database
+"mongoUrl": "mongodb://0.0.0.0:27017",
+"mongoDBName": "mergez",
+
 })
