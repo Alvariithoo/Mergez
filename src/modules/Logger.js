@@ -1,221 +1,181 @@
 ﻿'use strict';
-/*
- * Simple logger.
- *
- * Copyright (c) 2016 Barbosik https://github.com/Barbosik
- * License: Apache License, Version 2.0
- *
- */
+const fs = require('fs');
+const { EOL } = require('os');
+const LogLevelEnum = require('../enum/LogLevelEnum');
 
-var fs = require('fs');
-var util = require('util');
-var EOL = require('os').EOL;
-var LogLevelEnum = require('../enum/LogLevelEnum');
+const logFolder = "./logs";
+const logBackupFolder = "./logs/LogBackup";
+const logFileName = "MultiOgar";
 
-
-module.exports.debug = debug;
-module.exports.info = info;
-module.exports.warn = warn;
-module.exports.error = error;
-module.exports.fatal = fatal;
-module.exports.print = print;
-module.exports.write = write;
-module.exports.writeDebug = writeDebug;
-module.exports.writeError = writeError;
-module.exports.start = start;
-module.exports.shutdown = shutdown;
-module.exports.setVerbosity = function (level) {
-    logVerbosity = level;
-};
-module.exports.setFileVerbosity = function (level) {
-    logFileVerbosity = level;
-};
-module.exports.getVerbosity = function () {
-    return logVerbosity;
-};
-module.exports.getFileVerbosity = function () {
-    return logFileVerbosity;
+const conLogColor = {
+    gray: "\u001B[90m",
+    red: "\u001B[31m",
+    green: "\u001B[32m",
+    yellow: "\u001B[33m",
+    blue: "\u001B[34m",
+    magenta: "\u001B[35m",
+    cyan: "\u001B[36m",
+    white: "\u001B[37m",
+    bright: "\u001B[1m",
+    reset: "\u001B[0m"
 };
 
+let logVerbosity = LogLevelEnum.DEBUG;
+let logFileVerbosity = LogLevelEnum.DEBUG;
 
-var logVerbosity = LogLevelEnum.DEBUG;
-var logFileVerbosity = LogLevelEnum.DEBUG;
+let writeError = false;
+let writeCounter = 0;
+let writeShutdown = false;
+let writeStarted = false;
+const writeQueue = [];
 
-function debug(message) {
-    writeCon(colorWhite, LogLevelEnum.DEBUG, message);
-    writeLog(LogLevelEnum.DEBUG, message);
-};
+let consoleLog = null;
 
-function info(message) {
-    writeCon(colorWhite + colorBright, LogLevelEnum.INFO, message);
-    writeLog(LogLevelEnum.INFO, message);
-};
-
-function warn(message) {
-    writeCon(colorYellow + colorBright, LogLevelEnum.WARN, message);
-    writeLog(LogLevelEnum.WARN, message);
-};
-
-function error(message) {
-    writeCon(colorRed + colorBright, LogLevelEnum.ERROR, message);
-    writeLog(LogLevelEnum.ERROR, message);
-};
-
-function fatal(message) {
-    writeCon(colorRed + colorBright, LogLevelEnum.FATAL, message);
-    writeLog(LogLevelEnum.FATAL, message);
-};
-
-function print(message) {
-    writeCon(colorWhite, LogLevelEnum.NONE, message);
-    writeLog(LogLevelEnum.NONE, message);
-};
-
-function write(message) {
-    writeLog(LogLevelEnum.NONE, message);
-};
-
-function writeDebug(message) {
-    writeLog(LogLevelEnum.DEBUG, message);
-};
-
-function writeError(message) {
-    writeLog(LogLevelEnum.ERROR, message);
-};
-
-
-// --- utils ---
-
-function getDateTimeString() {
-    var date = new Date();
-    var dy = date.getFullYear();
-    var dm = date.getMonth() + 1;
-    var dd = date.getDate();
-    var th = date.getHours();
-    var tm = date.getMinutes();
-    var ts = date.getSeconds();
-    var tz = date.getMilliseconds();
-    dy = ("0000" + dy).slice(-4);
-    dm = ("00" + dm).slice(-2);
-    dd = ("00" + dd).slice(-2);
-    th = ("00" + th).slice(-2);
-    tm = ("00" + tm).slice(-2);
-    ts = ("00" + ts).slice(-2);
-    tz = ("000" + tz).slice(-3);
-    return dy + "-" + dm + "-" + dd + "T" + th + "-" + tm + "-" + ts + "-" + tz;
-};
-
-function getTimeString() {
-    var date = new Date();
-    var th = date.getHours();
-    var tm = date.getMinutes();
-    var ts = date.getSeconds();
-    th = ("00" + th).slice(-2);
-    tm = ("00" + tm).slice(-2);
-    ts = ("00" + ts).slice(-2);
-    return th + ":" + tm + ":" + ts;
-};
-
-function writeCon(color, level, message) {
-    if (level > logVerbosity) return;
-    message = util.format(message);
-    var prefix = "";
-    if (level == LogLevelEnum.DEBUG)
-        prefix = "[DEBUG] ";
-    else if (level == LogLevelEnum.INFO)
-        prefix = "[INFO] ";
-    else if (level == LogLevelEnum.WARN)
-        prefix = "[WARN] ";
-    else if (level == LogLevelEnum.ERROR)
-        prefix = "[ERROR] ";
-    else if (level == LogLevelEnum.FATAL)
-        prefix = "[FATAL] ";
-    process.stdout.write(color + prefix + message + "\u001B[0m" + EOL);
-};
-
-function writeLog(level, message) {
-    if (level > logFileVerbosity || writeError)
-        return;
-    message = util.format(message);
-    var prefix = "";
-    if (level == LogLevelEnum.DEBUG)
-        prefix = "[DEBUG]";
-    else if (level == LogLevelEnum.INFO)
-        prefix = "[INFO]";
-    else if (level == LogLevelEnum.WARN)
-        prefix = "[WARN]";
-    else if (level == LogLevelEnum.ERROR)
-        prefix = "[ERROR]";
-    else if (level == LogLevelEnum.FATAL)
-        prefix = "[FATAL]";
-    else if (level == LogLevelEnum.NONE)
-        prefix = "";
-    prefix += "[" + getTimeString() + "] ";
-    
-    writeQueue.push(prefix + message + EOL);
-    if (writeShutdown) {
-        flushSync();
-    } else {
-        if (writeCounter == 0) {
-            flushAsync();
-        }
+// Logging functions
+const logFunctions = {
+    debug: createLogFunction(LogLevelEnum.DEBUG, "[DEBUG]"),
+    info: createLogFunction(LogLevelEnum.INFO, "[INFO]"),
+    plugin: createLogFunction(LogLevelEnum.PLUGIN, "[PLUGIN]"),
+    warn: createLogFunction(LogLevelEnum.WARN, "[WARN]"),
+    error: createLogFunction(LogLevelEnum.ERROR, "[ERROR]"),
+    fatal: createLogFunction(LogLevelEnum.FATAL, "[FATAL]"),
+    print: createLogFunction(LogLevelEnum.NONE),
+    write: writeLog.bind(null, LogLevelEnum.NONE),
+    writeDebug: writeLog.bind(null, LogLevelEnum.DEBUG),
+    writeError: writeLog.bind(null, LogLevelEnum.ERROR),
+    start,
+    shutdown,
+    setVerbosity(level) {
+        logVerbosity = level
+    },
+    setFileVerbosity(level) {
+        logFileVerbosity = level
+    },
+    getVerbosity() {
+        return logVerbosity
+    },
+    getFileVerbosity() {
+        return logFileVerbosity
     }
 };
 
-var writeError = false;
-var writeCounter = 0;
-var writeShutdown = false;
-var writeStarted = false;
-var writeQueue = [];
+module.exports = logFunctions;
+
+// Utility functions
+function createLogFunction(level, color, logPrefix) {
+    return function (message) {
+        writeCon(level, logPrefix, message);
+        writeLog(level, message);
+    };
+}
+
+function getDateTimeString() {
+    const date = new Date();
+    return date.toISOString();
+}
+
+function writeCon(level, logPrefix, message) {
+    if (level > logVerbosity) return;
+    const prefix = getLogPrefix(level, logPrefix);
+    const timestamp = getDateTimeString();
+
+    // Apply color to each part of the log message
+    const timeStamp = conLogColor.gray + timestamp + conLogColor.reset;
+    const Prefix = getLogColor(level) + prefix + conLogColor.reset;
+    const Message = conLogColor.white + message + conLogColor.reset;
+
+    console.log(`${timeStamp} ${Prefix}: ${Message}`);
+}
+
+function getLogColor(level) {
+    switch (level) {
+        case LogLevelEnum.DEBUG:
+            return conLogColor.magenta;
+        case LogLevelEnum.INFO:
+            return conLogColor.cyan;
+        case LogLevelEnum.PLUGIN:
+            return conLogColor.green + conLogColor.bright;
+        case LogLevelEnum.WARN:
+            return conLogColor.yellow + conLogColor.bright;
+        case LogLevelEnum.ERROR:
+            return conLogColor.red + conLogColor.bright;
+        case LogLevelEnum.FATAL:
+            return conLogColor.red + conLogColor.bright;
+        case LogLevelEnum.NONE:
+            return conLogColor.gray;
+        default:
+            return conLogColor.reset;
+    }
+}
+
+function getLogPrefix(level, logPrefix) {
+    const prefixes = {
+        [LogLevelEnum.DEBUG]: "[DEBUG]",
+        [LogLevelEnum.INFO]: "[INFO]",
+        [LogLevelEnum.PLUGIN]: "[PLUGIN]",
+        [LogLevelEnum.WARN]: "[WARN]",
+        [LogLevelEnum.ERROR]: "[ERROR]",
+        [LogLevelEnum.FATAL]: "[FATAL]",
+        [LogLevelEnum.NONE]: ""
+    };
+    return prefixes[level] || logPrefix || "";
+}
+
+function writeLog(level, message) {
+    if (level > logFileVerbosity || writeError) return;
+    const prefix = getLogPrefix(level, "");
+    const logPrefix = `[${getTimeString()}] ${prefix}`;
+    writeQueue.push(logPrefix + " " + message + EOL);
+
+    if (writeShutdown) {
+        flushSync();
+    } else if (writeCounter === 0) {
+        flushAsync();
+    }
+}
+
+function getTimeString() {
+    const date = new Date();
+    return date.toISOString();
+}
 
 function flushAsync() {
-    if (writeShutdown || consoleLog == null || writeQueue.length == 0)
-        return;
+    if (writeShutdown || consoleLog === null || writeQueue.length === 0) return;
     writeCounter++;
-    consoleLog.write(writeQueue.shift(), function () { writeCounter--; flushAsync(); });
-};
+    consoleLog.write(writeQueue.shift(), () => {
+        writeCounter--;
+        flushAsync();
+    });
+}
 
 function flushSync() {
     try {
-        var tail = "";
-        while (writeQueue.length > 0) {
-            tail += writeQueue.shift();
-        }
-        var fileName = logFolder + "/" + logFileName + ".log";
-        fs.appendFileSync(fileName, tail);
+        const fileName = `${logFolder}/${logFileName}.log`;
+        fs.appendFileSync(fileName, writeQueue.join(''));
+        writeQueue.length = 0; // Clear the array
     } catch (err) {
-        writeError = true;
-        writeCon(colorRed + colorBright, LogLevelEnum.ERROR, err.message);
-        writeCon(colorRed + colorBright, LogLevelEnum.ERROR, "Failed to append log file!");
+        handleError(err);
     }
-};
+}
+
+function handleError(err) {
+    writeError = true;
+    const errorMessage = err.message || "Unknown error";
+    const timestamp = getDateTimeString();
+    console.log(conLogColor.red + `${timestamp} [ERROR]: ${errorMessage}` + conLogColor.reset);
+    console.log(conLogColor.red + `${timestamp} [ERROR]: Failed to append log file!` + conLogColor.reset);
+}
 
 function start() {
-    if (writeStarted)
-        return;
+    if (writeStarted) return;
     writeStarted = true;
+
     try {
-        console.log = function (message) { print(message); };
-        
-        var timeString = getDateTimeString();
-        var fileName = logFolder + "/" + logFileName + ".log";
-        var fileName2 = logBackupFolder + "/" + logFileName + "-" + timeString + ".log";
-        
-        if (!fs.existsSync(logFolder)) {
-            // Make log folder
-            fs.mkdirSync(logFolder);
-        } else if (fs.existsSync(fileName)) {
-            if (!fs.existsSync(logBackupFolder)) {
-                // Make log backup folder
-                fs.mkdirSync(logBackupFolder);
-            }
-            // Backup previous log
-            fs.renameSync(fileName, fileName2);
-        }
-        
-        fs.writeFileSync(fileName, "=== Started " + timeString + " ===" + EOL);
-        var file = fs.createWriteStream(fileName, { flags: 'a' });
-        file.on('open', function () {
+        console.log = console.log; // Reset console.log
+        createLogFiles();
+        const file = fs.createWriteStream(`${logFolder}/${logFileName}.log`, { flags: 'a' });
+
+        file.on('open', () => {
             if (writeShutdown) {
                 file.close();
                 return;
@@ -223,43 +183,34 @@ function start() {
             consoleLog = file;
             flushAsync();
         });
-        file.on('error', function (err) {
-            writeError = true;
-            consoleLog = null;
-            writeCon(colorRed + colorBright, LogLevelEnum.ERROR, err.message);
-        });
+
+        file.on('error', handleError);
     } catch (err) {
-        writeError = true;
-        consoleLog = null;
-        writeCon(colorRed + colorBright, LogLevelEnum.ERROR, err.message);
+        handleError(err);
     }
-};
+}
+
+function createLogFiles() {
+    if (!fs.existsSync(logFolder)) {
+        fs.mkdirSync(logFolder);
+    } else if (fs.existsSync(`${logFolder}/${logFileName}.log`)) {
+        if (!fs.existsSync(logBackupFolder)) {
+            fs.mkdirSync(logBackupFolder);
+        }
+        const timeString = getDateTimeString().replace(/[-:T.]/g, '');
+        fs.renameSync(`${logFolder}/${logFileName}.log`, `${logBackupFolder}/${logFileName}-${timeString}.log`);
+    }
+
+    fs.writeFileSync(`${logFolder}/${logFileName}.log`, `=== Started ${getDateTimeString()} ===${EOL}`);
+}
 
 function shutdown() {
     writeShutdown = true;
     if (writeError) return;
-    if (consoleLog != null) {
+    if (consoleLog !== null) {
         consoleLog.end();
-        consoleLog.close();
-        consoleLog.destroy();
         consoleLog = null;
     }
-    writeQueue.push("=== Shutdown " + getDateTimeString() + " ===" + EOL);
+    writeQueue.push(`=== Shutdown ${getDateTimeString()} ===${EOL}`);
     flushSync();
-};
-
-
-var logFolder = "./logs";
-var logBackupFolder = "./logs/LogBackup";
-var logFileName = "MultiOgar";
-
-var consoleLog = null;
-var colorBlack = "\u001B[30m";
-var colorRed = "\u001B[31m";
-var colorGreen = "\u001B[32m";
-var colorYellow = "\u001B[33m";
-var colorBlue = "\u001B[34m";
-var colorMagenta = "\u001B[35m";
-var colorCyan = "\u001B[36m";
-var colorWhite = "\u001B[37m";
-var colorBright = "\u001B[1m";
+}

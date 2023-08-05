@@ -1,5 +1,6 @@
 const Commands = require('./modules/CommandList');
 const PlayerCommand = require('./modules/PlayerCommand');
+const Logger = require('./modules/Logger')
 const fs = require('fs');
 
 class Plugins {
@@ -21,7 +22,7 @@ class Plugins {
 				continue;
 			var plugindir = require(this.pluginsdir[i]);
 			var plugin = new plugindir(this.server, this, function (message, name) {
-				console.log("\u001B[34m\u001B[1m[" + name + "] " + "\u001B[37m" + message);
+				Logger.plugin(`[${name}] || ${message}`);
 			});
 			if (!plugin.active)
 				continue;
@@ -37,7 +38,7 @@ class Plugins {
 		this.playerCommands[name] = funct;
 	}
 	Log(message) {
-		console.log("\u001B[1m\u001B[32m[MODS] " + message);
+		Logger.plugin(`${message}`);
 	}
 	getFiles(dir, files_) {
 		files_ = files_ || [];
