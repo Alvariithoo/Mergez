@@ -2,12 +2,16 @@
 const BinaryWriter = require('./BinaryWriter');
 
 class UpdateRedArea {
+    /**
+     * @param {any} server
+     * @param {any} redArea
+     */
     constructor(server, redArea) {
         this.server = server;
         this.redArea = redArea;
     }
-    build(protocol) {
-        var writer = new BinaryWriter();
+    build() {
+        const writer = new BinaryWriter();
         writer.writeUInt8(0x7B);                                // Packet ID - dec -> 67
 
         writer.writeInt16(this.redArea.curPos.x >>> 0);

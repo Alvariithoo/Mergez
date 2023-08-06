@@ -3,7 +3,7 @@
 class ClearOwned {
     constructor() { }
     build(protocol) {
-        var writer = new BinaryWriter();
+        const writer = new BinaryWriter();
         writer.writeUInt8(0x14);
         return writer.toBuffer();
     }

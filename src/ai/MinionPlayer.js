@@ -1,12 +1,18 @@
 const Player = require('../Player');
 
 class MinionPlayer extends Player {
+    /**
+     * @param {any} server
+     * @param {import("./FakeSocket")} socket
+     * @param {any} owner
+     */
     constructor(server, socket, owner) {
         super(server, socket);
-        this.owner = owner
+        this.owner = owner;
         this.isMi = true; // Marks as minion
         this.socket.isConnected = true;
     }
+
     checkConnection() {
         if (this.socket.isCloseRequest) {
             while (this.cells.length) {
@@ -15,44 +21,45 @@ class MinionPlayer extends Player {
             this.isRemoved = true;
             return;
         }
+
         if (this.owner.cells.length) {
-            this.joinGame(this.owner._name, this.owner._hat, this.owner._skin, this.owner._id, true)
+            this.joinGame(this.owner._name, this.owner._hat, this.owner._skin, this.owner._id);
             if (!this.cells.length) this.socket.close();
         }
-        // remove if owner has disconnected or has no control
-        if (this.owner.socket.isConnected == false || !this.owner.minionControl)
+
+        // Remove if owner has disconnected or has no control
+        if (!this.owner.socket.isConnected || !this.owner.minionControl)
             this.socket.close();
 
-        // frozen or not
-        if (this.owner.minionFrozen) this.frozen = true;
-        else this.frozen = false;
+        // Frozen or not
+        this.frozen = this.owner.minionFrozen;
 
-        // split cells
-        if (this.owner.minionSplit)
-            this.socket.client.Split = true;
+        // Split cells
+        this.socket.client.Split = this.owner.minionSplit;
 
-        // eject mass
-        if (this.owner.minionEject)
-            this.socket.client.pressW = true;
+        // Eject mass
+        this.socket.client.pressW = this.owner.minionEject;
 
-        // follow owners mouse by default
+        // Follow owner's mouse by default
         this.mouse = this.owner.mouse;
 
-        // pellet-collecting mode
+        // Pellet-collecting mode
         if (this.owner.collectPellets) {
             this.viewNodes = [];
-            var self = this;
+            const self = this;
             this.viewBox = this.owner.viewBox;
-            this.server.quadTree.find(this.viewBox, function (check) {
-                if (check.cellType == 1) self.viewNodes.push(check);
+            this.server.quadTree.find(this.viewBox, (check) => {
+                if (check.cellType === 1) self.viewNodes.push(check);
             });
-            var bestDistance = 1e999;
-            for (var i in this.viewNodes) {
-                var cell = this.viewNodes[i];
-                var dx = this.cells[0].position.x - cell.position.x;
-                var dy = this.cells[0].position.y - cell.position.y;
-                if (dx * dx + dy * dy < bestDistance) {
-                    bestDistance = dx * dx + dy * dy;
+
+            let bestDistance = 1e999;
+            for (const cell of this.viewNodes) {
+                const dx = this.cells[0].position.x - cell.position.x;
+                const dy = this.cells[0].position.y - cell.position.y;
+                const distanceSquared = dx * dx + dy * dy;
+
+                if (distanceSquared < bestDistance) {
+                    bestDistance = distanceSquared;
                     this.mouse = cell.position;
                 }
             }

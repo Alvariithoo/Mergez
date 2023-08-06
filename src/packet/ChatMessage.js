@@ -1,16 +1,21 @@
 ﻿const BinaryWriter = require('./BinaryWriter');
+// @ts-ignore
 const UserRoleEnum = require('../enum/UserRoleEnum');
 
 class ChatMessage {
+    /**
+     * @param {any} sender
+     * @param {any} message
+     */
     constructor(sender, message) {
         this.sender = sender;
         this.message = message;
     }
     build(protocol) {
-        var text = this.message;
+        let text = this.message;
         if (text == null) text = "";
-        var name = "SERVER";
-        var color = { 'r': 0x9B, 'g': 0x9B, 'b': 0x9B };
+        let name = "SERVER";
+        let color = { 'r': 0x9B, 'g': 0x9B, 'b': 0x9B };
         if (this.sender != null) {
             name = this.sender.getName();
             if (name == null || name.length == 0) {
@@ -24,11 +29,11 @@ class ChatMessage {
             }
         }
 
-        var writer = new BinaryWriter();
+        const writer = new BinaryWriter();
         writer.writeUInt8(0x63);            // message id (decimal 99)
 
         // flags
-        var flags = 0;
+        let flags = 0;
         if (this.sender == null)
             flags = 0x80;           // server message
         else if (this.sender.userRole == UserRoleEnum.ADMIN)

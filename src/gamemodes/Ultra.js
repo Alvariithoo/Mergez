@@ -93,12 +93,13 @@ class Ultra extends FFA {
 
         setTimeout(function () {
             server.restart();
+            // @ts-ignore
             this.downCounter = this.restartInterval / 1000;
             this.restarting = false;
         }.bind(this), this.restartInterval);
     }
     checkScoreLimit(server) {
-        for (var i = 0; i < server.clients.length; i++) {
+        for (let i = 0; i < server.clients.length; i++) {
             var player = server.clients[i].player;
             if (player.isRemoved || !player.cells.length ||player.socket.isConnected == false)
                 continue;
@@ -114,7 +115,7 @@ class Ultra extends FFA {
     }
     updateLB(server, lb) {
         server.leaderboardType = this.packetLB;
-        for (var i = 0, pos = 0; i < server.clients.length; i++) {
+        for (let i = 0, pos = 0; i < server.clients.length; i++) {
             var player = server.clients[i].player;
             if (player.isRemoved || !player.cells.length ||player.socket.isConnected == false)
                 continue;

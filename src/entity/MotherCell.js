@@ -3,49 +3,55 @@ const Food = require('./Food');
 const Virus = require('./Virus');
 
 class MotherCell extends Virus {
-        constructor(server, owner, position, size) {
+    /**
+     * @param {any} server
+     * @param {any} owner
+     * @param {{ x: number; y: number; }} position
+     * @param {any} size
+     */
+    constructor(server, owner, position, size) {
         super(server, owner, position, size);
         this.onEat = Cell.prototype.onEat;
         this.cellType = 2;
         this.isSpiked = true;
-        this.isMotherCell = true;       // Not to confuse bots
+        this.isMotherCell = true; // Not to confuse bots
         this.setColor({ r: 0xce, g: 0x63, b: 0x63 });
-        this.motherCellMinSize = 149;   // vanilla 149 (mass = 149*149/100 = 222.01)
+        this.motherCellMinSize = 149; // vanilla 149 (mass = 149*149/100 = 222.01)
         this.motherCellSpawnAmount = 2;
         if (!this.getSize()) {
             this.setSize(this.motherCellMinSize);
-        };
+        }
     }
+    /**
+     * @param {{ cellType: number; }} cell
+     */
     canEat(cell) {
-        return cell.cellType == 0 ||    // can eat player cell
-            cell.cellType == 2 ||       // can eat virus
-            cell.cellType == 3;         // can eat ejected mass
+        return [0, 2, 3].includes(cell.cellType); // can eat player cell, virus, or ejected mass
     }
     onUpdate() {
         if (this.getSize() <= this.motherCellMinSize) {
             return;
         }
-        var maxFood = this.server.config.foodMaxAmount + 500;
+        const maxFood = this.server.config.foodMaxAmount + 500;
         if (this.server.currentFood >= maxFood) {
             return;
         }
-        var size1 = this.getSize();
-        var size2 = this.server.config.foodMinSize;
-        for (var i = 0; i < this.motherCellSpawnAmount; i++) {
-            size1 = Math.sqrt(size1 * size1 - size2 * size2);
-            size1 = Math.max(size1, this.motherCellMinSize);
+        let size1 = this.getSize();
+        const size2 = this.server.config.foodMinSize;
+        for (let i = 0; i < this.motherCellSpawnAmount; i++) {
+            size1 = Math.max(Math.sqrt(size1 * size1 - size2 * size2), this.motherCellMinSize);
             this.setSize(size1);
 
             // Spawn food with size2
-            var angle = Math.random() * 2 * Math.PI;
-            var r = this.getSize();
-            var pos = {
+            const angle = Math.random() * 2 * Math.PI;
+            const r = this.getSize();
+            const pos = {
                 x: this.position.x + r * Math.sin(angle),
                 y: this.position.y + r * Math.cos(angle)
-            }
+            };
 
             // Spawn food
-            var food = new Food(this.server, null, pos, size2);
+            const food = new Food(this.server, null, pos, size2);
             food.setColor(this.server.getRandomColor());
             this.server.addNode(food);
 

@@ -1,6 +1,9 @@
 ﻿const BinaryWriter = require("./BinaryWriter");
 
 class ServerStat {
+    /**
+     * @param {any} player
+     */
     constructor(player) {
         this.player = player;
     }
@@ -19,9 +22,9 @@ class ServerStat {
             'playersSpect': stats.spectators,
             'playersLimit': server.config.serverMaxConnections
         };
-        var json = JSON.stringify(obj);
+        const json = JSON.stringify(obj);
         // Serialize
-        var writer = new BinaryWriter();
+        const writer = new BinaryWriter();
         writer.writeUInt8(254); // Message Id
         writer.writeStringZeroUtf8(json); // JSON
         return writer.toBuffer();

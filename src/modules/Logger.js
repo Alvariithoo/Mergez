@@ -1,6 +1,7 @@
 ﻿'use strict';
 const fs = require('fs');
 const { EOL } = require('os');
+// @ts-ignore
 const LogLevelEnum = require('../enum/LogLevelEnum');
 
 const logFolder = "./logs";
@@ -62,7 +63,7 @@ const logFunctions = {
 module.exports = logFunctions;
 
 // Utility functions
-function createLogFunction(level, color, logPrefix) {
+function createLogFunction(level, logPrefix) {
     return function (message) {
         writeCon(level, logPrefix, message);
         writeLog(level, message);

@@ -37,6 +37,9 @@ function checkAlloc(writer, size) {
 }
 
 class BinaryWriter {
+    /**
+     * @param {number} [size]
+     */
     constructor(size) {
         if (!size || size <= 0) {
             size = Buffer.poolSize / 2;
@@ -79,12 +82,12 @@ class BinaryWriter {
     }
     writeFloat(value) {
         checkAlloc(this, 4);
-        this._buffer.writeFloatLE(value, this._length, true);
+        this._buffer.writeFloatLE(value, this._length);
         this._length += 4;
     }
     writeDouble(value) {
         checkAlloc(this, 8);
-        this._buffer.writeDoubleLE(value, this._length, true);
+        this._buffer.writeDoubleLE(value, this._length);
         this._length += 8;
     }
     writeBytes(data) {

@@ -3,24 +3,28 @@ const BinaryWriter = require('./BinaryWriter');
 const WebSocket = require('ws');
 
 class UpdateMinimap {
+    /**
+     * @param {{ server: { gameMode: { IsTournament: any; }; }; }} player
+     * @param {any} clients
+     */
     constructor(player, clients) {
         this.player = player;
         this.clients = clients;
         this.torunament = player.server.gameMode.IsTournament;
     }
     build(protocol) {
-        var player = this.player;
-        var clients = this.clients;
+        const player = this.player;
+        const clients = this.clients;
 
-        if (!player.sendFriendsCoords) {
-            return;
-        }
+        // if (!player.sendFriendsCoords) {
+        //     return;
+        // }
 
-        var writer = new BinaryWriter();
+        const writer = new BinaryWriter();
         writer.writeUInt8(0x43);                                // Packet ID - dec -> 67
 
-        var count = 0;
-        for (var i = 0; i < clients.length; i++) {
+        let count = 0;
+        for (let i = 0; i < clients.length; i++) {
             if (clients[i].player.socket.readyState == WebSocket.OPEN &&
                 clients[i].player.cells.length > 0 &&
                 clients[i].player != player &&
@@ -30,7 +34,7 @@ class UpdateMinimap {
         }
         writer.writeInt16(count >>> 0);       // Number of elements
 
-        for (var i = 0; i < clients.length; i++) {
+        for (let i = 0; i < clients.length; i++) {
             if (clients[i].player.socket.readyState == WebSocket.OPEN &&
                 clients[i].player.cells.length > 0 &&
                 clients[i].player != player &&

@@ -2,15 +2,18 @@
 const BinaryWriter = require('./BinaryWriter');
 
 class SetParams {
+    /**
+     * @param {any} server
+     */
     constructor(server) {
         this.server = server;
     }
     build(protocol) {
-        var writer = new BinaryWriter();
+        const writer = new BinaryWriter();
         writer.writeUInt8(0x65); // Packet ID
         writer.writeUInt32(this.server.config.serverVersionCode);
 
-        var flags = 0;
+        let flags = 0;
         if (this.server.gameMode.hideLeaderBoardNumbers) { //for tournaments
             flags = flags | 1;
         }

@@ -1,5 +1,7 @@
+// @ts-nocheck
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const Logger = require('../modules/Logger')
 
 class Earn {
     constructor() {
@@ -9,9 +11,6 @@ class Earn {
 
         this.mongoUrl = this.config.mongoUrl;
         this.mongoName = this.config.mongoDBName;
-
-        // Set up the MongoDB connection
-        this.connectToMongoDB();
 
         // Define the User model schema only if it doesn't exist
         if (!mongoose.models.users) {
@@ -91,72 +90,45 @@ class Earn {
             this.User = mongoose.models.users;
         }
 
-        // Bind the method to make it accessible externally
-        this.updateCoins = this.updateUserCoins.bind(this);
-        this.updateExp = this.updateUserExperience.bind(this);
-        // *** Can use both ***
         this.updateCoinsExp = this.updateUserCoinsAndXP.bind(this);
     }
 
-    async connectToMongoDB() {
+    async startMongoDB() {
         try {
             await mongoose.connect(`${this.mongoUrl}/${this.mongoName}`, {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
             });
-            console.log('Connected to MongoDB!');
+            Logger.info('Connected to MongoDB!');
         } catch (error) {
-            console.error('Error connecting to MongoDB:', error);
+            Logger.error('Error connecting to MongoDB:', error);
         }
-    }
-
-    async updateUserCoins(userId, coinsToAdd) {
-        try {
-            const user = await this.updateUser({ id: userId }, { $inc: { coins: coinsToAdd } });
-            console.log('User coins: ', user.coins);
-        } catch (error) {
-            console.log('Error updating user coins:', error);
-        }
-    }
-
-    async updateUserExperience(userId, xpToAdd) {
-        try {
-            const user = await this.updateUser({ id: userId }, { $inc: { xp: xpToAdd } });
-            console.log('User experience: ', user.xp);
-        } catch (error) {
-            console.log('Error updating user experience:', error);
-        }
-    }
-
-    async updateUser(filter, update) {
-        return this.User.findOneAndUpdate(filter, update, { new: true });
     }
 
     async updateUserCoinsAndXP(userId, coinsToAdd, xpToAdd) {
         try {
-            const user = await this.User.findOneAndUpdate(
-                { id: userId },
-                {
-                    $inc: { coins: coinsToAdd, xp: xpToAdd },
-                },
-                { new: true } // Set { new: true } to return the updated document instead of the original one
-            );
+            const user = await this.User.findOne({ id: userId }); // Fetch the user's data
 
             if (user) {
-                console.log(`UserID ${userId}, Coins: ${user.coins}, XP: ${user.xp}`);
+                const userName = user.username; // Get the user's name
+                const updatedUser = await this.User.findOneAndUpdate(
+                    { id: userId },
+                    {
+                        $inc: { coins: coinsToAdd, xp: xpToAdd },
+                    },
+                    { new: true }
+                );
+                
+                if (updatedUser) {
+                    Logger.info(`User: ${userName}, ID: ${userId}, Coins: ${updatedUser.coins}, XP: ${updatedUser.xp}`);
+                } else {
+                    Logger.info(`User not found with the given id: ${userId}`);
+                }
             } else {
-                console.log(`User not found with the given id: ${userId}`);
+                Logger.info(`User not found with the given id: ${userId}`);
             }
         } catch (error) {
-            console.log('Error updating user coins and xp:', error);
-        }
-    }
-
-    logUpdateResult(user, messagePrefix) {
-        if (user) {
-            console.log(`${messagePrefix} updated:`, user);
-        } else {
-            console.log(`User not found with the given id.`);
+            Logger.error('Error updating user coins and xp:', error);
         }
     }
 }

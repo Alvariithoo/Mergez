@@ -1,45 +1,48 @@
 ﻿const Cell = require('./Cell');
 
 class PlayerCell extends Cell {
+    /**
+     * @param {any} server
+     * @param {any} owner
+     * @param {{ x: number; y: number; }} position
+     * @param {number} size
+     */
     constructor(server, owner, position, size) {
-        super(server, owner, position, size);        
+        super(server, owner, position, size);
         this.cellType = 0;
         this._canRemerge = false;
 
-        //default value
+        // Default values
         this._canRemergeLimit = 100;
         this.boostValue = 870;
 
-        var gameMode = this.server.gameMode;
+        const gameMode = this.server.gameMode;
 
-        //ultra values
-        if (gameMode.canRemergeLimit){
+        // Ultra values
+        if (gameMode.canRemergeLimit) {
             this._canRemergeLimit = gameMode.canRemergeLimit;
         }
 
-        if (gameMode.newPlayerCellBoostValue){
+        if (gameMode.newPlayerCellBoostValue) {
             this.boostValue = gameMode.newPlayerCellBoostValue;
-        } 
+        }
     }
     updateRemerge() {
-        var age = this.getAge(this.server.getTick());
-        var mergeType = this.server.config.playerMergeType;
-        var cellMass = this.getMass();
+        const age = this.getAge(this.server.getTick());
+        const mergeType = this.server.config.playerMergeType;
+        const cellMass = this.getMass();
 
-        switch(mergeType) {
-            case 0: { // Ultrasplit
-                var minDoubleMass = 6000;
+        switch (mergeType) {
+            case 0: // Ultrasplit
+                const minDoubleMass = 6000;
                 this._canRemerge = cellMass >= minDoubleMass / 4 ? age >= 21 : true;
                 break;
-            }
-            case 1: { // Instant
+            case 1: // Instant
                 this._canRemerge = age >= 24;
                 break;
-            }
-            case 2: { // Megasplit
+            case 2: // Megasplit
                 this._canRemerge = age >= cellMass * 2;
                 break;
-            }
         }
     }
     canRemerge() {
@@ -53,30 +56,30 @@ class PlayerCell extends Cell {
         return this.getSize() * splitMultiplier;
     }
     moveUser(border) {
-        if (this.owner == null || this.owner.socket.isConnected === false) {
+        if (!this.owner || !this.owner.socket.isConnected) {
             return;
         }
-        var x = this.owner.mouse.x;
-        var y = this.owner.mouse.y;
+        const x = this.owner.mouse.x;
+        const y = this.owner.mouse.y;
         if (isNaN(x) || isNaN(y)) {
             return;
         }
-        var dx = ~~(x - this.position.x);
-        var dy = ~~(y - this.position.y);
-        var squared = dx * dx + dy * dy;
+        const dx = ~~(x - this.position.x);
+        const dy = ~~(y - this.position.y);
+        const squared = dx * dx + dy * dy;
         if (squared < 1) return;
 
         // distance
-        var distance = Math.sqrt(squared);
+        const distance = Math.sqrt(squared);
 
         // normal
-        var invd = 1 / distance;
-        var nx = dx * invd;
-        var ny = dy * invd;
+        const invd = 1 / distance;
+        const nx = dx * invd;
+        const ny = dy * invd;
 
         // normalized distance (0..1)
-        distance = Math.min(distance, 32) / 32;
-        var speed = this.getSpeed() * distance;
+        const clampedDistance = Math.min(distance, 32) / 32;
+        const speed = this.getSpeed() * clampedDistance;
         if (speed <= 0) return;
 
         this.position.x += nx * speed;
@@ -88,10 +91,9 @@ class PlayerCell extends Cell {
         server.gameMode.onCellAdd(this);
     }
     onRemove(server) {
-        var index;
         // Remove from player cell list
-        index = this.owner.cells.indexOf(this);
-        if (index != -1) {
+        const index = this.owner.cells.indexOf(this);
+        if (index !== -1) {
             this.owner.cells.splice(index, 1);
         }
         // Gamemode actions

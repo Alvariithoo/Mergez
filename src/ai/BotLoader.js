@@ -8,6 +8,9 @@ const Client = require('../Client');
 const MinionPlayer = require('./MinionPlayer');
 
 class BotLoader {
+    /**
+     * @param {any} server
+     */
     constructor(server) {
         this.server = server;
         this.loadNames();
@@ -16,7 +19,7 @@ class BotLoader {
         var name = "";
         // Picks a random name for the bot
         if (this.randomNames.length > 0) {
-            var index = (this.randomNames.length * Math.random()) >>> 0;
+            const index = (this.randomNames.length * Math.random()) >>> 0;
             name = this.randomNames[index];
         } else {
             name = `bot${++this.nameIndex}`;
@@ -26,6 +29,9 @@ class BotLoader {
     }
     loadNames() {
         const botnameFile = "./ai/botnames.txt";
+        /**
+         * @type {string | any[]}
+         */
         this.randomNames = [];
         if (fs.existsSync(botnameFile))
             this.randomNames = fs.readFileSync(botnameFile, "utf8").split(/[\r\n]+/).filter(function (x) {
@@ -45,6 +51,11 @@ class BotLoader {
         this.server.clients.push(socket);
         socket.client.setNickname(name);
     }
+    /**
+     * @param {any} owner
+     * @param {string} name
+     * @param {any} mass
+     */
     addMinion(owner, name, mass) {
         // Aliases
         const maxSize = this.server.config.minionMaxStartSize;

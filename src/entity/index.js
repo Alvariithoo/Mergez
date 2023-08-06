@@ -5,6 +5,5 @@
     Virus: require('./Virus'),
     MotherCell: require('./MotherCell'),
     EjectedMass: require('./EjectedMass'),
-    Minions: require('./Minions'),
-    Kicker: require('./Kicker')
+    Minions: require('./Minions')
 };

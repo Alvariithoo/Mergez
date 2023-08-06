@@ -1,8 +1,13 @@
 ﻿const Packet = require('./packet');
 const BinaryWriter = require('./packet/BinaryWriter');
+// @ts-ignore
 const UserRoleEnum = require('./enum/UserRoleEnum');
 
 class Player {
+    /**
+     * @param {any} server
+     * @param {any} socket
+     */
     constructor(server, socket) {
         this.server = server;
         this.socket = socket;
@@ -108,15 +113,12 @@ class Player {
             this.scrambleY = 0;
         } else {
             this.scrambleId = (Math.random() * 0xFFFFFFFF) >>> 0;
-            // avoid mouse packet limitations
-            var maxx = Math.max(0, 32767 - 1000 - this.server.border.width);
-            var maxy = Math.max(0, 32767 - 1000 - this.server.border.height);
-            var x = maxx * Math.random();
-            var y = maxy * Math.random();
-            if (Math.random() >= 0.5) x = -x;
-            if (Math.random() >= 0.5) y = -y;
-            this.scrambleX = x;
-            this.scrambleY = y;
+            const maxx = Math.max(0, 32767 - 1000 - this.server.border.width);
+            const maxy = Math.max(0, 32767 - 1000 - this.server.border.height);
+            const x = maxx * Math.random();
+            const y = maxy * Math.random();
+            this.scrambleX = Math.random() >= 0.5 ? -x : x;
+            this.scrambleY = Math.random() >= 0.5 ? -y : y;
         }
         this.borderCounter = 0;
     }
@@ -220,7 +222,7 @@ class Player {
     updateMass() {
         var totalSize = 0;
         var totalScore = 0;
-        for (var i = 0; i < this.cells.length; i++) {
+        for (let i = 0; i < this.cells.length; i++) {
             var node = this.cells[i];
             totalSize += node.getSize();
             totalScore += node.getSizeSquared();
@@ -296,7 +298,7 @@ class Player {
                 // Remove all client cells
                 var cells = this.cells;
                 this.cells = [];
-                for (var i = 0; i < cells.length; i++) {
+                for (let i = 0; i < cells.length; i++) {
                     this.server.removeNode(cells[i]);
                 }
                 // Mark to remove
@@ -433,7 +435,7 @@ class Player {
             // 1 / 0.040 = 25 (once per second)
             this.tickLeaderboard = 0;
             if (this.server.leaderboardType >= 0) {
-                var packet = new Packet.UpdateLeaderboard(this, this.server.leaderboard, this.server.leaderboardType);
+                let packet = new Packet.UpdateLeaderboard(this, this.server.leaderboard, this.server.leaderboardType);
                 client.sendPacket(packet);
             }
         }
@@ -442,7 +444,7 @@ class Player {
             if (++this.tickMinimap > 50) {
                 //50 (once per two second)
                 this.tickMinimap = 0;
-                var packet = new Packet.UpdateMinimap(this, this.server.clients);
+                let packet = new Packet.UpdateMinimap(this, this.server.clients);
                 client.sendPacket(packet);
             }
         }
@@ -454,7 +456,7 @@ class Player {
         var cx = 0;
         var cy = 0;
         var count = 0;
-        for (var i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             var node = this.cells[i];
             cx += node.position.x;
             cy += node.position.y;
@@ -553,14 +555,14 @@ class Player {
             return;
         }
         // find next
-        for (var i = index + 1; i < this.server.clients.length; i++) {
+        for (let i = index + 1; i < this.server.clients.length; i++) {
             var player = this.server.clients[i].player;
             if (player.cells.length > 0) {
                 this.spectateTarget = player;
                 return;
             }
         }
-        for (var i = 0; i <= index; i++) {
+        for (let i = 0; i <= index; i++) {
             var player = this.server.clients[i].player;
             if (player.cells.length > 0) {
                 this.spectateTarget = player;

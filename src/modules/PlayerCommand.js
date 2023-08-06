@@ -1,8 +1,15 @@
 ﻿const Entity = require('../entity');
 const Logger = require('./Logger');
+// @ts-ignore
 const UserRoleEnum = require('../enum/UserRoleEnum');
 
 class Command {
+    /**
+     * @param {string} name
+     * @param {string} usage
+     * @param {string} description
+     * @param {any} minimumCredential
+     */
     constructor(name, usage, description, minimumCredential, handler) {
         this.name = name;
         this.description = description;
@@ -117,6 +124,7 @@ const commands = [
             y: parseInt(arg[3])
         }
 
+        let size;
         let mass = parseInt(arg[4]);
         if (!isNaN(mass)) size = Math.sqrt(mass * 100);
 
@@ -124,7 +132,6 @@ const commands = [
         if (isNaN(pos.x) || isNaN(pos.y)) return send(player, "Invalid coordinates");
 
         // Start size for each entity 
-        let size;
         if (ent == "virus") {
             size = player.server.config.virusMinSize;
         } else if (ent == "mothercell") {
@@ -191,14 +198,14 @@ const commands = [
                 ip = socket.remoteAddress;
             }
             
-            const protocol = player.server.clients[i].client.protocol;
+            let protocol = player.server.clients[i].client.protocol;
             if (protocol == null)
                 protocol = "?"
             // Get name and data
             
             if (socket.closeReason != null) {
                 // Disconnected
-                const reason = "[DISCONNECTED] ";
+                let reason = "[DISCONNECTED] ";
                 if (socket.closeReason.code)
                     reason += "[" + socket.closeReason.code + "] ";
                 if (socket.closeReason.message)
@@ -252,7 +259,7 @@ const commands = [
             player.server.sendChatMessage(null, null, name + " was kicked." + reason);
             socket.close(1000, "Kicked from server");
             send(player, "You kicked " + name + "." + reason)
-            console.log(name + " was kicked." + reason)
+            Logger.warn(name + " was kicked." + reason)
             count++;
         }, this);
         if (count) return;
@@ -260,16 +267,17 @@ const commands = [
         else send(player, "Player with ID " + id + "not found!");
     }),
     new Command("killall", "", "kills everyone", UserRoleEnum.MODER, (player, args) => {
-        const count = 0;
+        let count = 0;
         for (let i = 0; i < player.server.clients.length; i++) {
-            const player = player.server.clients[i].player;
-            while (player.cells.length > 0) {
-                player.server.removeNode(player.cells[0]);
+            const client = player.server.clients[i];
+            const targetPlayer = client.player;
+            while (targetPlayer.cells.length > 0) {
+                player.server.removeNode(targetPlayer.cells[0]);
                 count++;
             }
         }
-        send(player, "You killed everyone. (" + count + (" cells.)"));
-    }),
+        send(player, "You killed everyone. (" + count + " cells.)");
+    }),    
     new Command("spawnmass", "<mass> [id]", "gives spawn with mass to yourself or to other player", UserRoleEnum.MODER, (player, args) => {
         const mass = parseInt(args[1]);
         if (isNaN(mass))
@@ -370,7 +378,7 @@ const commands = [
 
             // Check for invalid decimal numbers of the IP address
             for (let i in ipParts) {
-                if (i > 1 && ipParts[i] == "*") {
+                if (parseInt(i) > 1 && ipParts[i] == "*") {
                     // mask for sub-net
                     continue;
                 }
@@ -421,13 +429,12 @@ const commands = [
             send(player, "Please specify a valid player ID!");
             return;
         }
-        const count = 0;
+        let count = 0;
         player.server.clients.forEach(function (socket) {
-            // disconnect
             const name = socket.player._name;
             player.server.sendChatMessage(null, null, name + " was muted." + reason);
             send(player, "You muted " + name + "." + reason);
-            console.log(name + " was muted." + reason);
+            Logger.warn(name + " was muted." + reason);
             socket.player.isMuted = true;
             count++;
         }, this);
@@ -435,21 +442,21 @@ const commands = [
         if (!id) send(player, "No players to mute!");
         else send(player, "Player with ID " + id + "not found!");
     }),
-    new Command("unmute", "[id]", "unmute (player's) from chat", UserRoleEnum.ADMIN, (args) => {
+    new Command("unmute", "[id]", "unmute (player's) from chat", UserRoleEnum.ADMIN, (args, player) => {
         let id = args[1];
         if (id == null) {
-            this.writeline("Please specify a valid player ID!");
+            send("Please specify a valid player ID!");
             return;
         }
-        const count = 0;
+        let count = 0;
         player.server.clients.forEach(function (socket) {
             const name = socket.player._name;
             if (socket.player.isMuted == false) {
                 send(player, name + " isn't muted")
             }
             player.server.sendChatMessage(null, null, name + ' was unmuted.');
-            send(player, "You unmuted " + name + '.')
-            console.log(name + ' was unmuted.')
+            send(player, "You unmuted " + name + '.');
+            Logger.warn(name + ' was unmuted.');
             socket.player.isMuted = false;
             count++;
         }, this);
@@ -459,31 +466,31 @@ const commands = [
     }),
     new Command("pause", "", "freeze game", UserRoleEnum.ADMIN, (player, args) => {
         player.server.run = !player.server.run; // Switches the pause state
-        let s = server.run ? "Unpaused" : "Paused";
+        let s = player.server.run ? "Unpaused" : "Paused";
         send(player, s + " the game.");
-    }),
+    }),    
     new Command("freeze", "[id]", "frozen (player's) or bots", UserRoleEnum.ADMIN, (player, args) => {
         let id = args[1];
         if (id == null) {
-            this.writeline("Please specify a valid player ID!");
+            send("Please specify a valid player ID!");
             return;
         }
         //kick player
-        const count = 0;
+        let count = 0;
         player.server.clients.forEach(function (socket) {
             const name = socket.player._name;
             const client = socket.player;
             if (!client.cells.length) return send(player, 'Player is not playing!')
             if (!client.frozen) {
                 client.frozen = true;
-                console.log(name + ` is frozen now.`)
+                Logger.warn(name + ` is frozen now.`)
                 player.server.sendChatMessage(null, null, name + ' is now frozen.');
                 send(player, "You froze " + name)
             } else {
                 client.frozen = false;
                 player.server.sendChatMessage(null, null, name + ` isn't frozen now.`);
                 send(player, "You unfroze " + name);
-                console.log(name + ` isn't frozen now.`)
+                Logger.warn(name + ` isn't frozen now.`)
             }
             count++;
         }, this);
@@ -516,10 +523,10 @@ const commands = [
         send(player, "Restarting...");
         player.server.restart();
     }),
-    new Command("shutdown", "", "SHUTS DOWN THE SERVER", UserRoleEnum.ADMIN, (args) => {
+    new Command("shutdown", "", "SHUTS DOWN THE SERVER", UserRoleEnum.ADMIN, (args, player) => {
         Logger.warn("SHUTDOWN REQUEST FROM " + player.socket.remoteAddress + " as " + player.userAuth);
         process.exit(0);
-    }),
+    })
 ]
 
 for (const cmd of commands) commandMap.set(cmd.name, cmd);

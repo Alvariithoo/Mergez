@@ -18,6 +18,9 @@
  */
 
 class BinaryReader {
+    /**
+     * @param {Buffer | ArrayBuffer | { valueOf(): ArrayBuffer | SharedArrayBuffer; }} buffer
+     */
     constructor(buffer) {
         this._offset = 0;
         this._buffer = Buffer.from(buffer);

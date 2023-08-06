@@ -1,6 +1,12 @@
 const Cell = require('./Cell');
 
 class Minions extends Cell {
+    /**
+     * @param {any} server
+     * @param {any} owner
+     * @param {{ x: number; y: number; }} position
+     * @param {number} size
+     */
     constructor(server, owner, position, size) {
         super(server, owner, position, size);
         this.cellType = 2;
@@ -13,11 +19,11 @@ class Minions extends Cell {
         this.server = server;
     }
     onEaten(server) {
-        var player = server.owner;
-        var self = this;
+        const player = server.owner;
+        const self = this;
         if (this.power == 2) {
             player.minionControl = true;
-            for (var i = 0; i < 5; i++) {
+            for (let i = 0; i < 5; i++) {
                 this.server.bots.addMinion(player);
             }
             this.server.sendChatMessage(null, player, "you got 5 minions for 20 sec!");
@@ -32,7 +38,7 @@ class Minions extends Cell {
         server.nodesVirus.push(this);
     }
     onRemove(server) {
-        var index = server.nodesVirus.indexOf(this);
+        const index = server.nodesVirus.indexOf(this);
         if (index != -1) {
             server.nodesVirus.splice(index, 1);
         }

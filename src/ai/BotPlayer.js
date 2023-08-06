@@ -1,24 +1,25 @@
 ﻿const Player = require('../Player');
 const Vector = require('vector2-node');
+const Cell = require('../entity/Cell');
 
 class BotPlayer extends Player {
+    /**
+     * @param {any} server
+     * @param {import("./FakeSocket")} socket
+     */
     constructor(server, socket) {
         super(server, socket);
         this.splitCooldown = 0;
     }
     getLowestCell() {
-        // Gets the cell with the lowest mass
-        if (this.cells.length <= 0) {
+        if (this.cells.length === 0) {
             return null; // Error!
         }
 
-        // Sort the cells by Array.sort() function to avoid errors
-        var sorted = this.cells.valueOf();
-        sorted.sort(function (a, b) {
-            return b.getSize() - a.getSize();
-        })
+        // Sort the cells by size to avoid errors
+        const sortedCells = [...this.cells].sort((a, b) => b.getSize() - a.getSize());
 
-        return sorted[0];
+        return sortedCells[0];
     }
     checkConnection() {
         if (this.socket.isCloseRequest) {
@@ -32,7 +33,7 @@ class BotPlayer extends Player {
         // Respawn if bot is dead
         if (this.cells.length <= 0) {
             this.server.gameMode.onPlayerSpawn(this.server, this);
-            if (this.cells.length == 0) {
+            if (this.cells.length === 0) {
                 // If the bot cannot spawn any cells, then disconnect it
                 this.socket.close();
             }
@@ -42,31 +43,33 @@ class BotPlayer extends Player {
         if (this.splitCooldown > 0) this.splitCooldown--;
 
         // Calc predators/prey
-        var cell = this.getLowestCell();
+        const cell = this.getLowestCell();
 
         // Action
         this.decide(cell);
     }
-    // Custom
+    /**
+     * @param {{ position: any; owner: { team: any; }; _size: number; }} cell
+     */
     decide(cell) {
         if (!cell) return; // Cell was eaten, check in the next tick (I'm too lazy)
 
-        var cellPos = cell.position;
-        var result = new Vector(0, 0);
+        const cellPos = cell.position;
+        const result = new Vector(0, 0);
         // Splitting
-        var split = false;
-        var splitTarget = null;
-        var threats = [];
+        let split = false;
+        let splitTarget = null;
+        const threats = [];
 
-        for (var i = 0; i < this.viewNodes.length; i++) {
-            var check = this.viewNodes[i];
-            if (check.owner == this) continue;
+        for (let i = 0; i < this.viewNodes.length; i++) {
+            const check = this.viewNodes[i];
+            if (check.owner === this) continue;
 
             // Get attraction of the cells - avoid larger cells, viruses and same team cells
-            var influence = 0;
-            if (check.cellType == 0) {
+            let influence = 0;
+            if (check.cellType === 0) {
                 // Player cell
-                if (this.server.gameMode.haveTeams && (cell.owner.team == check.owner.team)) {
+                if (this.server.gameMode.haveTeams && (cell.owner.team === check.owner.team)) {
                     // Same team cell
                     influence = 0;
                 } else if (cell._size > (check._size + 4) * 1.15) {
@@ -78,14 +81,14 @@ class BotPlayer extends Player {
                 } else {
                     influence = -(check._size / cell._size) / 3;
                 }
-            } else if (check.cellType == 1) {
+            } else if (check.cellType === 1) {
                 // Food
                 influence = 1;
-            } else if (check.cellType == 2) {
+            } else if (check.cellType === 2) {
                 // Virus
                 if (cell._size > check._size * 1.15) {
                     // Can eat it
-                    if (this.cells.length == this.server.config.playerMaxCells) {
+                    if (this.cells.length === this.server.config.playerMaxCells) {
                         // Won't explode
                         influence = check._size * 2.5;
                     } else {
@@ -96,7 +99,7 @@ class BotPlayer extends Player {
                     // can eat me
                     influence = -1;
                 }
-            } else if (check.cellType == 3) {
+            } else if (check.cellType === 3) {
                 // Ejected mass
                 if (cell._size > check._size * 1.15)
                     // can eat
@@ -106,35 +109,26 @@ class BotPlayer extends Player {
             }
 
             // Apply influence if it isn't 0 or my cell
-            if (influence == 0 || cell.owner == check.owner)
+            if (influence === 0 || cell.owner === check.owner)
                 continue;
 
             // Calculate separation between cell and check
-            var checkPos = check.position;
-            var displacement = new Vector(checkPos.x - cellPos.x, checkPos.y - cellPos.y);
+            const checkPos = check.position;
+            const displacement = new Vector(checkPos.x - cellPos.x, checkPos.y - cellPos.y);
 
             // Figure out distance between cells
-            var distance = displacement.length();
+            let distance = displacement.length();
             if (influence < 0) {
                 // Get edge distance
                 distance -= cell._size + check._size;
-                if (check.cellType == 0) threats.push(check);
+                if (check.cellType === 0) threats.push(check);
             }
 
             // The farther they are the smaller influnce it is
             if (distance < 1) distance = 1; // Avoid NaN and positive influence with negative distance & attraction
             influence /= distance;
 
-            // if (check.cellType == 0 && check.owner._name == "pl4") {
-            //     console.log(this._name);
-            //     console.log(cell._size > (check._size + 4) * 1.15);
-            //     console.log(cell._size < check._size * 5);
-            //     console.log( (!split));
-            //     console.log( this.splitCooldown);
-            //     console.log( this.cells.length);
-            // }
             // Splitting conditions
-
             splitTarget = check;
             split = true;
         }
@@ -176,13 +170,13 @@ class BotPlayer extends Player {
             y: cellPos.y + result.y * 800
         }
     }
-    // Subfunctions
+
+    /**
+     * @param {any[]} list
+     */
     largest(list) {
-        // Sort the cells by Array.sort() function to avoid errors
-        var sorted = list.valueOf();
-        sorted.sort(function (a, b) {
-            return b._size - a._size;
-        })
+        // Sort the cells by size to avoid errors
+        const sorted = [...list].sort((a, b) => b._size - a._size);
 
         return sorted[0];
     }

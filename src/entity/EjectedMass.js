@@ -1,6 +1,12 @@
 ﻿const Cell = require('./Cell');
 
 class EjectedMass extends Cell {
+    /**
+     * @param {any} server
+     * @param {any} owner
+     * @param {{ x: number; y: number; }} position
+     * @param {number} size
+     */
     constructor(server, owner, position, size) {
         super(server, owner, position, size);
         this.cellType = 3;
@@ -11,7 +17,7 @@ class EjectedMass extends Cell {
     }
     onRemove(server) {
         // Remove from list of ejected mass
-        var index = server.nodesEjected.indexOf(this);
+        const index = server.nodesEjected.indexOf(this);
         if (index != -1) {
             server.nodesEjected.splice(index, 1);
         }

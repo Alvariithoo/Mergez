@@ -17,10 +17,10 @@ module.exports = Commands;
 var fillChar = function (data, char, fieldLength, rTL) {
     var result = data.toString();
     if (rTL === true) {
-        for (var i = result.length; i < fieldLength; i++)
+        for (let i = result.length; i < fieldLength; i++)
             result = char.concat(result);
     } else {
-        for (var i = result.length; i < fieldLength; i++)
+        for (let i = result.length; i < fieldLength; i++)
             result = result.concat(char);
     }
     return result;
@@ -110,14 +110,14 @@ Commands.list = {
         server.restart();
     },
     chat: function (server, split) {
-        for (var i = 0; i < server.clients.length; i++) {
+        for (let i = 0; i < server.clients.length; i++) {
             server.sendChatMessage(null, i, String(split.slice(1, split.length).join(" ")));
         }
     },
     debug: function (server, split) {
         // Count client cells
         var clientCells = 0;
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             clientCells += server.clients[i].player.cells.length;
         }
         // Output node information
@@ -166,7 +166,7 @@ Commands.list = {
         }
 
         // Find ID specified and add/remove minions for them
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             var client = server.clients[i].player;
 
             if (client.pID == id) {
@@ -187,7 +187,7 @@ Commands.list = {
                     client.minionControl = true;
                     // Add minions for client
                     if (isNaN(add)) add = 1;
-                    for (var i = 0; i < add; i++) {
+                    for (let i = 0; i < add; i++) {
                         server.bots.addMinion(client, name);
                     }
                     Logger.print("Added " + add + " minions for " + getName(client._name));
@@ -202,7 +202,7 @@ Commands.list = {
             add = 1; // Adds 1 bot if user doesnt specify a number
         }
 
-        for (var i = 0; i < add; i++) {
+        for (let i = 0; i < add; i++) {
             server.bots.addBot();
         }
         Logger.print("Added " + add + " player bots");
@@ -219,21 +219,23 @@ Commands.list = {
 
         if (split[1].indexOf(".") >= 0) {
             // If input is an IP address
-            var ip = split[1];
-            var ipParts = ip.split(".");
+            const ip = split[1];
+            const ipParts = ip.split(".");
 
             // Check for invalid decimal numbers of the IP address
-            for (var i in ipParts) {
-                if (i > 1 && ipParts[i] == "*") {
-                    // mask for sub-net
-                    continue;
+
+            for (let i = 0; i < ipParts.length; i++) {
+                if (i > 1 && ipParts[i] === "*") {
+                    continue; // mask for sub-net
                 }
-                // If not numerical or if it's not between 0 and 255
-                if (isNaN(ipParts[i]) || ipParts[i] < 0 || ipParts[i] >= 256) {
+
+                const num = parseInt(ipParts[i]);
+                if (isNaN(num) || num < 0 || num >= 256) {
                     Logger.warn(logInvalid);
                     return;
                 }
             }
+
             ban(server, split, ip);
             return;
         }
@@ -245,7 +247,7 @@ Commands.list = {
             return;
         }
         var ip = null;
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             var client = server.clients[i];
             if (!client || !client.isConnected)
                 continue;
@@ -262,7 +264,7 @@ Commands.list = {
         Logger.print(" IP              | IP ");
         Logger.print("───────────────────────────────────");
 
-        for (var i = 0; i < server.ipBanList.length; i += 2) {
+        for (let i = 0; i < server.ipBanList.length; i += 2) {
             Logger.print(" " + fillChar(server.ipBanList[i], " ", 15) + " | " +
                 (server.ipBanList.length === i + 1 ? "" : server.ipBanList[i + 1])
             );
@@ -275,7 +277,7 @@ Commands.list = {
             toRemove = server.clients.length;
         }
         var removed = 0;
-        for (var i = 0; i < server.clients.length; i++) {
+        for (let i = 0; i < server.clients.length; i++) {
             if (server.clients[i].isConnected != null)
                 continue; // verify that the client is a bot
             server.clients[i].close();
@@ -294,7 +296,7 @@ Commands.list = {
         var newLB = [];
         var reset = split[1];
 
-        for (var i = 1; i < split.length; i++) {
+        for (let i = 1; i < split.length; i++) {
             if (split[i]) newLB[i - 1] = split[i];
             else newLB[i - 1] = " ";
         }
@@ -371,12 +373,12 @@ Commands.list = {
         color.b = Math.max(Math.min(parseInt(split[4]), 255), 0);
 
         // Sets color to the specified amount
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
                 client.color = color; // Set color
-                for (var j in client.cells) {
+                for (let j in client.cells) {
                     client.cells[j].color = color;
                 }
                 break;
@@ -490,11 +492,11 @@ Commands.list = {
         }
 
         var count = 0;
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 var len = client.cells.length;
-                for (var j = 0; j < len; j++) {
+                for (let j = 0; j < len; j++) {
                     server.removeNode(client.cells[0]);
                     count++;
                 }
@@ -507,7 +509,7 @@ Commands.list = {
     },
     killall: function (server, split) {
         var count = 0;
-        for (var i = 0; i < server.clients.length; i++) {
+        for (let i = 0; i < server.clients.length; i++) {
             var player = server.clients[i].player;
             while (player.cells.length > 0) {
                 server.removeNode(player.cells[0]);
@@ -531,11 +533,11 @@ Commands.list = {
         var size = Math.sqrt(amount * 100);
 
         // Sets mass to the specified amount
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
-                for (var j in client.cells) {
+                for (let j in client.cells) {
                     client.cells[j].setSize(size);
                 }
                 Logger.print("Set mass of " + getName(client._name) + " to " + (size * size / 100).toFixed(3));
@@ -559,7 +561,7 @@ Commands.list = {
         }
 
         // Sets spawnmass to the specified amount
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 client.spawnmass = size;
@@ -583,11 +585,11 @@ Commands.list = {
             Logger.print("Split player to playerMaxCells");
             count = server.config.playerMaxCells;
         }
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
-                for (var i = 0; i < count; i++) {
+                for (let i = 0; i < count; i++) {
                     server.splitCells(client);
                 }
                 Logger.print("Forced " + getName(client._name) + " to split " + count + " times");
@@ -611,7 +613,7 @@ Commands.list = {
         }
 
         // Change name
-        for (var i = 0; i < server.clients.length; i++) {
+        for (let i = 0; i < server.clients.length; i++) {
             var client = server.clients[i].player;
             if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
             if (client.pID == id) {
@@ -674,7 +676,7 @@ Commands.list = {
         sockets.sort(function (a, b) {
             return a.player.pID - b.player.pID;
         });
-        for (var i = 0; i < sockets.length; i++) {
+        for (let i = 0; i < sockets.length; i++) {
             var socket = sockets[i];
             var client = socket.player;
             var type = split[1];
@@ -742,7 +744,7 @@ Commands.list = {
             return;
         }
 
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
@@ -763,7 +765,7 @@ Commands.list = {
         // Get amount of humans/bots
         var humans = 0,
             bots = 0;
-        for (var i = 0; i < server.clients.length; i++) {
+        for (let i = 0; i < server.clients.length; i++) {
             if ('_socket' in server.clients[i])
                 humans++;
             else
@@ -772,7 +774,7 @@ Commands.list = {
 
         // Get average score of all players
         var scores = [];
-        for (var i in server.clients)
+        for (let i in server.clients)
             scores.push(getScore(server.clients[i].player))
         if (!server.clients.length) scores = [0];
 
@@ -802,11 +804,11 @@ Commands.list = {
         }
 
         // Spawn
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
-                for (var j in client.cells) {
+                for (let j in client.cells) {
                     client.cells[j].position.x = pos.x;
                     client.cells[j].position.y = pos.y;
                     server.updateNodeQuad(client.cells[j]);
@@ -876,7 +878,7 @@ Commands.list = {
             Logger.warn("Please specify either virus, food, or mothercell");
             return;
         }
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
@@ -913,7 +915,7 @@ Commands.list = {
             Logger.warn("Please specify a valid player ID!");
             return;
         }
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
                 if (!client.cells.length) return Logger.warn("That player is either dead or not playing!");
@@ -930,10 +932,10 @@ Commands.list = {
             Logger.warn("Please specify a valid player ID!");
             return;
         }
-        for (var i in server.clients) {
+        for (let i in server.clients) {
             if (server.clients[i].player.pID == id) {
                 var client = server.clients[i].player;
-                for (var i = 0; i < client.cells.length; i++) {
+                for (let i = 0; i < client.cells.length; i++) {
                     var cell = client.cells[i];
                     while (cell._size > server.config.playerMinSize) {
                         // remove mass from parent cell
@@ -1028,7 +1030,7 @@ Commands.list = {
 // functions from Server
 function playerById(id, server) {
     if (!id) return null;
-    for (var i = 0; i < server.clients.length; i++) {
+    for (let i = 0; i < server.clients.length; i++) {
         var player = server.clients[i].player;
         if (player.pID == id) {
             return player;
@@ -1089,7 +1091,7 @@ function getName(name) {
 
 function getScore(client) {
     var score = 0; // reset to not cause bugs
-    for (var i = 0; i < client.cells.length; i++) {
+    for (let i = 0; i < client.cells.length; i++) {
         if (!client.cells[i]) continue;
         score += client.cells[i]._mass;
     }
@@ -1097,7 +1099,7 @@ function getScore(client) {
 }
 
 function getPos(client) {
-    for (var i = 0; i < client.cells.length; i++) {
+    for (let i = 0; i < client.cells.length; i++) {
         if (!client.cells[i]) continue;
         return {
             x: client.cells[i].position.x / client.cells.length,
@@ -1109,7 +1111,7 @@ function getPos(client) {
 // functions from QuadNode
 function scanNodeCount(quad) {
     var count = 0;
-    for (var i = 0; i < quad.childNodes.length; i++) {
+    for (let i = 0; i < quad.childNodes.length; i++) {
         count += scanNodeCount(quad.childNodes[i]);
     }
     return 1 + count;
@@ -1117,7 +1119,7 @@ function scanNodeCount(quad) {
 
 function scanItemCount(quad) {
     var count = 0;
-    for (var i = 0; i < quad.childNodes.length; i++) {
+    for (let i = 0; i < quad.childNodes.length; i++) {
         count += scanItemCount(quad.childNodes[i]);
     }
     return quad.items.length + count;

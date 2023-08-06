@@ -6,6 +6,7 @@ class FFA extends Mode {
         this.ID = 0;
         this.name = "FFA";
         this.specByLeaderboard = true;
+        this.redAreaDecayRate = undefined;
     }
     onPlayerSpawn(server, player) {
         player.setColor(player.isMinion ? { r: 240, g: 240, b: 255} : server.getRandomColor());
@@ -13,11 +14,11 @@ class FFA extends Mode {
     }
     updateLB(server, lb) {
         server.leaderboardType = this.packetLB;
-        for (var i = 0, pos = 0; i < server.clients.length; i++) {
+        for (let i = 0, pos = 0; i < server.clients.length; i++) {
             var player = server.clients[i].player;
             if (player.isRemoved || !player.cells.length ||player.socket.isConnected == false)
                 continue;
-            for (var j = 0; j < pos; j++)
+            for (let j = 0; j < pos; j++)
                 if (lb[j]._score < player._score)
                     break;
             lb.splice(j, 0, player);

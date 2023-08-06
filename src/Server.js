@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 const QuadNode = require('quad-node');
 const PlayerCommand = require('./modules/PlayerCommand');
-const day = require('./modules/date');
 const WebSocket = require('ws');
 
 // Project imports
@@ -16,8 +15,8 @@ const Entity = require('./entity');
 const Gamemode = require('./gamemodes');
 const BotLoader = require('./ai/BotLoader');
 const Logger = require('./modules/Logger');
+// @ts-ignore
 const UserRoleEnum = require('./enum/UserRoleEnum');
-const Plugins = require('./PluginsLoader');
 
 // Files imports
 const fileNameBadWords = '../src/badwords.txt';
@@ -54,8 +53,6 @@ class Server {
         this.leaderboardType = -1; // no type
 
         this.bots = new BotLoader(this);
-        this.Plugins = new Plugins(this);
-        this.commands; // Command handler
 
         // Main loop tick
         this.startTime = Date.now();
@@ -85,84 +82,81 @@ class Server {
 
         this.setBorder(this.config.borderWidth, this.config.borderHeight);
         this.quadTree = new QuadNode(this.border, 64, 32);
+        this.commands = undefined;
     }
     start() {
-        this.Plugins.load();
         this.timerLoopBind = this.timerLoop.bind(this);
         this.mainLoopBind = this.mainLoop.bind(this);
 
         // Gamemodes
         this.gameMode = Gamemode.get(this.config.serverGamemode);
-
-        // Gamemode configurations
         this.gameMode.onServerInit(this);
-        var dirSsl = path.join(path.dirname(module.filename), '../ssl');
-        var pathKey = path.join(dirSsl, 'key.pem');
-        var pathCert = path.join(dirSsl, 'cert.pem');
 
+        // @ts-ignore
+        const dirSsl = path.join(path.dirname(module.filename), '../ssl');
+        const pathKey = path.join(dirSsl, 'key.pem');
+        const pathCert = path.join(dirSsl, 'cert.pem');
+    
         if (fs.existsSync(pathKey) && fs.existsSync(pathCert)) {
-            // HTTP/TLS
-            var options = {
+            const options = {
                 key: fs.readFileSync(pathKey, 'utf8'),
                 cert: fs.readFileSync(pathCert, 'utf8')
-            }
+            };
             Logger.info("TLS: supported");
+            // @ts-ignore
             this.httpServer = HttpsServer.createServer(options);
         } else {
-            // HTTP only
             Logger.warn("TLS: not supported (SSL certificate not found!)");
             this.httpServer = http.createServer();
         }
-        var wsOptions = {
+    
+        const wsOptions = {
             server: this.httpServer,
             perMessageDeflate: false,
             maxPayload: 4096
-        }
-
+        };
+    
         this.wsServer = new WebSocket.Server(wsOptions);
         this.wsServer.on('error', this.onServerSocketError.bind(this));
         this.wsServer.on('connection', this.onClientSocketOpen.bind(this));
         this.httpServer.listen(this.config.serverPort, this.config.serverBind, this.onHttpServerOpen.bind(this));
-
+    
         this.startStatsServer(this.config.serverStatsPort);
     }
     onHttpServerOpen() {
-        // Spawn starting food
         this.startingFood();
-
-        // Start Main Loop
         setTimeout(this.timerLoopBind, 1);
-
-        // Done
-        Logger.info("GAMESERVER'S PORT: \x1b[34m" + this.config.serverPort + "\x1b[0m");
-        Logger.info("Current game mode is: \x1b[34m" + this.gameMode.name + "\x1b[0m");
-
-        // Player bots (Experimental)
+    
+        Logger.info(`GAMESERVER'S PORT: \x1b[34m${this.config.serverPort}\x1b[0m`);
+        Logger.info(`Current game mode is: \x1b[34m${this.gameMode.name}\x1b[0m`);
+    
         if (this.config.serverBots > 0) {
-            Logger.info("Added " + this.config.serverBots + " player bots");
-            for (var i = 0; i < this.config.serverBots; i++) {
+            Logger.info(`Added ${this.config.serverBots} player bots`);
+            for (let i = 0; i < this.config.serverBots; i++) {
                 this.bots.addBot();
             }
         }
     }
     onServerSocketError(error) {
-        Logger.error("WebSocket: " + error.code + " - " + error.message);
-        switch (error.code) {
+        const { code, message } = error;
+        Logger.error(`WebSocket: ${code} - ${message}`);
+        switch (code) {
             case "EADDRINUSE":
-                Logger.error("Server could not bind to port " + this.config.serverPort + "!");
+                Logger.error(`Server could not bind to port ${this.config.serverPort}!`);
                 Logger.error("Please close out of Skype or change 'serverPort' in Settings.js to a different number.");
                 break;
             case "EACCES":
                 Logger.error("Please make sure you are running Ogar with root privileges.");
                 break;
         }
-        process.exit(1); // Exits the program
+        process.exit(1);
     }
     onClientSocketOpen(ws) {
-        var logip = ws._socket.remoteAddress + ":" + ws._socket.remotePort;
-        ws.on('error', function (err) {
-            Logger.writeError("[" + logip + "] " + err.stack);
+        const logip = `${ws._socket.remoteAddress}:${ws._socket.remotePort}`;
+        ws.on('error', (err) => {
+            Logger.writeError(`[${logip}] ${err.stack}`);
         });
+    
         if (this.config.serverMaxConnections > 0 && this.socketCount >= this.config.serverMaxConnections) {
             ws.close(1000, "No slots");
             return;
@@ -173,7 +167,7 @@ class Server {
         }
         if (this.config.serverIpLimit > 0) {
             var ipConnections = 0;
-            for (var i = 0; i < this.clients.length; i++) {
+            for (let i = 0; i < this.clients.length; i++) {
                 var socket = this.clients[i];
                 if (!socket.isConnected || socket.remoteAddress != ws._socket.remoteAddress)
                     continue;
@@ -188,7 +182,7 @@ class Server {
         ws.remoteAddress = ws._socket.remoteAddress;
         ws.remotePort = ws._socket.remotePort;
         ws.lastAliveTime = Date.now();
-        Logger.info(day() + " CONNECTED: " + ws.remoteAddress + ":" + ws.remotePort + ", origin: \"" + "\"");
+        Logger.info("CONNECTED: " + ws.remoteAddress + ":" + ws.remotePort + ", origin: \"" + "\"");
         ws.player = new Player(this, ws);
         ws.client = new Client(this, ws);
         ws.playerCommand = new PlayerCommand(this, ws.player);
@@ -221,7 +215,7 @@ class Server {
                 message: ws._closeMessage
             };
             ws.closeTime = Date.now();
-            Logger.info(day() + " DISCONNECTED " + ws.remoteAddress + ":" + ws.remotePort + ", code: " + ws._closeCode + ", reason: \"" + ws._closeMessage + "\", name: \"" + ws.player.getName() + "\"");
+            Logger.info("DISCONNECTED " + ws.remoteAddress + ":" + ws.remotePort + ", code: " + ws._closeCode + ", reason: \"" + ws._closeMessage + "\", name: \"" + ws.player.getName() + "\"");
             // disconnected effect
             var color = this.getGrayColor(ws.player.getColor());
             ws.player.setColor(color);
@@ -242,7 +236,7 @@ class Server {
             if ((ws.lastAliveTime - this.startTime) / 1000 >= this.config.serverMinionIgnoreTime) {
                 if (this.minionTest.length >= this.config.serverMinionThreshold) {
                     ws.player.isMinion = true;
-                    for (var i = 0; i < this.minionTest.length; i++) {
+                    for (let i = 0; i < this.minionTest.length; i++) {
                         var player = this.minionTest[i];
                         if (!player.socket.isConnected) continue;
                         player.isMinion = true;
@@ -275,7 +269,6 @@ class Server {
         this.nodesEjected = [];
         this.nodesPlayer = [];
         this.movingNodes = [];
-        this.commands;
         this.ticks = 0;
         this.loadIpBanList();
         this.loadUserList();
@@ -287,8 +280,8 @@ class Server {
         Logger.info(`Restarted ${date} ${time}`);
     }
     setBorder(width, height) {
-        var hw = width / 2;
-        var hh = height / 2;
+        const hw = width / 2;
+        const hh = height / 2;
         this.border = {
             minx: -hw,
             miny: -hh,
@@ -307,104 +300,122 @@ class Server {
         return this.gameMode;
     }
     getNextNodeId() {
-        // Resets integer
         if (this.lastNodeId > 2147483647) {
             this.lastNodeId = 1;
         }
-        return this.lastNodeId++ >>> 0;
+        return (this.lastNodeId++) >>> 0;
     }
     getNewPlayerID() {
-        // Resets integer
         if (this.lastPlayerId > 2147483647) {
             this.lastPlayerId = 1;
         }
-        return this.lastPlayerId++ >>> 0;
+        return (this.lastPlayerId++) >>> 0;
     }
     getRandomPosition() {
         return {
             x: Math.floor(this.border.minx + this.border.width * Math.random()),
             y: Math.floor(this.border.miny + this.border.height * Math.random())
-        }
+        };
     }
     getGrayColor(rgb) {
-        var luminance = Math.min(255, (rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721)) >>> 0;
+        const luminance = Math.min(255, (rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721)) >>> 0;
         return {
             r: luminance,
             g: luminance,
             b: luminance
-        }
+        };
     }
     getRandomColor() {
-        var h = 360 * Math.random();
-        var s = 248 / 255;
-        var v = 1;
-
+        const h = 360 * Math.random();
+        const s = 248 / 255;
+        const v = 1;
+    
         // hsv to rgb    
-        var rgb = { r: v, g: v, b: v }; // achromatic (grey)
+        let r = v;
+        let g = v;
+        let b = v;
+    
         if (s > 0) {
-            h /= 60; // sector 0 to 5
-            var i = Math.floor(h) >> 0;
-            var f = h - i; // factorial part of h
-            var p = v * (1 - s);
-            var q = v * (1 - s * f);
-            var t = v * (1 - s * (1 - f));
+            const hTemp = h / 60;
+            const i = Math.floor(hTemp);
+            const f = hTemp - i;
+            const p = v * (1 - s);
+            const q = v * (1 - s * f);
+            const t = v * (1 - s * (1 - f));
+    
             switch (i) {
                 case 0:
-                    rgb = { r: v, g: t, b: p };
-                    break
+                    r = v;
+                    g = t;
+                    b = p;
+                    break;
                 case 1:
-                    rgb = { r: q, g: v, b: p };
-                    break
+                    r = q;
+                    g = v;
+                    b = p;
+                    break;
                 case 2:
-                    rgb = { r: p, g: v, b: t };
-                    break
+                    r = p;
+                    g = v;
+                    b = t;
+                    break;
                 case 3:
-                    rgb = { r: p, g: q, b: v };
-                    break
+                    r = p;
+                    g = q;
+                    b = v;
+                    break;
                 case 4:
-                    rgb = { r: t, g: p, b: v };
-                    break
+                    r = t;
+                    g = p;
+                    b = v;
+                    break;
                 default:
-                    rgb = { r: v, g: p, b: q };
-                    break
+                    r = v;
+                    g = p;
+                    b = q;
+                    break;
             }
         }
+    
         // check color range
-        rgb.r = Math.max(rgb.r, 0);
-        rgb.g = Math.max(rgb.g, 0);
-        rgb.b = Math.max(rgb.b, 0);
-        rgb.r = Math.min(rgb.r, 1);
-        rgb.g = Math.min(rgb.g, 1);
-        rgb.b = Math.min(rgb.b, 1);
+        r = Math.max(Math.min(r, 1), 0);
+        g = Math.max(Math.min(g, 1), 0);
+        b = Math.max(Math.min(b, 1), 0);
+    
         return {
-            r: (rgb.r * 255) >>> 0,
-            g: (rgb.g * 255) >>> 0,
-            b: (rgb.b * 255) >>> 0
-        }
+            r: (r * 255) | 0,
+            g: (g * 255) | 0,
+            b: (b * 255) | 0
+        };
     }
-    movePlayer(cell1, client) {
-        var dx = ~~(client.mouse.x - cell1.position.x);
-        var dy = ~~(client.mouse.y - cell1.position.y);
-        var squared = dx * dx + dy * dy;
+    movePlayer(cell1, client, server) {
+        const dx = client.mouse.x - cell1.position.x;
+        const dy = client.mouse.y - cell1.position.y;
+        const squared = dx * dx + dy * dy;
+        
         if (squared < 1 || isNaN(dx) || isNaN(dy)) {
             return;
         }
-        // get movement speed
-        var d = Math.sqrt(squared);
+    
+        // Calculate movement speed
+        const d = Math.sqrt(squared);
+        let speed;
+        
         if (client.doublespeed) {
-            if (server)
-                speed = cell1.getSpeed(d) * 4;
-            else speed = cell1.getSpeed(d) * 2;
+            speed = cell1.getSpeed(d) * (server ? 4 : 2);
         } else if (client.FreezeCell) {
-            if (server)
-                speed = cell1.getSpeed(d) * 0;
-            else speed = cell1.getSpeed(d) * 2;
-        } else speed = cell1.getSpeed(d);
-        if (!speed) return; // avoid shaking
-
-        // move player cells
-        cell1.position.x += dx / d * speed;
-        cell1.position.y += dy / d * speed;
+            speed = cell1.getSpeed(d) * (server ? 0 : 2);
+        } else {
+            speed = cell1.getSpeed(d);
+        }
+    
+        if (!speed) {
+            return; // Avoid shaking
+        }
+    
+        // Move player cells
+        cell1.position.x += (dx / d) * speed;
+        cell1.position.y += (dy / d) * speed;
     }
     updateNodeQuad(node) {
         var item = node.quadItem;
@@ -429,9 +440,9 @@ class Server {
         this.quadTree.update(item);
     }
     addNode(node) {
-        var x = node.position.x;
-        var y = node.position.y;
-        var size = node.getSize();
+        const x = node.position.x;
+        const y = node.position.y;
+        const size = node.getSize();
         node.quadItem = {
             cell: node,
             x: x,
@@ -445,155 +456,141 @@ class Server {
             }
         };
         this.quadTree.insert(node.quadItem);
-
+    
         this.nodes.push(node);
 
+
+        // Adds to the owning player's screen
+    
         // Adds to the owning player's screen
         if (node.owner) {
-            node.setColor(node.owner.getColor());
+            const color = node.owner.getColor();
+            node.setColor(color);
             node.owner.cells.push(node);
-            node.owner.socket.client.sendPacket(new Packet.AddNode(node.owner, node));
+            const addNodePacket = new Packet.AddNode(node.owner, node);
+            node.owner.socket.client.sendPacket(addNodePacket);
         }
 
+
+        // Special on-add actions
+    
         // Special on-add actions
         node.onAdd(this);
     }
     removeNode(node) {
-        if (node.quadItem == null) {
+        if (!node.quadItem) {
             throw new TypeError("Server.removeNode: attempt to remove invalid node!");
         }
         node.isRemoved = true;
         this.quadTree.remove(node.quadItem);
         node.quadItem = null;
-
-        // Remove from main nodes list
-        var index = this.nodes.indexOf(node);
-        if (index != -1) {
-            this.nodes.splice(index, 1);
+    
+        const nodeIndex = this.nodes.indexOf(node);
+        if (nodeIndex !== -1) {
+            this.nodes.splice(nodeIndex, 1);
+        }
+    
+        const movingNodeIndex = this.movingNodes.indexOf(node);
+        if (movingNodeIndex !== -1) {
+            this.movingNodes.splice(movingNodeIndex, 1);
         }
 
-        // Remove from moving cells list
-        index = this.movingNodes.indexOf(node);
-        if (index != -1) {
-            this.movingNodes.splice(index, 1);
-        }
 
+        // Special on-remove actions
+    
         // Special on-remove actions
         node.onRemove(this);
     }
     updateClients() {
-        // check minions
-        for (var i = 0; i < this.minionTest.length;) {
-            var player = this.minionTest[i];
-            if (this.stepDateTime - player.connectedTime > this.config.serverMinionInterval) {
-                this.minionTest.splice(i, 1);
-            } else {
-                i++;
-            }
-        }
-        // check dead clients
-        for (var i = 0; i < this.clients.length;) {
-            var player = this.clients[i].player;
+        this.minionTest = this.minionTest.filter(player => this.stepDateTime - player.connectedTime <= this.config.serverMinionInterval);
+    
+        this.clients = this.clients.filter(client => {
+            const player = client.player;
             player.checkConnection();
-            if (player.isRemoved) {
-                // remove dead client
-                this.clients.splice(i, 1);
-            } else {
-                i++;
-            }
-        }
-        // update
-        for (var i = 0; i < this.clients.length; i++) {
-            this.clients[i].player.updateTick();
-        }
-        for (var i = 0; i < this.clients.length; i++) {
-            this.clients[i].player.sendUpdate();
-        }
+            return !player.isRemoved;
+        });
+    
+        this.clients.forEach(client => {
+            const player = client.player;
+            player.updateTick();
+            player.sendUpdate();
+        });
     }
     updateLeaderboard() {
-        // Update leaderboard with the gamemode's method
         this.leaderboard = [];
         this.leaderboardType = -1;
         this.gameMode.updateLB(this, this.leaderboard);
-
+    
         if (!this.gameMode.specByLeaderboard) {
-            // Get client with largest score if gamemode doesn't have a leaderboard
-            var clients = this.clients.valueOf();
-
-            // Use sort function
-            clients.sort(function (a, b) {
-                return b.player.getScore() - a.player.getScore();
-            });
-            //this.largestClient = clients[0].player;
-            this.largestClient = null;
-            if (clients[0] != null)
-                this.largestClient = clients[0].player;
+            const clients = this.clients.slice();
+            clients.sort((a, b) => b.player.getScore() - a.player.getScore());
+            this.largestClient = clients[0]?.player || null;
         } else {
             this.largestClient = this.gameMode.rankOne;
         }
     }
     onChatMessage(from, to, message) {
-        var tick = this.getTick();
-        var dt = tick - this.lastChatTick;
+        const tick = this.getTick();
+        const dt = tick - this.lastChatTick;
         this.lastChatTick = tick;
-
-        if (!message || !(message = message.trim()))
+    
+        if (!message || !(message = message.trim())) {
             return;
+        }
+    
         if (from && message.length > 0 && message[0] == '/') {
-            // player command
             from.socket.playerCommand.processMessage(from, message);
             return;
         } else if (dt < this.config.chatCooldown) {
             return;
         }
+    
         if (!this.config.serverChat) {
-            // chat is disabled
             return;
         }
+    
         if (from && from.isMuted) {
-            // player is muted
             return;
         }
+    
         if (message.length > 64) {
             message = message.slice(0, 64);
         }
-        if (this.config.serverChatAscii) {
-            for (var i = 0; i < message.length; i++) {
-                var c = message.charCodeAt(i);
-                if (c < 0x20 || c > 0x7F) {
-                    if (from) {
-                        this.sendChatMessage(null, from, "You can use ASCII text only!");
-                    }
-                    return;
-                }
+    
+        if (this.config.serverChatAscii && /[^\x20-\x7E]/.test(message)) {
+            if (from) {
+                this.sendChatMessage(null, from, "You can use ASCII text only!");
             }
+            return;
         }
+    
         if (this.checkBadWord(message)) {
             if (from) {
                 this.sendChatMessage(null, from, "Stop insulting others! Keep calm and be friendly please");
             }
             return;
         }
+    
         if (from) {
-            Logger.writeDebug("[CHAT][" + from.socket.remoteAddress + ":" + from.socket.remotePort + "][" + from.getFriendlyName() + "] " + message);
+            Logger.writeDebug(`[CHAT][${from.socket.remoteAddress}:${from.socket.remotePort}][${from.getFriendlyName()}] ${message}`);
         } else {
-            Logger.writeDebug("[CHAT][][]: " + message);
+            Logger.writeDebug(`[CHAT][][]: ${message}`);
         }
+    
         this.sendChatMessage(from, to, message);
     }
     sendChatMessage(from, to, message) {
-        for (var i = 0, len = this.clients.length; i < len; i++) {
-            if (!this.clients[i])
+        for (const client of this.clients) {
+            if (!client) {
                 continue;
-            if (!to || to == this.clients[i].player) {
+            }
+            if (!to || to == client.player) {
                 if (this.config.separateChatForTeams && this.gameMode.haveTeams) {
-                    //  from equals null if message from server
-                    if (from == null || from.team === this.clients[i].player.team) {
-                        this.clients[i].client.sendPacket(new Packet.ChatMessage(from, message));
+                    if (!from || from.team === client.player.team) {
+                        client.client.sendPacket(new Packet.ChatMessage(from, message));
                     }
-                }
-                else {
-                    this.clients[i].client.sendPacket(new Packet.ChatMessage(from, message));
+                } else {
+                    client.client.sendPacket(new Packet.ChatMessage(from, message));
                 }
             }
         }
@@ -602,35 +599,36 @@ class Server {
         if (this.stop) {
             return;
         }
-        var timeStep = 40;
-
-        var ts = Date.now();
-        var dt = ts - this.timeStamp;
+    
+        const timeStep = 40;
+        const ts = Date.now();
+        const dt = ts - this.timeStamp;
+    
         if (dt < timeStep - 5) {
-            setTimeout(this.timerLoopBind, ((timeStep - 5) - dt) >> 0);
+            setTimeout(this.timerLoopBind, (timeStep - 5 - dt) >> 0);
             return;
         }
+    
         if (dt < timeStep - 1) {
             setTimeout(this.timerLoopBind, 0);
             return;
         }
+    
         if (dt < timeStep) {
-            //process.nextTick(this.timerLoopBind);
             setTimeout(this.timerLoopBind, 0);
             return;
         }
+    
         if (dt > 120) {
-            // too high lag => resynchronize
             this.timeStamp = ts - timeStep;
         }
-        // update average
+    
         this.updateTimeAvg += 0.5 * (this.updateTime - this.updateTimeAvg);
-        // calculate next
-        if (this.timeStamp == 0)
+        if (this.timeStamp === 0) {
             this.timeStamp = ts;
+        }
+    
         this.timeStamp += timeStep;
-        //process.nextTick(this.mainLoopBind);
-        //process.nextTick(this.timerLoopBind);
         setTimeout(this.mainLoopBind, 0);
         setTimeout(this.timerLoopBind, 0);
     }
@@ -638,146 +636,128 @@ class Server {
         if (this.stop) {
             return;
         }
+    
         this.stepDateTime = Date.now();
-        var tStart = process.hrtime();
-
-        // Loop main functions
+        const tStart = process.hrtime();
+    
         if (this.run) {
             this.updateMoveEngine();
-            if ((this.getTick() % this.config.spawnInterval) == 0) {
-                this.updateFood(); // Spawn food
-                this.updateVirus(); // Spawn viruses
+            if ((this.getTick() % this.config.spawnInterval) === 0) {
+                this.updateFood();
+                this.updateVirus();
             }
             this.gameMode.onTick(this);
-            if (((this.getTick() + 3) % (1000 / 40)) == 0) {
-                // once per second
+            if (((this.getTick() + 3) % (1000 / 40)) === 0) {
                 this.updateMassDecay();
             }
         }
-        //to fix lag when tournament stucks at start
+    
         if (!this.run && this.gameMode.IsTournament) {
             this.tickCounter++;
         }
-
+    
         this.updateClients();
-
-        // once per second
-        if (((this.getTick() + 7) % (1000 / 40)) == 0) {
-            // once per second
+    
+        if (((this.getTick() + 7) % (1000 / 40)) === 0) {
             this.updateLeaderboard();
         }
-
-        // ping server tracker
-        if (this.config.serverTracker && (this.getTick() % (10000 / 40)) == 0) {
-            // once per 30 seconds
-            this.pingServerTracker();
+    
+        if (this.config.serverTracker && (this.getTick() % (10000 / 40)) === 0) {
+            // this.pingServerTracker();
         }
-
+    
         if (this.run) {
             this.tickCounter++;
         }
-        var tEnd = process.hrtime(tStart);
+    
+        const tEnd = process.hrtime(tStart);
         this.updateTime = tEnd[0] * 1000 + tEnd[1] / 1000000;
     }
     startingFood() {
-        // Spawns the starting amount of food cells
-        for (var i = 0; i < this.config.foodMinAmount; i++) {
+        for (let i = 0; i < this.config.foodMinAmount; i++) {
             this.spawnFood();
         }
     }
     updateFood() {
-        var maxCount = this.config.foodMinAmount - this.currentFood;
-        var spawnCount = Math.min(maxCount, this.config.foodSpawnAmount);
-        for (var i = 0; i < spawnCount; i++) {
+        const maxCount = this.config.foodMinAmount - this.currentFood;
+        const spawnCount = Math.min(maxCount, this.config.foodSpawnAmount);
+    
+        for (let i = 0; i < spawnCount; i++) {
             this.spawnFood();
         }
     }
     updateVirus() {
-        var maxCount = this.config.virusMinAmount - this.nodesVirus.length;
-        var spawnCount = Math.min(maxCount, 2);
-        for (var i = 0; i < spawnCount; i++) {
+        const maxCount = this.config.virusMinAmount - this.nodesVirus.length;
+        const spawnCount = Math.min(maxCount, 2);
+    
+        for (let i = 0; i < spawnCount; i++) {
             this.spawnVirus();
         }
     }
     spawnFood() {
-        var cell = new Entity.Food(this, null, this.getRandomPosition(), this.config.foodMinSize);
+        const cell = new Entity.Food(this, null, this.getRandomPosition(), this.config.foodMinSize);
+    
         if (this.config.foodMassGrow) {
-            var size = cell.getSize();
-            var maxGrow = this.config.foodMaxSize - size;
-            size += maxGrow * Math.random();
-            cell.setSize(size);
+            const size = cell.getSize();
+            const maxGrow = this.config.foodMaxSize - size;
+            cell.setSize(size + maxGrow * Math.random());
         }
+    
         cell.setColor(this.getRandomColor());
         this.addNode(cell);
     }
     spawnVirus() {
-        // Spawns a virus
-        var pos = this.getRandomPosition();
+        const pos = this.getRandomPosition();
+    
         if (this.willCollide(pos, this.config.virusMinSize)) {
-            // cannot find safe position => do not spawn
             return;
         }
-        var virus = new Entity.Virus(this, null, pos, this.config.virusMinSize);
+    
+        const virus = new Entity.Virus(this, null, pos, this.config.virusMinSize);
         this.addNode(virus);
     }
     spawnPlayer(player, pos, size) {
-        // Check if can spawn from ejected mass
-        if (!pos && this.config.ejectSpawnPlayer && this.nodesEjected.length > 0) {
-            if (Math.random() >= 0.5) {
-                // Spawn from ejected mass
-                var index = (this.nodesEjected.length - 1) * Math.random() >>> 0;
-                var eject = this.nodesEjected[index];
-                if (!eject.isRemoved) {
-                    this.removeNode(eject);
-                    pos = {
-                        x: eject.position.x,
-                        y: eject.position.y
-                    };
-                    if (!size) {
-                        size = Math.max(eject.getSize(), Math.max(player.startingSize ? player.startingSize : this.config.playerStartSize, this.config.playerStartSize));
-                    }
+        if (!pos && this.config.ejectSpawnPlayer && this.nodesEjected.length > 0 && Math.random() >= 0.5) {
+            const index = (this.nodesEjected.length - 1) * Math.random() >>> 0;
+            const eject = this.nodesEjected[index];
+    
+            if (!eject.isRemoved) {
+                this.removeNode(eject);
+                pos = { x: eject.position.x, y: eject.position.y };
+    
+                if (!size) {
+                    size = Math.max(eject.getSize(), Math.max(player.startingSize ? player.startingSize : this.config.playerStartSize, this.config.playerStartSize));
                 }
             }
         }
-
+    
         if (size == null) {
-            // Get starting mass
             size = Math.max(player.startingSize ? player.startingSize : this.config.playerStartSize, this.config.playerStartSize);
         }
-
-        if (player.spawnmass) { // for changing spawn mass during game
+    
+        if (player.spawnmass) {
             size = player.spawnmass;
         }
-
+    
         if (pos == null) {
-            // Get random pos
-            var pos = this.getRandomPosition();
-            // 10 attempts to find safe position
-            for (var i = 0; i < 10 && this.willCollide(pos, size); i++) {
+            pos = this.getRandomPosition();
+    
+            for (let i = 0; i < 10 && this.willCollide(pos, size); i++) {
                 pos = this.getRandomPosition();
             }
         }
-
-        // pos = {x : 0, y: 0};
-        var name = player.getName();
-        if (name.length > this.config.playerMaxNickLength) {
-            name = name.substring(0, this.config.playerMaxNickLength);
-        }
+    
+        const name = player.getName().substring(0, this.config.playerMaxNickLength);
         player.setName(name);
-
-        // Spawn player and add to world
-        var cell = new Entity.PlayerCell(this, player, pos, size);
+    
+        const cell = new Entity.PlayerCell(this, player, pos, size);
         this.addNode(cell);
-
-        // Set initial mouse coords
-        player.mouse = {
-            x: pos.x,
-            y: pos.y
-        };
+    
+        player.mouse = { x: pos.x, y: pos.y };
     }
     willCollide(pos, size) {
         // Look if there will be any collision with the current nodes
-        var bound = {
+        const bound = {
             minx: pos.x - size,
             miny: pos.y - size,
             maxx: pos.x + size,
@@ -789,13 +769,11 @@ class Server {
                 return item.cell.cellType == 0; // check players only
             });
     }
-    // Checks cells for collision.
-    // Returns collision manifold or null if there is no collision
     checkCellCollision(cell, check) {
-        var r = cell.getSize() + check.getSize();
-        var dx = check.position.x - cell.position.x;
-        var dy = check.position.y - cell.position.y;
-        var squared = dx * dx + dy * dy; // squared distance from cell to check
+        const r = cell.getSize() + check.getSize();
+        const dx = check.position.x - cell.position.x;
+        const dy = check.position.y - cell.position.y;
+        const squared = dx * dx + dy * dy; // squared distance from cell to check
         if (squared > r * r) {
             // no collision
             return null;
@@ -810,32 +788,31 @@ class Server {
             squared: squared // squared distance from cell1 to cell2
         }
     }
-
     // Resolves rigid body collision
     resolveRigidCollision(manifold, border) {
         // distance from cell1 to cell2
-        var d = Math.sqrt(manifold.squared);
+        const d = Math.sqrt(manifold.squared);
         if (d <= 0) return;
-        var invd = 1 / d;
+        const invd = 1 / d;
 
         // normal
-        var nx = ~~manifold.dx * invd;
-        var ny = ~~manifold.dy * invd;
+        const nx = ~~manifold.dx * invd;
+        const ny = ~~manifold.dy * invd;
 
         // body penetration distance
-        var penetration = manifold.r - d;
+        const penetration = manifold.r - d;
         if (penetration <= 0) return;
 
         // penetration vector = penetration * normal
-        var px = penetration * nx;
-        var py = penetration * ny;
+        const px = penetration * nx;
+        const py = penetration * ny;
 
         // body impulse
-        var totalMass = manifold.cell1.getSizeSquared() + manifold.cell2.getSizeSquared();
+        const totalMass = manifold.cell1.getSizeSquared() + manifold.cell2.getSizeSquared();
         if (totalMass <= 0) return;
-        var invTotalMass = 1 / totalMass;
-        var impulse1 = manifold.cell2.getSizeSquared() * invTotalMass;
-        var impulse2 = manifold.cell1.getSizeSquared() * invTotalMass;
+        const invTotalMass = 1 / totalMass;
+        const impulse1 = manifold.cell2.getSizeSquared() * invTotalMass;
+        const impulse2 = manifold.cell1.getSizeSquared() * invTotalMass;
 
         // apply extrusion force
         manifold.cell1.position.x -= px * impulse1;
@@ -852,13 +829,12 @@ class Server {
             return false;
         if (manifold.cell1.owner != manifold.cell2.owner) {
             // Different owners
-            return this.gameMode.haveTeams &&
-                manifold.cell1.owner.getTeam() == manifold.cell2.owner.getTeam();
+            return this.gameMode.haveTeams && manifold.cell1.owner.getTeam() == manifold.cell2.owner.getTeam();
         }
         // The same owner
         if (manifold.cell1.owner.mergeOverride)
             return false;
-        var tick = this.getTick();
+        const tick = this.getTick();
         if (manifold.cell1.getAge(tick) < 15 || manifold.cell2.getAge(tick) < 15) {
             // just splited => ignore
             return false;
@@ -867,8 +843,8 @@ class Server {
     }
     // Resolves non-rigid body collision
     resolveCollision(manifold) {
-        var minCell = manifold.cell1;
-        var maxCell = manifold.cell2;
+        let minCell = manifold.cell1;
+        let maxCell = manifold.cell2;
         // check if any cell already eaten
         if (minCell.isRemoved || maxCell.isRemoved)
             return;
@@ -878,7 +854,7 @@ class Server {
         }
 
         // check distance
-        var eatDistance = maxCell.getSize() - minCell.getSize() / 3;
+        const eatDistance = maxCell.getSize() - minCell.getSize() / 3;
         if (manifold.squared >= eatDistance * eatDistance) {
             // too far => can't eat
             return;
@@ -887,7 +863,7 @@ class Server {
         if (minCell.owner && minCell.owner == maxCell.owner) {
             // collision owned/owned => ignore or resolve or remerge
 
-            var tick = this.getTick();
+            const tick = this.getTick();
             if (minCell.getAge(tick) < 15 || maxCell.getAge(tick) < 15) {
                 // just splited => ignore
                 return;
@@ -930,8 +906,7 @@ class Server {
             minCell.owner.mergeOverride = false;
         }
 
-        var isMinion = (maxCell.owner && maxCell.owner.isMinion) ||
-            (minCell.owner && minCell.owner.isMinion);
+        const isMinion = (maxCell.owner && maxCell.owner.isMinion) || (minCell.owner && minCell.owner.isMinion);
         if (!isMinion) {
             // Consume effect
             maxCell.onEat(minCell);
@@ -948,10 +923,10 @@ class Server {
     updateMoveEngine() {
         var tick = this.getTick();
         // Move player cells
-        for (var i in this.clients) {
+        for (let i in this.clients) {
             var client = this.clients[i].player;
             var checkSize = !client.mergeOverride || client.cells.length == 1;
-            for (var j = 0; j < client.cells.length; j++) {
+            for (let j = 0; j < client.cells.length; j++) {
                 var cell1 = client.cells[j];
                 if (cell1.isRemoved)
                     continue;
@@ -974,7 +949,7 @@ class Server {
                         var splitMass = splitSize * splitSize / 100;
                         var angle = Math.random() * 2 * Math.PI;
                         var step = 2 * Math.PI / count;
-                        for (var k = 0; k < count; k++) {
+                        for (let k = 0; k < count; k++) {
                             this.splitPlayerCell(client, cell1, angle, splitMass);
                             angle += step;
                         }
@@ -984,7 +959,7 @@ class Server {
             }
         }
         // Move moving cells
-        for (var i = 0; i < this.movingNodes.length;) {
+        for (let i = 0; i < this.movingNodes.length;) {
             var cell1 = this.movingNodes[i];
             if (cell1.isRemoved)
                 continue;
@@ -1001,9 +976,9 @@ class Server {
         var self = this;
         var rigidCollisions = [];
         var eatCollisions = [];
-        for (var i in this.clients) {
+        for (let i in this.clients) {
             var client = this.clients[i].player;
-            for (var j = 0; j < client.cells.length; j++) {
+            for (let j = 0; j < client.cells.length; j++) {
                 var cell1 = client.cells[j];
                 if (cell1 == null) continue;
                 this.quadTree.find(cell1.quadItem.bound, function (item) {
@@ -1026,14 +1001,14 @@ class Server {
         }
 
         // resolve rigid body collisions
-        for (var k = 0; k < rigidCollisions.length; k++) {
+        for (let k = 0; k < rigidCollisions.length; k++) {
             var c = rigidCollisions[k];
             var manifold = this.checkCellCollision(c.cell1, c.cell2);
             if (manifold == null) continue;
             this.resolveRigidCollision(manifold, this.border);
         }
         // Update quad tree
-        for (var k = 0; k < rigidCollisions.length; k++) {
+        for (let k = 0; k < rigidCollisions.length; k++) {
             var c = rigidCollisions[k];
             this.updateNodeQuad(c.cell1);
             this.updateNodeQuad(c.cell2);
@@ -1041,7 +1016,7 @@ class Server {
         rigidCollisions = null;
 
         // resolve eat collisions
-        for (var k = 0; k < eatCollisions.length; k++) {
+        for (let k = 0; k < eatCollisions.length; k++) {
             var c = eatCollisions[k];
             var manifold = this.checkCellCollision(c.cell1, c.cell2);
             if (manifold == null) continue;
@@ -1053,7 +1028,7 @@ class Server {
         rigidCollisions = [];
         eatCollisions = [];
         var self = this;
-        for (var i = 0; i < this.movingNodes.length; i++) {
+        for (let i = 0; i < this.movingNodes.length; i++) {
             var cell1 = this.movingNodes[i];
             if (cell1.isRemoved) continue;
             this.quadTree.find(cell1.quadItem.bound, function (item) {
@@ -1087,7 +1062,7 @@ class Server {
         }
 
         // resolve rigid body collisions
-        for (var k = 0; k < rigidCollisions.length; k++) {
+        for (let k = 0; k < rigidCollisions.length; k++) {
             var c = rigidCollisions[k];
             var manifold = this.checkCellCollision(c.cell1, c.cell2);
             if (manifold == null) continue;
@@ -1095,7 +1070,7 @@ class Server {
             // position changed! don't forgot to update quad-tree
         }
         // Update quad tree
-        for (var k = 0; k < rigidCollisions.length; k++) {
+        for (let k = 0; k < rigidCollisions.length; k++) {
             var c = rigidCollisions[k];
             this.updateNodeQuad(c.cell1);
             this.updateNodeQuad(c.cell2);
@@ -1103,7 +1078,7 @@ class Server {
         rigidCollisions = null;
 
         // resolve eat collisions
-        for (var k = 0; k < eatCollisions.length; k++) {
+        for (let k = 0; k < eatCollisions.length; k++) {
             var c = eatCollisions[k];
             var manifold = this.checkCellCollision(c.cell1, c.cell2);
             if (manifold == null) continue;
@@ -1135,7 +1110,7 @@ class Server {
         var masses = [];
         if (maxCount < 3 || maxCount < count || curMass / throwMass <= 30) {
             // Monotone blow up
-            for (var i = 0; i < maxCount; i++) {
+            for (let i = 0; i < maxCount; i++) {
                 masses.push(splitMass);
             }
         } else {
@@ -1201,7 +1176,7 @@ class Server {
         // Logger.debug("===Server.splitMass===");
         // Logger.debug("mass = " + mass.toFixed(3) + "  |  " + Math.sqrt(mass * 100).toFixed(3));
         // var sum = 0;
-        // for (var i = 0; i < masses.length; i++) {
+        // for (let i = 0; i < masses.length; i++) {
         //    Logger.debug("mass[" + i + "] = " + masses[i].toFixed(3) + "  |  " + Math.sqrt(masses[i] * 100).toFixed(3));
         //    sum += masses[i]
         // }
@@ -1211,7 +1186,7 @@ class Server {
     splitCells(client) {
         // it seems that vanilla uses order by cell age
         var cellToSplit = [];
-        for (var i = 0; i < client.cells.length; i++) {
+        for (let i = 0; i < client.cells.length; i++) {
             var cell = client.cells[i];
             if (cell.getSize() < this.config.playerMinSplitSize) {
                 continue;
@@ -1221,7 +1196,7 @@ class Server {
                 break;
         }
         var splitCells = 0; // How many cells have been split
-        for (var i = 0; i < cellToSplit.length; i++) {
+        for (let i = 0; i < cellToSplit.length; i++) {
             var cell = cellToSplit[i];
             var dx = ~~(client.mouse.x - cell.position.x);
             var dy = ~~(client.mouse.y - cell.position.y);
@@ -1278,84 +1253,85 @@ class Server {
         return true;
     }
     canEjectMass(client) {
-        var tick = this.getTick();
+        const tick = this.getTick();
         if (client.lastEject == null) {
-            // first eject
+            // First eject
             client.lastEject = tick;
             return true;
         }
-        var dt = tick - client.lastEject;
+        const dt = tick - client.lastEject;
         if (dt < this.config.ejectCooldown) {
-            // reject (cooldown)
+            // Reject (cooldown)
             return false;
         }
         client.lastEject = tick;
         return true;
     }
     ejectMass(client) {
-        if (!this.canEjectMass(client))
+        if (!this.canEjectMass(client)) {
             return;
-        for (var i = 0; i < client.cells.length; i++) {
-            var cell = client.cells[i];
-
-            if (!cell) {
+        }
+        for (let i = 0; i < client.cells.length; i++) {
+            const cell = client.cells[i];
+    
+            if (!cell || cell.getSize() < this.config.playerMinSplitSize) {
                 continue;
             }
-
-            if (cell.getSize() < this.config.playerMinSplitSize) {
-                continue;
-            }
-            var size2 = this.config.ejectSize;
-            var sizeLoss = this.config.ejectSizeLoss;
-            var sizeSquared = cell.getSizeSquared() - sizeLoss * sizeLoss;
+    
+            const size2 = this.config.ejectSize;
+            const sizeLoss = this.config.ejectSizeLoss;
+            const sizeSquared = cell.getSizeSquared() - sizeLoss * sizeLoss;
             if (sizeSquared < this.config.playerMinSize * this.config.playerMinSize) {
                 continue;
             }
-            var size1 = Math.sqrt(sizeSquared);
-
-            var dx = client.mouse.x - cell.position.x;
-            var dy = client.mouse.y - cell.position.y;
-            var dl = dx * dx + dy * dy;
+            const size1 = Math.sqrt(sizeSquared);
+    
+            let dx = client.mouse.x - cell.position.x;
+            let dy = client.mouse.y - cell.position.y;
+            let dl = dx * dx + dy * dy;
             if (dl < 1) {
                 dx = 1;
                 dy = 0;
+                dl = 1;
             } else {
                 dl = Math.sqrt(dl);
                 dx /= dl;
                 dy /= dl;
             }
-
+    
             // Remove mass from parent cell first
             cell.setSize(size1);
-
+    
             // Get starting position
-            var pos = {
+            const pos = {
                 x: cell.position.x + dx * cell.getSize(),
                 y: cell.position.y + dy * cell.getSize()
             };
-
-            var angle = Math.atan2(dx, dy);
-            if (isNaN(angle)) angle = Math.PI / 2;
-
+    
+            let angle = Math.atan2(dx, dy);
+            if (isNaN(angle)) {
+                angle = Math.PI / 2;
+            }
+    
             // Randomize angle
             angle += (Math.random() * 0.6) - 0.3;
-
+    
             // Create cell
-            var ejected = new Entity.EjectedMass(this, null, pos, size2);
+            const ejected = new Entity.EjectedMass(this, null, pos, size2);
             ejected.ejector = cell;
             ejected.setColor(cell.getColor());
             ejected.setBoost(this.config.ejectDistance, angle);
-
+    
             this.addNode(ejected);
         }
     }
     shootVirus(parent, angle) {
-        var parentPos = {
+        const parentPos = {
             x: parent.position.x,
             y: parent.position.y,
         };
 
-        var newVirus = new Entity.Virus(this, null, parentPos, this.config.virusMinSize);
+        const newVirus = new Entity.Virus(this, null, parentPos, this.config.virusMinSize);
         newVirus.setBoost(780, angle);
 
         // Add to moving cells list
@@ -1363,8 +1339,8 @@ class Server {
     }
     getNearestVirus(cell) {
         // Loop through all viruses on the map. There is probably a more efficient way of doing this but whatever
-        for (var i = 0; i < this.nodesVirus.length; i++) {
-            var check = this.nodesVirus[i];
+        for (let i = 0; i < this.nodesVirus.length; i++) {
+            const check = this.nodesVirus[i];
             if (check === null) continue;
             if (this.checkCellCollision(cell, check) != null) {
                 return check;
@@ -1375,38 +1351,40 @@ class Server {
         if (!this.config.playerDecayRate) {
             return;
         }
-        var decay = 1 - this.config.playerDecayRate * this.gameMode.decayMod;
-        // Loop through all player cells
-        for (var i = 0; i < this.clients.length; i++) {
-            var player = this.clients[i].player;
-            for (var j = 0; j < player.cells.length; j++) {
-                var cell = player.cells[j];
-                var size = cell.getSize();
-                if (size <= this.config.playerMinSize)
+        const decay = 1 - this.config.playerDecayRate * this.gameMode.decayMod;
+        
+        for (let i = 0; i < this.clients.length; i++) {
+            const player = this.clients[i].player;
+            for (let j = 0; j < player.cells.length; j++) {
+                const cell = player.cells[j];
+                const size = cell.getSize();
+                if (size <= this.config.playerMinSize) {
                     continue;
-
-                var size;
-                //Adjust decay for every cell in BattleRoyal
-                if (this.gameMode.ID == 8 && cell.inRedArea) {
-                    size = Math.sqrt(size * size * (1 - this.gameMode.redAreaDecayRate));
-                    if (size < this.config.playerMinSize) {
+                }
+    
+                let newSize;
+                if (this.gameMode.ID === 8 && cell.inRedArea) {
+                    newSize = Math.sqrt(size * size * decay); // (1 - this.gameMode.redAreaDecayRate)
+                    if (newSize < this.config.playerMinSize) {
                         this.removeNode(cell);
                     }
                 } else {
-                    size = Math.sqrt(size * size * decay);
+                    newSize = Math.sqrt(size * size * decay);
                 }
-                size = Math.max(size, this.config.playerMinSize);
-                if (size != cell.getSize()) {
-                    cell.setSize(size);
+                newSize = Math.max(newSize, this.config.playerMinSize);
+                if (newSize !== size) {
+                    cell.setSize(newSize);
                 }
             }
         }
     }
     getPlayerById(id) {
-        if (id == null) return null;
-        for (var i = 0; i < this.clients.length; i++) {
-            var player = this.clients[i].player;
-            if (player.pID == id) {
+        if (id == null) {
+            return null;
+        }
+        for (let i = 0; i < this.clients.length; i++) {
+            const player = this.clients[i].player;
+            if (player.pID === id) {
                 return player;
             }
         }
@@ -1416,15 +1394,15 @@ class Server {
         if (!skinName) {
             return true;
         }
-        if (skinName.length == 1 || skinName.length > 25) {
+        if (skinName.length === 1 || skinName.length > 25) {
             return false;
         }
-        if (skinName[0] != '%' /* && skinName[0] != ':' */) {
+        if (skinName[0] !== '%') {
             return false;
         }
-        for (var i = 1; i < skinName.length; i++) {
-            var c = skinName.charCodeAt(i);
-            if (c < 0x21 || c > 0x7F || c == '/' || c == '\\' || c == ':' || c == '%' || c == '?' || c == '&' || c == '<' || c == '>') {
+        for (let i = 1; i < skinName.length; i++) {
+            const c = skinName.charCodeAt(i);
+            if (c < 0x21 || c > 0x7F || c === '/' || c === '\\' || c === ':' || c === '%' || c === '?' || c === '&' || c === '<' || c === '>') {
                 return false;
             }
         }
@@ -1433,64 +1411,59 @@ class Server {
     loadBadWords() {
         try {
             if (!fs.existsSync(fileNameBadWords)) {
-                Logger.warn(fileNameBadWords + " not found");
+                Logger.warn(`${fileNameBadWords} not found`);
             } else {
-                var words = fs.readFileSync(fileNameBadWords, 'utf-8');
-                words = words.split(/[\r\n]+/);
-                words = words.map(function (arg) {
-                    return arg.trim().toLowerCase();
-                });
-                words = words.filter(function (arg) {
-                    return !!arg;
-                });
+                const words = fs.readFileSync(fileNameBadWords, 'utf-8')
+                .split(/[\r\n]+/)
+                .map(arg => arg.trim().toLowerCase())
+                .filter(arg => !!arg);
                 this.badWords = words;
-                //Logger.info(this.badWords.length + " bad words loaded");
+                // Logger.info(`${this.badWords.length} bad words loaded`);
             }
         } catch (err) {
             Logger.error(err.stack);
-            Logger.error("Failed to load " + fileNameBadWords + ": " + err.message);
+            Logger.error(`Failed to load ${fileNameBadWords}: ${err.message}`);
         }
     }
     checkBadWord(value) {
-        if (!value) return false;
-        value = value.toLowerCase().trim();
-        if (!value) return false;
-        for (var i = 0; i < this.badWords.length; i++) {
-            if (value.indexOf(this.badWords[i]) >= 0) {
-                return true;
-            }
+        if (!value) {
+            return false;
         }
-        return false;
+        value = value.toLowerCase().trim();
+        if (!value) {
+            return false;
+        }
+        return this.badWords.some(word => value.includes(word));
     }
     changeConfig(name, value) {
         if (value == null || isNaN(value)) {
-            Logger.warn("Invalid value: " + value);
+            Logger.warn(`Invalid value: ${value}`);
             return;
         }
         if (!this.config.hasOwnProperty(name)) {
-            Logger.warn("Unknown config value: " + name);
+            Logger.warn(`Unknown config value: ${name}`);
             return;
         }
         this.config[name] = value;
-
-        // update/validate
+    
+        // Update/validate
         this.config.playerMinSize = Math.max(32, this.config.playerMinSize);
         Logger.setVerbosity(this.config.logVerbosity);
         Logger.setFileVerbosity(this.config.logFileVerbosity);
-
-        Logger.print("Set " + name + " = " + this.config[name]);
+    
+        Logger.print(`Set ${name} = ${this.config[name]}`);
     }
     loadUserList() {
         try {
             this.userList = [];
             if (!fs.existsSync(fileNameUsers)) {
-                Logger.warn(fileNameUsers + " is missing.");
+                Logger.warn(`${fileNameUsers} is missing.`);
                 return;
             }
-            var usersJson = fs.readFileSync(fileNameUsers, 'utf-8');
-            var list = JSON.parse(usersJson.trim());
-            for (var i = 0; i < list.length;) {
-                var item = list[i];
+            const usersJson = fs.readFileSync(fileNameUsers, 'utf-8');
+            const list = JSON.parse(usersJson.trim());
+            for (let i = 0; i < list.length;) {
+                const item = list[i];
                 if (!item.hasOwnProperty("ip") ||
                     !item.hasOwnProperty("password") ||
                     !item.hasOwnProperty("role") ||
@@ -1499,7 +1472,7 @@ class Server {
                     continue;
                 }
                 if (!item.password || !item.password.trim()) {
-                    Logger.warn("User account \"" + item.name + "\" disabled");
+                    Logger.warn(`User account "${item.name}" disabled`);
                     list.splice(i, 1);
                     continue;
                 }
@@ -1508,7 +1481,7 @@ class Server {
                 }
                 item.password = item.password.trim();
                 if (!UserRoleEnum.hasOwnProperty(item.role)) {
-                    Logger.warn("Unknown user role: " + role);
+                    Logger.warn(`Unknown user role: ${item.role}`);
                     item.role = UserRoleEnum.USER;
                 } else {
                     item.role = UserRoleEnum[item.role];
@@ -1517,22 +1490,20 @@ class Server {
                 i++;
             }
             this.userList = list;
-            Logger.info(this.userList.length + " user records loaded.");
+            Logger.info(`${this.userList.length} user records loaded.`);
         } catch (err) {
             Logger.error(err.stack);
-            Logger.error("Failed to load " + fileNameUsers + ": " + err.message);
+            Logger.error(`Failed to load ${fileNameUsers}: ${err.message}`);
         }
     }
     userLogin(ip, password) {
         if (!password) return null;
         password = password.trim();
         if (!password) return null;
-        for (var i = 0; i < this.userList.length; i++) {
-            var user = this.userList[i];
-            if (user.password != password)
-                continue;
-            if (user.ip && user.ip != ip && user.ip != "*") // * - means any IP
-                continue;
+        for (let i = 0; i < this.userList.length; i++) {
+            const user = this.userList[i];
+            if (user.password !== password) continue;
+            if (user.ip && user.ip !== ip && user.ip !== "*") continue;
             return user;
         }
         return null;
@@ -1540,132 +1511,129 @@ class Server {
     loadIpBanList() {
         try {
             if (fs.existsSync(fileNameIpBan)) {
-                // Load and input the contents of the ipbanlist file
-                this.ipBanList = fs.readFileSync(fileNameIpBan, "utf8").split(/[\r\n]+/).filter(function (x) {
-                    return x != ''; // filter empty lines
-                });
-                if (this.ipBanList.length !== 0) Logger.info(this.ipBanList.length + " IP ban records loaded.");
+                this.ipBanList = fs.readFileSync(fileNameIpBan, "utf8")
+                    .split(/[\r\n]+/)
+                    .filter(x => x !== ''); // filter empty lines
+                if (this.ipBanList.length !== 0) {
+                    Logger.info(`${this.ipBanList.length} IP ban records loaded.`);
+                }
             } else {
-                Logger.warn(fileNameIpBan + " is missing.");
+                Logger.warn(`${fileNameIpBan} is missing.`);
             }
         } catch (err) {
             Logger.error(err.stack);
-            Logger.error("Failed to load " + fileNameIpBan + ": " + err.message);
+            Logger.error(`Failed to load ${fileNameIpBan}: ${err.message}`);
         }
     }
-    // Do not store ips in the file because we can ban clients for too many bad connections
     saveIpBanList() {
-        //return;
         try {
-            var blFile = fs.createWriteStream(fileNameIpBan);
+            const blFile = fs.createWriteStream(fileNameIpBan);
             // Sort the blacklist and write.
-            this.ipBanList.sort().forEach(function (v) {
+            this.ipBanList.sort().forEach(v => {
                 blFile.write(v + '\n');
             });
             blFile.end();
-            Logger.info(this.ipBanList.length + " IP ban records saved.");
+            Logger.info(`${this.ipBanList.length} IP ban records saved.`);
         } catch (err) {
             Logger.error(err.stack);
-            Logger.error("Failed to save " + fileNameIpBan + ": " + err.message);
+            Logger.error(`Failed to save ${fileNameIpBan}: ${err.message}`);
         }
     }
     checkIpBan(ipAddress) {
-        if (!this.ipBanList || this.ipBanList.length == 0 || !ipAddress || ipAddress == "127.0.0.1") {
+        if (!this.ipBanList || this.ipBanList.length === 0 || !ipAddress || ipAddress === "127.0.0.1") {
             return false;
         }
         if (this.ipBanList.indexOf(ipAddress) >= 0) {
             return true;
         }
-        var ipBin = ipAddress.split('.');
-        if (ipBin.length != 4) {
-            // unknown IP format
-            return false;
+        const ipBin = ipAddress.split('.');
+        if (ipBin.length !== 4) {
+            return false; // unknown IP format
         }
-        var subNet2 = ipBin[0] + "." + ipBin[1] + ".*.*";
+        const subNet2 = ipBin[0] + "." + ipBin[1] + ".*.*";
         if (this.ipBanList.indexOf(subNet2) >= 0) {
             return true;
         }
-        var subNet1 = ipBin[0] + "." + ipBin[1] + "." + ipBin[2] + ".*";
+        const subNet1 = ipBin[0] + "." + ipBin[1] + "." + ipBin[2] + ".*";
         if (this.ipBanList.indexOf(subNet1) >= 0) {
             return true;
         }
         return false;
     }
     banIp(ip) {
-        var ipBin = ip.split('.');
-        if (ipBin.length != 4) {
-            Logger.warn("Invalid IP format: " + ip);
+        const ipBin = ip.split('.');
+        if (ipBin.length !== 4) {
+            Logger.warn(`Invalid IP format: ${ip}`);
             return;
         }
-        if (ipBin[0] == "127") {
+        if (ipBin[0] === "127") {
             Logger.warn("Cannot ban localhost");
             return;
         }
         if (this.ipBanList.indexOf(ip) >= 0) {
-            Logger.warn(ip + " is already in the ban list!");
+            Logger.warn(`${ip} is already in the ban list!`);
             return;
         }
         this.ipBanList.push(ip);
-        if (ipBin[2] == "*" || ipBin[3] == "*") {
-            Logger.print("The IP sub-net " + ip + " has been banned");
+        if (ipBin[2] === "*" || ipBin[3] === "*") {
+            Logger.print(`The IP sub-net ${ip} has been banned`);
         } else {
-            Logger.print("The IP " + ip + " has been banned");
+            Logger.print(`The IP ${ip} has been banned`);
         }
-        this.clients.forEach(function (socket) {
-            // If already disconnected or the ip does not match
-            if (socket == null || !socket.isConnected || !this.checkIpBan(socket.remoteAddress))
+        this.clients.forEach(socket => {
+            if (socket === null || !socket.isConnected || !this.checkIpBan(socket.remoteAddress)) {
                 return;
-
-            // remove player cells
-            socket.player.cells.forEach(function (cell) {
+            }
+    
+            // Remove player cells
+            socket.player.cells.forEach(cell => {
                 this.removeNode(cell);
-            }, this);
-
-            // disconnect
+            });
+    
+            // Disconnect
             socket.close(1000, "Banned from server");
-            var name = socket.player.getFriendlyName();
-            Logger.print("Banned: \"" + name + "\" with Player ID " + socket.player.pID);
-            this.sendChatMessage(null, null, "Banned \"" + name + "\""); // notify to don't confuse with server bug
-        }, this);
+            const name = socket.player.getFriendlyName();
+            Logger.print(`Banned: "${name}" with Player ID ${socket.player.pID}`);
+            this.sendChatMessage(null, null, `Banned "${name}"`); // Notify to avoid confusion
+        });
         this.saveIpBanList();
     }
     unbanIp(ip) {
-        var index = this.ipBanList.indexOf(ip);
+        const index = this.ipBanList.indexOf(ip);
         if (index < 0) {
-            Logger.warn("IP " + ip + " is not in the ban list!");
+            Logger.warn(`IP ${ip} is not in the ban list!`);
             return;
         }
         this.ipBanList.splice(index, 1);
-        Logger.print("Unbanned IP: " + ip);
+        Logger.print(`Unbanned IP: ${ip}`);
         this.saveIpBanList();
     }
-    // Kick player by ID. Use ID = 0 to kick all players
     kickId(id, moderator) {
-        var count = 0;
-        this.clients.forEach(function (socket) {
-            if (socket.isConnected == false)
-                return;
-            if (id != 0 && socket.player.pID != id)
-                return;
-            // remove player cells
-            socket.player.cells.forEach(function (cell) {
+        let count = 0;
+        this.clients.forEach(socket => {
+            if (!socket.isConnected) return;
+            if (id !== 0 && socket.player.pID !== id) return;
+    
+            // Remove player cells
+            socket.player.cells.forEach(cell => {
                 this.removeNode(cell);
-            }, this);
-
-            var name = socket.player.getFriendlyName();
-            var whoKick = moderator ? moderator : null;
-            Logger.print("Kicked \"" + name + "\"");
-            this.sendChatMessage(whoKick, null, "Kicked \"" + name + "\""); // notify to don't confuse with server bug
-            // disconnect
+            });
+    
+            const name = socket.player.getFriendlyName();
+            const whoKick = moderator ? moderator : null;
+            Logger.print(`Kicked "${name}"`);
+            this.sendChatMessage(whoKick, null, `Kicked "${name}"`); // Notify to avoid confusion
+    
+            // Disconnect
             socket.close(1000, "Kicked from server");
             count++;
-        }, this);
-        if (count > 0)
-            return;
-        if (id == 0)
+        });
+        if (count > 0) return;
+        if (id === 0) {
             Logger.warn("No players to kick!");
-        else
-            Logger.warn("Player with ID " + id + " not found!");
+        } else {
+            Logger.warn(`Player with ID ${id} not found!`);
+        }
     }
     // Stats server
     startStatsServer(port) {
@@ -1673,38 +1641,41 @@ class Server {
         if (port < 1) {
             return;
         }
-
+    
         // Create stats
         this.stats = "Test";
         this.getStats();
-        var getMassLimitBind = this.getMassLimit.bind(this);
+        const getMassLimitBind = this.getMassLimit.bind(this);
         setInterval(getMassLimitBind, 1000);
-
-        Logger.info("STATS port: \x1b[34m" + port + '\x1b[0m');
+    
+        Logger.info(`STATS port: \x1b[34m${port}\x1b[0m`);
+        
         // Show stats
-        var getStatsBind = this.getStats.bind(this);
-        this.httpServer = http.createServer(function (req, res) {
+        const getStatsBind = this.getStats.bind(this);
+        this.httpServer = http.createServer((req, res) => {
             // Stats server
-            var url = req.url.replace('/', '');
-            console.log(url)
-            if (url == '') {
+            const url = req.url.replace('/', '');
+            console.log(url);
+            if (url === '') {
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 res.writeHead(200);
                 res.end('Welcome to API');
-                return
+                return;
             }
-            if (url == 'stats') {
+            if (url === 'stats') {
                 this.statsInterval = setInterval(getStatsBind, this.config.serverStatsUpdate * 1000);
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 res.writeHead(200);
                 res.end(this.stats);
-                return
+                return;
             }
-        }.bind(this));
-        this.httpServer.on('error', function (err) {
-            Logger.error("Stats Server: " + err.message);
         });
-        this.httpServer.listen(port)
+        
+        this.httpServer.on('error', err => {
+            Logger.error(`Stats Server: ${err.message}`);
+        });
+        
+        this.httpServer.listen(port);
     }
     getStats() {
         // Get server statistics
@@ -1719,7 +1690,8 @@ class Server {
             else if (client.player.cells.length) ++alivePlayers;
             else ++spectatePlayers;
         }
-        var s = {
+        
+        const s = {
             'server_name': this.config.serverName,
             'server_chat': this.config.serverChat ? "true" : "false",
             'border_width': this.border.width,
@@ -1736,26 +1708,27 @@ class Server {
             'start_time': this.startTime,
             'stats_time': Date.now()
         };
+        
         this.statsObj = s;
         this.stats = JSON.stringify(s);
     }
     getMassLimit() {
         if (this.config.serverMassLimit <= 0) return;
-        for (var i = 0; i < this.clients.length; i++) {
-            var socket = this.clients[i];
-            var playerScore = socket.player.getScore();
+        for (let i = 0; i < this.clients.length; i++) {
+            const socket = this.clients[i];
+            const playerScore = socket.player.getScore();
             if (playerScore / 100 > this.config.serverMassLimit) {
-                for (var j = 0; j < socket.player.cells.length; j++) {
+                for (let j = 0; j < socket.player.cells.length; j++) {
                     socket.player.cells[j].setSize(1);
                     while (this.nodes.length > 0) {
-                        var node = this.nodes[0];
+                        const node = this.nodes[0];
                         node && this.removeNode(node);
                     }
                 }
                 this.sendChatMessage(null, null, this.config.serverMassLimitMessage);
             }
         }
-    }
+    }    
 }
 
 module.exports = Server;
