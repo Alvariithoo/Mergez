@@ -36,7 +36,6 @@ let consoleLog = null;
 const logFunctions = {
     debug: createLogFunction(LogLevelEnum.DEBUG, "[DEBUG]"),
     info: createLogFunction(LogLevelEnum.INFO, "[INFO]"),
-    plugin: createLogFunction(LogLevelEnum.PLUGIN, "[PLUGIN]"),
     warn: createLogFunction(LogLevelEnum.WARN, "[WARN]"),
     error: createLogFunction(LogLevelEnum.ERROR, "[ERROR]"),
     fatal: createLogFunction(LogLevelEnum.FATAL, "[FATAL]"),
@@ -94,8 +93,6 @@ function getLogColor(level) {
             return conLogColor.magenta;
         case LogLevelEnum.INFO:
             return conLogColor.cyan;
-        case LogLevelEnum.PLUGIN:
-            return conLogColor.green + conLogColor.bright;
         case LogLevelEnum.WARN:
             return conLogColor.yellow + conLogColor.bright;
         case LogLevelEnum.ERROR:
@@ -113,7 +110,6 @@ function getLogPrefix(level, logPrefix) {
     const prefixes = {
         [LogLevelEnum.DEBUG]: "[DEBUG]",
         [LogLevelEnum.INFO]: "[INFO]",
-        [LogLevelEnum.PLUGIN]: "[PLUGIN]",
         [LogLevelEnum.WARN]: "[WARN]",
         [LogLevelEnum.ERROR]: "[ERROR]",
         [LogLevelEnum.FATAL]: "[FATAL]",
