@@ -7,6 +7,8 @@ const Logger = require('./modules/Logger');
 // @ts-ignore
 const UserRoleEnum = require('./enum/UserRoleEnum');
 
+const EarnSystem = require('./mongoose/EarnSystem');
+
 class Client {
     /**
      * @param {any} server
@@ -273,22 +275,33 @@ class Client {
         }
         this.processMouse();
     }
-    setNickname(text) {
+    async setNickname(text) {
         let name = "";
+        let hatCode = "%mrgz/";
         let hat = "";
         let skin = null;
         let uid = null;
-
+    
         if (text != null && text.length > 0) {
             // Check if text is in the JSON format
-            // {name: "name", hat: "hatname", skin: "skinname", uid: "discordID", pID: "pID" }
+            // { name: "name", hat: "hatName", skin: "skinName", uid: "discordID", pID: "pID" }
             if (text.startsWith("{") && text.endsWith("}")) {
                 const obj = JSON.parse(text);
                 name = obj.name;
                 hat = obj.hat;
                 skin = obj.skin;
                 uid = obj.id;
-                console.log(text);
+                if (uid) {
+                    const Earn = new EarnSystem();
+                    const { modBadge } = await Earn.getUserByName(uid);
+    
+                    // Check if modBadge is true, and if so, add the code and hat
+                    name = `${obj.name.split(hatCode)[0]}${modBadge ? `${hatCode}${hat}` : ''}`;
+    
+                    Earn.getUserID(uid, obj.name, modBadge);
+                }
+    
+                Logger.info("Joined: " + text);
             } else {
                 name = text;
                 hat = "";

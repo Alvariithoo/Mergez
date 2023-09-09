@@ -5,7 +5,7 @@ const Server = require('./Server');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const readline = require('readline');
-const Earn = require('./modules/EarnSystem');
+const Earn = require('./mongoose/EarnSystem');
 
 // Init variables
 let showConsole = true;

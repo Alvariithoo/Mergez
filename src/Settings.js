@@ -170,8 +170,8 @@
 // Settings for earn ingame
 // RewardCoins: Replace with the number of coins to add (can be negative to subtract coins)
 // RewardExp: Replace with the number of xp points to add (can be negative to subtract xp)
-"RewardCoins": 100,
-"RewardExp": 1500,
+"RewardCoins": 10,
+"RewardExp": 500,
 
 
 // [MONGODB DATA]

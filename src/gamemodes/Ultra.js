@@ -1,6 +1,6 @@
 const FFA = require('./FFA');
 const Logger = require('../modules/Logger');
-const EarnSystem = require('../modules/EarnSystem')
+const EarnSystem = require('../mongoose/EarnSystem');
 
 class Ultra extends FFA {
     constructor() {
