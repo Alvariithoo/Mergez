@@ -26,13 +26,14 @@ class Earn {
 
     async startMongoDB() {
         try {
-            await mongoose.connect(`${this.mongoUrl}/${this.mongoName}`, {
+            await mongoose.connect(this.mongoUrl, {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
+                dbName: this.mongoName
             });
             Logger.info('Connected to MongoDB!');
         } catch (error) {
-            Logger.error('Error connecting to MongoDB:', error);
+            Logger.error('Error connecting to MongoDB: ' + error);
         }
     }
 
