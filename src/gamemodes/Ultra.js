@@ -83,9 +83,6 @@ class Ultra extends FFA {
         this.restarting = true;
         let congratolations = `Congratolations to ${this.winner}!`;
         server.sendChatMessage(null, null, congratolations);
-        server.sendChatMessage(null, null, 'For winning the server get:');
-        server.sendChatMessage(null, null, `Reward: ${this.RewardExp} EXP`);
-        server.sendChatMessage(null, null, `Reward: ${this.RewardCoins} Coins`);
 
         const Earn = new EarnSystem();
         const UserID = uid;
@@ -109,7 +106,7 @@ class Ultra extends FFA {
             if (!this.restarting &&
                 playerScore / 100 > this.scoreLimit &&
                 player.cells.length > 0) {
-                this.startRestartTimer(server, player._name, player._id);
+                this.startRestartTimer(server, player._name.split("%mrgz/")[0], player._id);
             }
         }
     }
@@ -134,7 +131,10 @@ class Ultra extends FFA {
                 "Restarting",
                 this.downCounter-- + "s",
                 this.winner,
-                "Won The Game!"
+                "Won The Game!",
+                "Rewards:",
+                this.RewardExp + " xp",
+                this.RewardCoins + " coins"
             ];
             server.leaderboard = restart;
             server.leaderboardType = 48;
