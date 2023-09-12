@@ -70,7 +70,7 @@
 "separateChatForTeams": 1,
 "serverName": "Ultrasplit",
 "serverWelcome1": "Connected to Ultrasplit",
-"serverWelcome2": "First to get 220k wins!",
+"serverWelcome2": "First to get 160k wins!",
 
 // [Border]
 // Border size (vanilla 14142.135623730952)
@@ -93,8 +93,8 @@
 // virusMaxSize: vanilla 140 (mass = 140*140/100 = 196)
 "virusMinSize": 100,
 "virusMaxSize": 141.421356237,
-"virusMinAmount": 0,
-"virusMaxAmount": 3,
+"virusMinAmount": 4,
+"virusMaxAmount": 4,
 
 // [Ejected Mass]
 // ejectSize: vanilla 37 (mass = 37*37/100 = 13.69)
@@ -143,7 +143,7 @@
 // playerSplitDelay: Next Auto Split In Milliseconds for (Double, tripe, x16, etc.)
 // playerMergeType: 0 = Ultrasplit | 1 = Instant | 2 = Normal
 // chatCooldown: Next msg in Milliseconds
-"ultraRestartMassLimit": 220000,
+"ultraRestartMassLimit": 160000,
 "ultraRestartCounterDuration": 25,
 "serverMassLimit": 1000000,
 "restartMessage": "Server restarting...",

@@ -23,8 +23,8 @@ class Ultra extends FFA {
         this.config.serverMaxConnections = 33;
         this.config.serverSpectatorScale = 0.1;
 
-        this.config.borderWidth = 27000;
-        this.config.borderHeight = 27000;
+        this.config.borderWidth = 25000;
+        this.config.borderHeight = 25000;
 
         this.config.foodMinSize = 20;
         this.config.foodMaxSize = 20;
@@ -33,19 +33,19 @@ class Ultra extends FFA {
         this.config.foodMaxAmount = 1000;
 
         this.config.virusMaxSize = 120;
-        this.config.virusMaxAmount = 0;
+        this.config.virusMaxAmount = 5;
 
         this.config.ejectSize = 32.06;
-        this.config.ejectSizeLoss = 32.23;
+        this.config.ejectSizeLoss = 33.23;
         this.config.ejectCooldown = 0;
 
         this.config.playerMinSize = 84;
         this.config.playerMaxSize = 150000000;
         this.config.playerMinSplitSize = 121;
-        this.config.playerStartSize = 1200;
+        this.config.playerStartSize = 1000;
         this.config.playerMaxCells = 138;
         this.config.playerSpeed = 1.6;
-        this.config.playerDecayRate = .001;
+        this.config.playerDecayRate = .00275;
         this.config.playerRecombineTime = 0;
 
         this.config.ejectSpawnPlayer = 0;
