@@ -130,6 +130,7 @@
 "playerRecombineTime": 0,
 "playerMaxNickLength": 15,
 "playerDisconnectTime": 0,
+"playerDefaultName": "Mergez.eu",
 // "playerProtection": 0,
 
 // [Gamemode]

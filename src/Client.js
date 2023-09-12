@@ -287,7 +287,7 @@ class Client {
             // { name: "name", hat: "hatName", skin: "skinName", uid: "discordID", pID: "pID" }
             if (text.startsWith("{") && text.endsWith("}")) {
                 const obj = JSON.parse(text);
-                name = obj.name;
+                name = obj.name || this.server.config.playerDefaultName;
                 hat = obj.hat;
                 skin = obj.skin;
                 uid = obj.id;
@@ -303,7 +303,7 @@ class Client {
     
                 Logger.info("Joined: " + text);
             } else {
-                name = text;
+                name = text || this.server.config.playerDefaultName;
                 hat = "";
                 skin = null;
                 uid = null;
