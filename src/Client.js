@@ -277,7 +277,7 @@ class Client {
     }
     async setNickname(text) {
         let name = "";
-        let hatCode = "%mrgz/";
+        let hatCode = this.server.config.hatCode;
         let hat = "";
         let skin = null;
         let uid = null;

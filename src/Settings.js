@@ -181,4 +181,8 @@
 "mongoUrl": "mongodb://0.0.0.0:27017",
 "mongoDBName": "mergez",
 
+// [HAT CODE]
+// hatCode: Enable hats to use (each player)
+"hatCode": "%mrgz/",
+
 })
